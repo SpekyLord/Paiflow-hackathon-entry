@@ -57,9 +57,10 @@ export async function listOrgDocuments(orgId: string): Promise<OrgDocumentDTO[]>
 export async function getOrgDocument(orgId: string, documentId: string): Promise<OrgDocumentRow> {
   const { data, error } = await getServiceClient().from('org_documents')
     .select('id,org_id,kind,sha256,size_bytes,media_type,storage_key,original_filename,uploaded_by,ledger_block_id,created_at')
-    .eq('org_id', orgId).eq('id', documentId).maybeSingle();
+    .eq('id', documentId).maybeSingle();
   if (error) throw new HttpError('INTERNAL');
   if (!data) throw new HttpError('NOT_FOUND');
+  if (data.org_id !== orgId) throw new HttpError('FORBIDDEN');
   return data as unknown as OrgDocumentRow;
 }
 
@@ -76,9 +77,10 @@ export async function getPlanVersionInOrg(orgId: string, versionId: string): Pro
     .select('id,version,purpose,plan_sha256,plan_id').eq('id', versionId).maybeSingle();
   if (versionError) throw new HttpError('INTERNAL');
   if (!version) throw new HttpError('NOT_FOUND');
-  const { data: plan, error: planError } = await db.from('budget_plans').select('id')
-    .eq('id', version.plan_id).eq('org_id', orgId).maybeSingle();
+  const { data: plan, error: planError } = await db.from('budget_plans').select('id,org_id')
+    .eq('id', version.plan_id).maybeSingle();
   if (planError) throw new HttpError('INTERNAL');
   if (!plan) throw new HttpError('NOT_FOUND');
+  if (plan.org_id !== orgId) throw new HttpError('FORBIDDEN');
   return { id: version.id as string, version: version.version as number, purpose: version.purpose as string, plan_sha256: version.plan_sha256 as string };
 }

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { MAX_UPLOAD_BYTES } from '@/contracts/limits';
-import { requireOrgMember } from '@/server/auth/guards';
+import { parseUuid, requireOrgMember } from '@/server/auth/guards';
 import { getOrgDocument, getPlanVersionInOrg } from '@/server/files/repository';
 import { validateUpload } from '@/server/files/validation';
 import { readMultipart } from '@/server/http/multipart';
@@ -21,7 +21,7 @@ function parseTarget(raw: string | undefined): VerifyTarget {
   if (Object.keys(target).length !== 2 || (target.kind !== 'org_document' && target.kind !== 'plan_version') || typeof target.id !== 'string') {
     throw new HttpError('VALIDATION_SHAPE', 'Choose a saved record to compare.');
   }
-  return { kind: target.kind, id: target.id };
+  return { kind: target.kind, id: parseUuid(target.id, 'record') };
 }
 
 export async function POST(request: Request, context: { params: Promise<{ orgId: string }> }) {

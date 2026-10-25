@@ -1021,7 +1021,7 @@ The phases below are listed in order:
     - Approving a superseded version → 409.
     - The deployment is never taken from browser input.
 
-- [ ] **F-15 SME documents, download and tamper check**
+- [x] **F-15 SME documents, download and tamper check**
   - **Requirements:** REQ-DOC-01 AC1/AC2, REQ-DLV-02 AC1–AC4, PRD §K.6.
   - **Deliverable:**
     - `src/server/files/**`: a streaming size limit before full buffering where possible; a type allowlist (PDF, PNG, JPEG, ZIP, TXT, DOCX) checked against both the declared type and magic bytes where feasible; server-side SHA-256; a private upload; the row written only after the storage write succeeds; orphan cleanup noted.
@@ -1033,6 +1033,8 @@ The phases below are listed in order:
     - Another org's record → 403.
     - 413/415 limits hold.
     - The rate limit applies.
+  - **Implementation:** uploads are streamed through the shared multipart size cap, validated against the MIME allowlist and file signatures, hashed server-side, then written to the private bucket before the transactional record RPC. RPC failure triggers best-effort orphan deletion. Downloads use attachment signed URLs capped at 300 seconds. Verification scopes the selected document or plan version to the requested org; cross-org IDs return 403.
+  - **Verification:** `npm run typecheck` passed. Runtime upload, cross-org, size-limit and one-byte-change flows still need acceptance exercise.
 
 - [ ] **F-16 Plan approval route hardening**
   - **Requirements:** REQ-BUD-02 AC1–AC3.

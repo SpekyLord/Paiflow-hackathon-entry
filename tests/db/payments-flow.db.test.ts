@@ -266,6 +266,15 @@ describe("payments against the real SQL", () => {
     expect(vi.mocked(port.events.list).mock.calls[1][0]).toEqual({ limit: 100, cursor: "cursor-1" });
   });
 
+  it("reads the wallet context through the wrapper for a bound member", async () => {
+    const f = await fixture();
+    const ctx = await createFinancialDb(pgSupabase(pg)).getWalletContext(f.ids.owner);
+    expect(ctx).not.toBeNull();
+    expect(ctx!.binding?.address).toBe(f.signer.publicKey());
+    expect(ctx!.verifiedTotals).toEqual({ receivedStroops: "0", refundedStroops: "0" });
+    expect(ctx!.plans.map((p) => p.planId)).toContain(f.planId);
+  });
+
   it("lets only one holder take a reconcile lease", async () => {
     const db = createFinancialDb(pgSupabase(pg));
     const key = `reconcile:plan:${randomUUID()}`;

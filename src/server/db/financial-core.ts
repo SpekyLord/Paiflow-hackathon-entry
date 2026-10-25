@@ -435,14 +435,17 @@ export function createFinancialDb(client: SupabaseClient) {
       history: Omit<WalletSummaryDTO['history'][number], 'explorerUrl'>[];
       verifiedTotals: WalletSummaryDTO['verifiedPayouts'];
     } | null> {
-      const r = await rpc<{
+      // get_wallet_context is a plain read: it returns the context object itself, not an {ok, value} envelope
+      // (found by Carlos's live smoke test, where the envelope check turned every answer into INTERNAL).
+      type WalletContext = {
         binding: { address: GAddress; verifiedAt: IsoUtc } | null;
         plans: WalletSummaryDTO['plans'];
         escrow: WalletSummaryDTO['escrow'];
         history: Omit<WalletSummaryDTO['history'][number], 'explorerUrl'>[];
         verifiedTotals: WalletSummaryDTO['verifiedPayouts'];
-      }>('get_wallet_context', { p_user: userId });
-      return r.ok ? r.value : null;
+      };
+      const data = await read<WalletContext>('getWalletContext', () => client.rpc('get_wallet_context', { p_user: userId }));
+      return data && typeof data === 'object' && 'verifiedTotals' in data ? data : null;
     },
   };
 }

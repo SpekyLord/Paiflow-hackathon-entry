@@ -19,13 +19,11 @@ const rel = (path: string) => path.replace('/src/app/api/', '').replace('/route.
 const PUBLIC_BY_DESIGN = ['auth/sign-in', 'auth/sign-out'];
 
 // Routes that must answer 401 without a session.
-const MUST_BE_401 = [/^orgs(\/|$)/, /^operator\//, /^wallet\//, /^auth\/me$/, /^deals(\/|$)/, /^receipts(\/|$)/];
+const MUST_BE_401 = [/^orgs(\/|$)/, /^operator\//, /^wallet\//, /^auth\/me$/, /^integration\/status$/, /^deals(\/|$)/, /^receipts(\/|$)/];
 
 // KNOWN GAPS, listed so they stay visible. Remove an entry when its route is fixed or deleted.
-//  - integration/status: Carlos has not added the session check yet (contract §3.5 says "user").
 //  - the inherited government-edition routes are still reachable until F-20 (PRD §K.12); Shanti's HO-12 comes first.
 const KNOWN_GAPS = [
-  'integration/status',
   'audit', 'auth', 'auth/login', 'auth/logout', 'blockchain', 'blockchain/nodes', 'blockchain/validate',
   'budget', 'consensus', 'consensus/[documentId]/approve', 'consensus/[documentId]/reject',
   'documents', 'documents/[id]', 'summarize', 'verify',

@@ -1,6 +1,6 @@
 # Testing guide — CYFER for SMEs
 
-Owner: Carlos (Developer 2). Source of truth: [docs/PRD.MD](docs/PRD.MD) v2.1.0, §M. The inherited government-edition guide is gone; its "PASSED" results were never re-run for the SME product.
+Owner: Carlos (Developer 2). Source of truth: [docs/PRD.MD](docs/PRD.MD) v2.1.0, §M. The inherited earlier-edition guide is gone; its "PASSED" results were never re-run for the SME product.
 
 ## Commands
 

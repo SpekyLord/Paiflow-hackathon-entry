@@ -1,8 +1,12 @@
 "use client";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { listMoneyMovements, moneyMovementsCsvPath } from "@/client/api/payments";
+import { toSafeError } from "./live/ports";
+import { moneyMovementsFixture } from "./mock/money-movements";
+import { createMovementsStore } from "./money-movements";
 import type { ControllerHooks } from "@/contracts/controllers";
 import { budgetVsActual } from "@/lib/budget-vs-actual";
-import type { UseBudgetVsActual } from "./erp-types";
+import type { UseBudgetVsActual, UseMoneyMovements } from "./erp-types";
 import * as live from "./live/hooks";
 import * as mock from "./mock/hooks";
 
@@ -36,5 +40,29 @@ export function useBudgetVsActual(orgId: string, planId: string, opts?: { auto?:
     refreshEvidence: evidence.refreshEvidence,
   };
 }
-export type { UseBudgetVsActual } from "./erp-types";
+
+// ERP-LOG-3: fixture mode serves local rows with no network call.
+export function useMoneyMovements(orgId: string): UseMoneyMovements {
+  const [store] = useState(() =>
+    createMovementsStore(
+      process.env.NEXT_PUBLIC_CYFER_FIXTURES === "1" && process.env.NODE_ENV !== "production"
+        ? async () => moneyMovementsFixture()
+        : (before) => listMoneyMovements(orgId, { before }),
+      toSafeError,
+    ),
+  );
+  useEffect(() => void store.reload(), [store]);
+  const state = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
+  return {
+    rows: state.rows,
+    totals: state.totals,
+    loading: state.loading,
+    hasMore: state.nextBefore !== null,
+    error: state.error,
+    csvPath: moneyMovementsCsvPath(orgId),
+    reload: store.reload,
+    loadMore: store.loadMore,
+  };
+}
+export type { UseBudgetVsActual, UseMoneyMovements } from "./erp-types";
 export { getControllerMode } from "./mode";

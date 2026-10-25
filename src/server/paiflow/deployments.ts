@@ -9,7 +9,7 @@ import { fail, readJson, requireSameOrigin, RouteError, UUID } from "@/server/pa
 // Paiflow capabilities. Paiflow never returns recipients or bps (CL-12), so
 // those stay operator-attested from Shanti's handoff record.
 
-async function requireOperator(deps: PaymentDeps, request: Request) {
+export async function requireOperator(deps: PaymentDeps, request: Request) {
   const session = await requireSession(deps, request);
   if (!session.isOperator) fail("OPERATOR_REQUIRED");
   return session;

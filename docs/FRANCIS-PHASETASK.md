@@ -876,7 +876,7 @@ The phases below are listed in order:
 
 ### Phase B — Schema and RPCs (write files; do not apply until F-19) [MVP]
 
-- [x] **F-05 Migration 002: identity, organisations, wallet bindings — proven in DB (replay, other address/user, unique address, lock), §11F-05 Migration 002: identity, organisations, wallet bindings**
+- [x] **F-05 Migration 002: identity, organisations, wallet bindings** — proven in DB (replay, other address/user, unique address, lock), §11
   - **Requirements:** REQ-ACC-01, REQ-ACC-02 AC1–AC4, PRD §I.1, §I.2, §D.2.
   - **Deliverable:** `002_sme_identity_orgs_wallets.sql`, containing:
     - `profiles(user_id → auth.users, display_name, is_operator default false)`, with the flag settable only by migration or service role
@@ -890,7 +890,7 @@ The phases below are listed in order:
   - **Acceptance:** the replay, wrong-signer and unique-address rules are enforceable in SQL; the signature itself is checked in F-13.
   - **Verification:** SQL review; tests in F-21.
 
-- [x] **F-06 Migration 003: deployment registry and reservations — proven in DB (one active reservation under concurrency, Split recipient validation), §11F-06 Migration 003: deployment registry and reservations**
+- [x] **F-06 Migration 003: deployment registry and reservations** — proven in DB (one active reservation under concurrency, Split recipient validation), §11
   - **Requirements:** REQ-DEP-01 AC1–AC4, D-04, D-12.
   - **Deliverable:** `003_sme_deployments.sql`, containing:
     - `paiflow_deployments` (PRD §I.4 plus `capability_snapshot jsonb` and `split_recipients jsonb` in deployment order), with no credential columns
@@ -915,7 +915,7 @@ The phases below are listed in order:
   - **Acceptance:** every rule in the §3.6 "DB enforces" list is expressible.
   - **Blocking question:** B-04.
 
-- [x] **F-08 Migrations 004 and 006: budget plans and SME documents — proven in DB (private bucket, no object policies, key format, approver PK), §11F-08 Migrations 004 and 006: budget plans and SME documents**
+- [x] **F-08 Migrations 004 and 006: budget plans and SME documents** — proven in DB (private bucket, no object policies, key format, approver PK), §11
   - **Requirements:** REQ-BUD-01/02, REQ-DOC-01, PRD §I.6, §I.8, §K.6, CL-13…CL-15.
   - **Deliverable (F-08b) `004_sme_budget_plans.sql`:**
     - `budget_plans(id, org_id, deployment_id, state, current_version_id, created_by, …)`
@@ -933,7 +933,7 @@ The phases below are listed in order:
     - Storage keys contain no user filename.
     - The approver primary key prevents duplicate approver rows.
 
-- [x] **F-09 Migration 007: ledger and audit concurrency fix — proven in DB (advisory lock, no fork under concurrency, hashes recomputable), §11F-09 Migration 007: ledger and audit concurrency fix**
+- [x] **F-09 Migration 007: ledger and audit concurrency fix** — proven in DB (advisory lock, no fork under concurrency, hashes recomputable), §11
   - **Requirements:** PRD §I.10, §I.11, §K.9, D-09.
   - **Deliverable:** `007_sme_ledger_audit.sql`, containing:
     - additive `transactions` columns `deal_id`, `org_id`, `plan_id`, `actor_user_id`, `hash_input jsonb`, with new `action_type` values (PRD §I.10 plus `plan_create`, `plan_approve`, `plan_reject`, `doc_record`, `pay_prepare`, `pay_submit`, `envelope_payout_verified`) added after F-02 confirms the existing check constraint
@@ -945,7 +945,7 @@ The phases below are listed in order:
     - The UI label is "CYFER audit hash".
   - **Blocking question:** B-01.
 
-- [x] **F-10 Business RPCs — proven in DB incl. concurrent last approvals and ledger-failure rollback, §11F-10 Business RPCs**
+- [x] **F-10 Business RPCs** — proven in DB incl. concurrent last approvals and ledger-failure rollback, §11
   - **Requirements:** REQ-BUD-01 AC1/AC2, REQ-BUD-02 AC1–AC3, REQ-BUD-03 AC2, REQ-DOC-01, REQ-DEP-01.
   - **Deliverable:** these SQL functions, each locking the plan or org row and appending evidence in the same transaction:
     - `create_budget_plan(p_actor, p_org, p_input jsonb)`:

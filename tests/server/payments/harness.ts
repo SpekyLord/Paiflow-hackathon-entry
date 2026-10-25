@@ -45,6 +45,7 @@ export function makeHarness(session: RouteSession | null = { userId: USER, isOpe
     sleep: vi.fn(async (ms: number) => {
       clock += ms;
     }),
+    rateLimit: vi.fn(),
   };
   const sdkCalls = () =>
     paiflow.capabilities.get.mock.calls.length +

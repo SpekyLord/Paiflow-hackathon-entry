@@ -3,7 +3,7 @@ import type { FinancialDb } from "@/server/db/financial-core";
 import type { PaiflowDeployment } from "@paiflow/sdk";
 import { paiflowDeployment } from "@/server/paiflow/client";
 import { toSafePaiflowError } from "@/server/paiflow/errors";
-import { fail } from "@/server/paiflow/route-kit";
+import { createRateLimiter, fail } from "@/server/paiflow/route-kit";
 
 // Everything a payment route touches outside itself, so tests can pass fakes
 // and count Paiflow calls.
@@ -21,7 +21,17 @@ export interface PaymentDeps {
   session(request: Request): Promise<RouteSession | null>;
   now(): number;
   sleep(ms: number): Promise<void>;
+  // Throws RATE_LIMITED (429) when the user exceeds the bucket.
+  rateLimit(bucket: RateBucket, key: string): void;
 }
+
+export type RateBucket = "prepare" | "submit" | "check";
+// Process-local, which is enough for the single demo server.
+const LIMITERS: Record<RateBucket, (key: string) => void> = {
+  prepare: createRateLimiter(10, 60_000),
+  submit: createRateLimiter(10, 60_000),
+  check: createRateLimiter(20, 60_000),
+};
 
 export async function requireSession(deps: PaymentDeps, request: Request): Promise<RouteSession> {
   const session = await deps.session(request);
@@ -53,5 +63,6 @@ export async function liveDeps(): Promise<PaymentDeps> {
     session: noSessionYet,
     now: Date.now,
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+    rateLimit: (bucket, key) => LIMITERS[bucket](key),
   };
 }

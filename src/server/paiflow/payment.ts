@@ -4,12 +4,13 @@ import type { PaymentAttemptViewDTO, PaymentReviewDTO } from "@/contracts/dto";
 import type { ErrorCode } from "@/contracts/errors";
 import { MAX_PAY_SUBMIT_BODY_BYTES, MAX_SIGNED_XDR_CHARS } from "@/contracts/limits";
 import { splitShares } from "@/contracts/split";
+import { isTerminalAttemptState } from "@/contracts/states";
 import type { PaymentAttemptRow, PaymentContext, PayScope, SubmissionOutcome } from "@/server/db/financial-core";
 import { toAttemptView } from "@/server/paiflow/attempt-view";
 import { callPaiflow, requireSession, type PaymentDeps, type RouteSession } from "@/server/paiflow/deps";
 import { SafePaiflowError } from "@/server/paiflow/errors";
-import { fail, readJson, requireSameOrigin, requireUuid, RouteError } from "@/server/paiflow/route-kit";
-import { checkOnce } from "@/server/paiflow/status";
+import { fail, readJson, requireSameOrigin, requireUuid, RouteError, TX_HASH } from "@/server/paiflow/route-kit";
+import { boundedCheck, checkOnce, isFinal } from "@/server/paiflow/status";
 import { envelopeHash, feeStroops, inspectEnvelope, isSignedBy } from "@/lib/stellar/envelope";
 
 // Budget-plan Split payment routes (C-07…C-09). Order matters and is tested:
@@ -217,6 +218,54 @@ export async function submitPaymentHandler(deps: PaymentDeps, request: Request, 
     }),
   );
   const submitted = await submitAndRecord(deps, persisted, signedXdr);
+  const { row } = await checkOnce(deps, submitted);
+  return toAttemptView(row);
+}
+
+// CL-05: read-only. It never submits or prepares; any member may run it.
+export async function checkPaymentHandler(deps: PaymentDeps, request: Request, params: PlanParams): Promise<PaymentAttemptViewDTO> {
+  requireSameOrigin(request);
+  const session = await requireSession(deps, request);
+  deps.rateLimit("check", session.userId);
+  const body = await readJson(request);
+  const attemptId = requireUuid(body.attemptId, "attempt");
+  await loadContext(deps, session, params);
+  const attempt = await loadAttempt(deps, attemptId, params.planId);
+  if (isFinal(attempt)) return toAttemptView(attempt);
+  if (!attempt.originalTxHash) fail("STATE_CONFLICT", "This payment was not prepared.");
+  if (!attempt.signedXdr) {
+    // Never signed: nothing can be on the ledger. Expired ones go to review.
+    if (attempt.expiresAt && deps.now() > Date.parse(attempt.expiresAt)) {
+      await deps.db.markExpiredUnsigned(attempt.id);
+      return toAttemptView((await deps.db.getAttempt(attempt.id)) ?? attempt);
+    }
+    return toAttemptView(attempt);
+  }
+  return toAttemptView(await boundedCheck(deps, attempt));
+}
+
+// Re-sends the byte-identical stored envelope with the original preparation
+// ID. Only on explicit intent, for the signer, while the outcome is unresolved.
+export async function resubmitPaymentHandler(deps: PaymentDeps, request: Request, params: PlanParams): Promise<PaymentAttemptViewDTO> {
+  requireSameOrigin(request);
+  const session = await requireSession(deps, request);
+  deps.rateLimit("submit", session.userId);
+  const body = await readJson(request);
+  const attemptId = requireUuid(body.attemptId, "attempt");
+  if (body.intent !== "resubmit_same_signed_envelope") fail("VALIDATION_SHAPE", "Confirm resubmitting the same signed envelope.");
+  if (typeof body.originalTxHash !== "string" || !TX_HASH.test(body.originalTxHash)) fail("VALIDATION_SHAPE", "Invalid original transaction hash.");
+
+  const { context } = await loadContext(deps, session, params);
+  requireSigner(session, context);
+  const attempt = await loadAttempt(deps, attemptId, params.planId);
+  if (
+    !attempt.signedXdr ||
+    attempt.originalTxHash !== body.originalTxHash ||
+    isFinal(attempt) ||
+    isTerminalAttemptState(attempt.state)
+  )
+    fail("RESUBMIT_NOT_ALLOWED");
+  const submitted = await submitAndRecord(deps, attempt, attempt.signedXdr!);
   const { row } = await checkOnce(deps, submitted);
   return toAttemptView(row);
 }

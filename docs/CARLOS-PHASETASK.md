@@ -447,14 +447,48 @@ const pay = usePayment({ kind: 'plan', orgId, planId });
 //   only when plan.allowedActions.includes('resubmit_same_envelope')
 ```
 
+**Fixture mode (HO-06).** Run with `NEXT_PUBLIC_CYFER_FIXTURES=1 npm run dev`. Render the "FIXTURE DATA — not Testnet" banner when `getControllerMode() === 'fixture'`. Pick the story with URL parameters: `fixturePlan=<PlanState>`, `fixturePartial=1` (2 of 3 verified), `fixturePayment=confirmed|refused_not_approved|wallet_changed|expired|unresolved|failed`, `fixtureWallet=ok|unavailable|empty`, `fixtureFreighter=connected|not_installed|not_connected|wrong_network`, `fixtureDelay=<ms>`. Example: `/plans/x?fixturePlan=payment_confirmed&fixturePartial=1`. Live mode currently returns a "not connected" error from every hook until C-15.
+
+```tsx
+import { useFreighter, useWalletBinding, usePayment, usePlanEvidence,
+  useWalletSummary, useOperatorConsole, getControllerMode } from '@/client/controllers';
+
+// useFreighter — wallet chip
+const fr = useFreighter();
+// render fr.status / fr.address; "Connect Freighter" → fr.connect()  disabled={fr.status === 'not_installed'}
+// fr.error?.message for not_installed / wrong_network
+
+// useWalletBinding — wallet page
+const wb = useWalletBinding();
+// "Bind wallet" → wb.bind()  disabled={wb.phase !== 'idle' && wb.phase !== 'error'}
+// show wb.binding?.address, wb.binding?.verifiedAt; warn when wb.freighterMatchesBinding === false
+
+// usePlanEvidence — plan page
+const ev = usePlanEvidence(orgId, planId, { auto: true });
+// render ev.plan (envelopes[].payout.state, payoutsVerified, payment, allowedActions); ev.loading skeleton
+// "Refresh evidence" → ev.refreshEvidence()  disabled={ev.refreshing}  (ev.error.retryAfterMs on RATE_LIMITED)
+
+// usePayment — see the pattern above; buttons from ev.plan.allowedActions, disabled={pay.busy}
+
+// useWalletSummary — wallet page
+const ws = useWalletSummary();
+// ws.data.balance.state === 'unavailable' → "Balance unavailable" (never 0); history[].explorerUrl links
+// verifiedPayouts are verified-only totals
+
+// useOperatorConsole — operator page
+const op = useOperatorConsole();
+// list op.deployments / op.reviews; "Resolve" → op.resolveReview(id, { outcome, justification, evidence: { notes } })
+// "Register" → op.registerDeployment(input); show op.error?.message (BPS_TOTAL_INVALID, DUPLICATE_RECIPIENT, VALIDATION)
+```
+
 | Hook | Snippet delivered (commit) |
 |---|---|
-| `useFreighter` | — |
-| `useWalletBinding` | — |
-| `usePayment` (plan) | — |
-| `usePlanEvidence` | — |
-| `useWalletSummary` | — |
-| `useOperatorConsole` | — |
+| `useFreighter` | Fixture: `4524866`, `5104ea6` |
+| `useWalletBinding` | Fixture: `4524866`, `5104ea6` |
+| `usePayment` (plan) | Fixture: `4524866`, `5104ea6` |
+| `usePlanEvidence` | Fixture: `4524866`, `5104ea6` |
+| `useWalletSummary` | Fixture: `4524866`, `5104ea6` |
+| `useOperatorConsole` | Fixture: `4524866`, `5104ea6` |
 | SHOULD: `usePayment` (deal), `useDealEvidence`, `useRelease` | — |
 
 ---
@@ -553,3 +587,7 @@ const pay = usePayment({ kind: 'plan', orgId, planId });
 | 12:40 | C-14 | `src/client/wallet/freighter.ts` (`3f5b58c`). Starter wallet cases ported; `signChallenge` output verified with `Keypair.verifyMessage` against a test key. **Not a real Freighter signature** (C-02(a) still open). | Mocked | — |
 | 12:42 | C-17 (part) | Bundle scan extended (`6f57a77`); `npm run check:bundle` passes on the current production build. Route negative-path tests wait on C-06…C-16. | Mocked | — |
 | 12:43 | Totals | `npm run lint` (0 errors, 6 inherited warnings), `npm run typecheck`, `npm test` (5 files, 105 tests), `npm run build`, `npm run check:bundle` all pass on Node v24.11.1 | Mocked | — |
+| 12:47 | Merge | Francis's `francis/contracts` and `francis/schema` merged into `main` with no conflicts; all checks passed on the merged tree. | Mocked | — |
+| 12:57 | C-11 | `src/server/paiflow/verify.ts` (`021e73c`): H.1 + H.2 receipt and H.5 per-envelope checks, each with pass and fail fixtures (29 tests). Fixture provenance: event field names from Paiflow source (§2); Split payout shape unknown (B-04), so envelope checks return `awaiting_events` by default. 2 of 3 never gives `allVerified`. | Mocked | — |
+| 12:57 | C-05 | `src/client/api/payments.ts` (`d900a44`), mock controllers (`4524866`), index, mode switch and live stubs (`5104ea6`). Every MVP money state renders without a server; mocks import no Freighter/SDK (tested). Production build with a probe page: live hooks bundled, no `[FIXTURE]` (`check:bundle` passes). Snippets in §4 (HO-06). | Mocked | — |
+| 12:57 | Totals (after C-05/C-11) | `npm run typecheck`, `npm run lint` (0 errors), `npm test` (8 files, 155 tests), `npm run build`, `npm run check:bundle` pass on Node v24.11.1 | Mocked | — |

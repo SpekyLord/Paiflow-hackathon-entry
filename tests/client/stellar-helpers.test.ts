@@ -9,6 +9,8 @@ import {
   assertOriginal,
   envelopeHash,
   feeStroops,
+  inspectEnvelope,
+  isSignedBy,
 } from "@/lib/stellar/envelope";
 import { matchesNativeAsset } from "@/lib/stellar/asset";
 import { EXPLORER_LABEL, stellarExpertTxUrl } from "@/lib/explorer";
@@ -64,6 +66,27 @@ describe("envelope helpers", () => {
 
   it("rejects unparseable envelopes", () => {
     expect(() => envelopeHash("not-xdr")).toThrow();
+  });
+
+  it("classifies envelopes without throwing", () => {
+    expect(inspectEnvelope(signed(fixtureUnsignedXdr))).toEqual({ kind: "transaction", hash });
+    expect(inspectEnvelope("not-xdr")).toEqual({ kind: "unparseable" });
+    const inner = TransactionBuilder.fromXDR(signed(fixtureUnsignedXdr), Networks.TESTNET);
+    const feeBump = TransactionBuilder.buildFeeBumpTransaction(
+      Keypair.fromRawEd25519Seed(Buffer.alloc(32, 9)),
+      "200",
+      inner as Parameters<typeof TransactionBuilder.buildFeeBumpTransaction>[2],
+      Networks.TESTNET,
+    ).toXDR();
+    expect(inspectEnvelope(feeBump)).toEqual({ kind: "fee_bump" });
+  });
+
+  it("checks the envelope is signed by the expected account", () => {
+    const signedXdr = signed(fixtureUnsignedXdr);
+    expect(isSignedBy(signedXdr, fixtureKeypair.publicKey())).toBe(true);
+    expect(isSignedBy(fixtureUnsignedXdr, fixtureKeypair.publicKey())).toBe(false);
+    expect(isSignedBy(signedXdr, Keypair.fromRawEd25519Seed(Buffer.alloc(32, 8)).publicKey())).toBe(false);
+    expect(isSignedBy("not-xdr", fixtureKeypair.publicKey())).toBe(false);
   });
 
   it("reads the fee in stroops", () => {

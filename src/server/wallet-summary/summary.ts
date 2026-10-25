@@ -2,6 +2,7 @@ import "server-only";
 import type { WalletSummaryDTO } from "@/contracts/dto";
 import type { FinancialDb } from "@/server/db/financial-core";
 import { stellarExpertTxUrl } from "@/lib/explorer";
+import { requireSession, type PaymentDeps } from "@/server/paiflow/deps";
 import { RouteError } from "@/server/paiflow/route-kit";
 import { readNativeBalance } from "@/server/wallet-summary/horizon";
 
@@ -38,4 +39,10 @@ export async function buildWalletSummary(
     verifiedPayouts: context.verifiedTotals,
     history,
   };
+}
+
+export async function walletSummaryHandler(deps: PaymentDeps, request: Request, fetchImpl?: typeof fetch) {
+  const session = await requireSession(deps, request);
+  deps.rateLimit("check", session.userId);
+  return buildWalletSummary(deps.db, session.userId, deps.now, fetchImpl);
 }

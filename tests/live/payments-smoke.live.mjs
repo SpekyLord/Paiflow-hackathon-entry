@@ -48,22 +48,20 @@ const MUTATIONS = [
   ['operator/reviews/:id POST', () => `/api/operator/reviews/${randomUUID()}`, { outcome: 'no_action', justification: 'x', evidence: { notes: '' } }],
 ];
 
-// 1. Integration status: no secrets, Paiflow not configured on this machine.
-const status = await call('GET', '/api/integration/status');
-check('integration status reports configuration only', status.status === 200 && status.json?.data?.paiflowConfigured === false && status.json?.data?.network === null, JSON.stringify(status.json));
-
-// 2. Without a session every Carlos route is 401.
-for (const path of ['/api/wallet/summary', '/api/operator/deployments', '/api/operator/reviews'])
+// 1. Without a session every Carlos route is 401 (integration status included, contract §3.5).
+for (const path of ['/api/integration/status', '/api/wallet/summary', '/api/operator/deployments', '/api/operator/reviews'])
   check(`401 without session: GET ${path}`, (await call('GET', path)).status === 401);
 for (const [name, path, body] of MUTATIONS)
   check(`401 without session: ${name}`, (await call('POST', path(org, plan), { body })).status === 401);
 
-// 3. Owner.
+// 2. Owner.
 const owner = await signIn('owner@cyfer-demo.test', env.DEMO_OWNER_PASSWORD);
 check('owner signs in', owner.res.status === 200 && owner.cookie.length > 0, `status ${owner.res.status}`);
 const me = await call('GET', '/api/auth/me', { cookie: owner.cookie });
 const ownerOrg = me.json?.data?.orgs?.[0]?.orgId;
 check('owner session has an org', Boolean(ownerOrg));
+const status = await call('GET', '/api/integration/status', { cookie: owner.cookie });
+check('integration status reports configuration only', status.status === 200 && status.json?.data?.paiflowConfigured === false && status.json?.data?.network === null, JSON.stringify(status.json));
 
 const wallet = await call('GET', '/api/wallet/summary', { cookie: owner.cookie });
 const balance = wallet.json?.data?.balance;
@@ -87,7 +85,7 @@ check('413 for an oversized submit body', big.status === 413, String(big.status)
 const otherOrg = await call('POST', `${planPath(randomUUID(), plan)}/pay/prepare`, { cookie: owner.cookie });
 check('another organisation is refused', [403, 404].includes(otherOrg.status), String(otherOrg.status));
 
-// 4. Operator.
+// 3. Operator.
 const operator = await signIn('operator@cyfer-demo.test', env.DEMO_OPERATOR_PASSWORD);
 check('operator signs in', operator.res.status === 200, `status ${operator.res.status}`);
 const deployments = await call('GET', '/api/operator/deployments', { cookie: operator.cookie });
@@ -105,7 +103,7 @@ check('empty justification is 422', resolve.status === 422);
 
 for (const s of [owner, operator]) await call('POST', '/api/auth/sign-out', { cookie: s.cookie });
 
-// 5. Nothing secret in any response.
+// 4. Nothing secret in any response.
 const all = bodies.join('\n');
 check('no secret value in any response', SECRETS.every((v) => !all.includes(v)) && !/pf[dk]_[a-f0-9]{64}/.test(all) && !/"role":"service_role"/.test(all));
 

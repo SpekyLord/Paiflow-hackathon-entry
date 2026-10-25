@@ -1,6 +1,6 @@
 # CYFER: Governance Edition — Phase Task Breakdown
 
-> **Historical — superseded (2026-10-25).** This document belongs to the inherited government-first CYFER project. The current product is "CYFER for SMEs — Escrow, Budget Tracking and Verified Payouts"; see [the active PRD](PRD.MD). Its checked boxes record government-edition work only; no SME task is complete, and SME implementation slices are listed in PRD §L.2.
+> **Historical — superseded (2026-10-25).** This document belongs to the inherited government-first CYFER project. The current product is "CYFER for SMEs — Escrow, Budget Tracking and Verified Payouts"; see [the active PRD](PRD.MD). Its checked boxes record government-edition work only; no SME task is complete, and SME implementation slices are listed in PRD §L.2. **Active SME phase tasks:** [FRANCIS-PHASETASK.md](FRANCIS-PHASETASK.md) (canonical contracts and coordination), [CARLOS-PHASETASK.md](CARLOS-PHASETASK.md), [SHANTI-PHASETASK.md](SHANTI-PHASETASK.md).
 
 ## Timeline: March 16 - March 22, 2026 (6 Days)
 

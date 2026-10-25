@@ -23,7 +23,7 @@ const primaryActions = [
   {
     href: '/documents',
     title: 'Find the official copy',
-    description: 'Browse and download the city’s published documents.',
+    description: 'Browse and download the published documents.',
     button: 'Open Official Records',
     icon: FileText,
     accent: 'var(--ink-025)',

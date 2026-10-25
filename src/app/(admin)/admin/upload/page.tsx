@@ -108,7 +108,7 @@ export default function UploadPage() {
       <AdminPageHeader
         eyebrow="Submission workspace"
         title="Upload document"
-        description="Add a new civic record, assign its category, and send it into the approval workflow."
+        description="Add a new record, assign its category, and send it into the approval workflow."
       />
 
       <div className="grid gap-[var(--s-6)] xl:grid-cols-[1.1fr_0.9fr]">

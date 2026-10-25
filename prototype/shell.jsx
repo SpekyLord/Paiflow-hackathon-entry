@@ -23,7 +23,7 @@ function Topbar({ route, nav }) {
         ),
         React.createElement('span', null,
           React.createElement('div', { className: 'brand-name' }, 'CYFER'),
-          React.createElement('div', { className: 'brand-sub' }, 'Verified Civic Records')
+          React.createElement('div', { className: 'brand-sub' }, 'Verified Records')
         )
       ),
       React.createElement('nav', { className: 'nav-primary', 'aria-label': 'Primary' },

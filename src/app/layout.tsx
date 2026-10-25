@@ -23,7 +23,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CYFER - Verified Civic Records",
+  title: "CYFER - Verified Records",
   description:
     "Tamper-proof document records, unanimous approvals and verified payouts for organisations, starting with SMEs.",
 };

@@ -71,7 +71,7 @@ export function Navbar() {
             <span>
               <span className="brand-name">CYFER</span>
               <span className="brand-sub" style={{ whiteSpace: 'nowrap' }}>
-                Verified Civic Records
+                Verified Records
               </span>
             </span>
           </Link>

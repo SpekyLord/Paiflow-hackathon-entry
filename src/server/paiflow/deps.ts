@@ -1,4 +1,5 @@
 import "server-only";
+import type { BudgetPlanDetailDTO } from "@/contracts/dto";
 import type { FinancialDb } from "@/server/db/financial-core";
 import type { PaiflowDeployment } from "@paiflow/sdk";
 import { paiflowDeployment } from "@/server/paiflow/client";
@@ -23,6 +24,8 @@ export interface PaymentDeps {
   sleep(ms: number): Promise<void>;
   // Throws RATE_LIMITED (429) when the user exceeds the bucket.
   rateLimit(bucket: RateBucket, key: string): void;
+  // Francis's F-17 plan detail for this viewer.
+  planDetail(orgId: string, planId: string, userId: string): Promise<BudgetPlanDetailDTO>;
 }
 
 export type RateBucket = "prepare" | "submit" | "check";
@@ -53,7 +56,11 @@ async function readSession(): Promise<RouteSession | null> {
 }
 
 export async function liveDeps(): Promise<PaymentDeps> {
-  const [db, { limit }] = await Promise.all([import("@/server/db/financial"), import("@/server/http/rate-limit")]);
+  const [db, { limit }, { detailFor }] = await Promise.all([
+    import("@/server/db/financial"),
+    import("@/server/http/rate-limit"),
+    import("@/server/business/service"),
+  ]);
   return {
     db,
     paiflow: paiflowDeployment,
@@ -62,5 +69,6 @@ export async function liveDeps(): Promise<PaymentDeps> {
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
     // Shared per-process buckets (global + per user) from Francis's F-12.
     rateLimit: (bucket, key) => limit(bucket, key),
+    planDetail: detailFor,
   };
 }

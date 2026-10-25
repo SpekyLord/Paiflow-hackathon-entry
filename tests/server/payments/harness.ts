@@ -1,4 +1,5 @@
 import { vi, type Mock } from "vitest";
+import type { BudgetPlanDetailDTO } from "@/contracts/dto";
 import type { FinancialDb, PaymentAttemptRow, PaymentContext } from "@/server/db/financial-core";
 import type { PaymentDeps, PaiflowPort, RouteSession } from "@/server/paiflow/deps";
 
@@ -46,6 +47,7 @@ export function makeHarness(session: RouteSession | null = { userId: USER, isOpe
       clock += ms;
     }),
     rateLimit: vi.fn(),
+    planDetail: vi.fn(async () => ({ planId: PLAN }) as unknown as BudgetPlanDetailDTO),
   };
   const sdkCalls = () =>
     paiflow.capabilities.get.mock.calls.length +

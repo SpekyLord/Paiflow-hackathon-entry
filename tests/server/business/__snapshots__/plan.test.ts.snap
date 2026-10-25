@@ -1,0 +1,1219 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`getPlanDetail > matches a browser-safe detail snapshot for the approved plan state 1`] = `
+{
+  "allowedActions": [
+    "edit_plan",
+    "pay",
+    "verify_file",
+  ],
+  "approvals": {
+    "approved": 2,
+    "required": 2,
+  },
+  "approvalsDetail": [
+    {
+      "approverName": "Owner",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": true,
+      "reason": null,
+    },
+    {
+      "approverName": "Approver",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": false,
+      "reason": null,
+    },
+  ],
+  "asset": {
+    "kind": "native",
+  },
+  "dashboardState": "approved",
+  "deployment": {
+    "asset": {
+      "kind": "native",
+    },
+    "id": "dep",
+    "network": "testnet",
+  },
+  "envelopes": [
+    {
+      "bps": 5000,
+      "expectedShareStroops": "5000000",
+      "label": "Ops",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 0,
+      "recipientAddress": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2",
+    },
+    {
+      "bps": 3000,
+      "expectedShareStroops": "3000000",
+      "label": "Pay",
+      "payout": null,
+      "planningPhpCentavos": "500",
+      "position": 1,
+      "recipientAddress": "GBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB2",
+    },
+    {
+      "bps": 2000,
+      "expectedShareStroops": "2000001",
+      "label": "Sup",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 2,
+      "recipientAddress": "GCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC2",
+    },
+  ],
+  "ledgerBlockId": 7,
+  "orgId": "00000000-0000-4000-8000-000000000001",
+  "payment": null,
+  "paymentReceipt": null,
+  "payoutsVerified": {
+    "total": 3,
+    "verified": 0,
+  },
+  "planId": "00000000-0000-4000-8000-000000000002",
+  "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+  "purpose": "Budget",
+  "serverTime": "2026-10-25T00:00:00.000Z",
+  "signer": {
+    "address": "GSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS2",
+    "displayName": "Owner",
+  },
+  "state": "approved",
+  "timeline": [
+    {
+      "actorRole": "owner",
+      "at": "t1",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000384",
+      "kind": "plan_create",
+      "ledgerBlockId": 7,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "summary": "Budget plan created",
+    },
+    {
+      "actorRole": "owner",
+      "at": "t2",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000385",
+      "kind": "pay_confirmed",
+      "stellarTxHash": "00000000000000000000000000000000000000000000000000000000000000c8",
+      "summary": "Payment transaction confirmed",
+    },
+  ],
+  "totalStroops": "10000001",
+  "updatedAt": "u",
+  "version": 1,
+  "versionId": "00000000-0000-4000-8000-000000000003",
+  "versions": [
+    {
+      "createdAt": "c",
+      "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "superseded": false,
+      "version": 1,
+      "versionId": "00000000-0000-4000-8000-000000000003",
+    },
+  ],
+  "viewerRoles": [
+    "owner",
+    "signer",
+  ],
+}
+`;
+
+exports[`getPlanDetail > matches a browser-safe detail snapshot for the distribution_verified plan state 1`] = `
+{
+  "allowedActions": [
+    "verify_file",
+  ],
+  "approvals": {
+    "approved": 2,
+    "required": 2,
+  },
+  "approvalsDetail": [
+    {
+      "approverName": "Owner",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": true,
+      "reason": null,
+    },
+    {
+      "approverName": "Approver",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": false,
+      "reason": null,
+    },
+  ],
+  "asset": {
+    "kind": "native",
+  },
+  "dashboardState": "verified_distribution",
+  "deployment": {
+    "asset": {
+      "kind": "native",
+    },
+    "id": "dep",
+    "network": "testnet",
+  },
+  "envelopes": [
+    {
+      "bps": 5000,
+      "expectedShareStroops": "5000000",
+      "label": "Ops",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 0,
+      "recipientAddress": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2",
+    },
+    {
+      "bps": 3000,
+      "expectedShareStroops": "3000000",
+      "label": "Pay",
+      "payout": null,
+      "planningPhpCentavos": "500",
+      "position": 1,
+      "recipientAddress": "GBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB2",
+    },
+    {
+      "bps": 2000,
+      "expectedShareStroops": "2000001",
+      "label": "Sup",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 2,
+      "recipientAddress": "GCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC2",
+    },
+  ],
+  "ledgerBlockId": 7,
+  "orgId": "00000000-0000-4000-8000-000000000001",
+  "payment": null,
+  "paymentReceipt": null,
+  "payoutsVerified": {
+    "total": 3,
+    "verified": 0,
+  },
+  "planId": "00000000-0000-4000-8000-000000000002",
+  "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+  "purpose": "Budget",
+  "serverTime": "2026-10-25T00:00:00.000Z",
+  "signer": {
+    "address": "GSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS2",
+    "displayName": "Owner",
+  },
+  "state": "distribution_verified",
+  "timeline": [
+    {
+      "actorRole": "owner",
+      "at": "t1",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000384",
+      "kind": "plan_create",
+      "ledgerBlockId": 7,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "summary": "Budget plan created",
+    },
+    {
+      "actorRole": "owner",
+      "at": "t2",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000385",
+      "kind": "pay_confirmed",
+      "stellarTxHash": "00000000000000000000000000000000000000000000000000000000000000c8",
+      "summary": "Payment transaction confirmed",
+    },
+  ],
+  "totalStroops": "10000001",
+  "updatedAt": "u",
+  "version": 1,
+  "versionId": "00000000-0000-4000-8000-000000000003",
+  "versions": [
+    {
+      "createdAt": "c",
+      "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "superseded": false,
+      "version": 1,
+      "versionId": "00000000-0000-4000-8000-000000000003",
+    },
+  ],
+  "viewerRoles": [
+    "owner",
+    "signer",
+  ],
+}
+`;
+
+exports[`getPlanDetail > matches a browser-safe detail snapshot for the draft plan state 1`] = `
+{
+  "allowedActions": [
+    "edit_plan",
+    "verify_file",
+  ],
+  "approvals": {
+    "approved": 2,
+    "required": 2,
+  },
+  "approvalsDetail": [
+    {
+      "approverName": "Owner",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": true,
+      "reason": null,
+    },
+    {
+      "approverName": "Approver",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": false,
+      "reason": null,
+    },
+  ],
+  "asset": {
+    "kind": "native",
+  },
+  "dashboardState": "planned",
+  "deployment": {
+    "asset": {
+      "kind": "native",
+    },
+    "id": "dep",
+    "network": "testnet",
+  },
+  "envelopes": [
+    {
+      "bps": 5000,
+      "expectedShareStroops": "5000000",
+      "label": "Ops",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 0,
+      "recipientAddress": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2",
+    },
+    {
+      "bps": 3000,
+      "expectedShareStroops": "3000000",
+      "label": "Pay",
+      "payout": null,
+      "planningPhpCentavos": "500",
+      "position": 1,
+      "recipientAddress": "GBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB2",
+    },
+    {
+      "bps": 2000,
+      "expectedShareStroops": "2000001",
+      "label": "Sup",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 2,
+      "recipientAddress": "GCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC2",
+    },
+  ],
+  "ledgerBlockId": 7,
+  "orgId": "00000000-0000-4000-8000-000000000001",
+  "payment": null,
+  "paymentReceipt": null,
+  "payoutsVerified": {
+    "total": 3,
+    "verified": 0,
+  },
+  "planId": "00000000-0000-4000-8000-000000000002",
+  "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+  "purpose": "Budget",
+  "serverTime": "2026-10-25T00:00:00.000Z",
+  "signer": {
+    "address": "GSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS2",
+    "displayName": "Owner",
+  },
+  "state": "draft",
+  "timeline": [
+    {
+      "actorRole": "owner",
+      "at": "t1",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000384",
+      "kind": "plan_create",
+      "ledgerBlockId": 7,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "summary": "Budget plan created",
+    },
+    {
+      "actorRole": "owner",
+      "at": "t2",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000385",
+      "kind": "pay_confirmed",
+      "stellarTxHash": "00000000000000000000000000000000000000000000000000000000000000c8",
+      "summary": "Payment transaction confirmed",
+    },
+  ],
+  "totalStroops": "10000001",
+  "updatedAt": "u",
+  "version": 1,
+  "versionId": "00000000-0000-4000-8000-000000000003",
+  "versions": [
+    {
+      "createdAt": "c",
+      "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "superseded": false,
+      "version": 1,
+      "versionId": "00000000-0000-4000-8000-000000000003",
+    },
+  ],
+  "viewerRoles": [
+    "owner",
+    "signer",
+  ],
+}
+`;
+
+exports[`getPlanDetail > matches a browser-safe detail snapshot for the mismatch plan state 1`] = `
+{
+  "allowedActions": [
+    "verify_file",
+  ],
+  "approvals": {
+    "approved": 2,
+    "required": 2,
+  },
+  "approvalsDetail": [
+    {
+      "approverName": "Owner",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": true,
+      "reason": null,
+    },
+    {
+      "approverName": "Approver",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": false,
+      "reason": null,
+    },
+  ],
+  "asset": {
+    "kind": "native",
+  },
+  "dashboardState": "needs_review",
+  "deployment": {
+    "asset": {
+      "kind": "native",
+    },
+    "id": "dep",
+    "network": "testnet",
+  },
+  "envelopes": [
+    {
+      "bps": 5000,
+      "expectedShareStroops": "5000000",
+      "label": "Ops",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 0,
+      "recipientAddress": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2",
+    },
+    {
+      "bps": 3000,
+      "expectedShareStroops": "3000000",
+      "label": "Pay",
+      "payout": null,
+      "planningPhpCentavos": "500",
+      "position": 1,
+      "recipientAddress": "GBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB2",
+    },
+    {
+      "bps": 2000,
+      "expectedShareStroops": "2000001",
+      "label": "Sup",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 2,
+      "recipientAddress": "GCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC2",
+    },
+  ],
+  "ledgerBlockId": 7,
+  "orgId": "00000000-0000-4000-8000-000000000001",
+  "payment": null,
+  "paymentReceipt": null,
+  "payoutsVerified": {
+    "total": 3,
+    "verified": 0,
+  },
+  "planId": "00000000-0000-4000-8000-000000000002",
+  "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+  "purpose": "Budget",
+  "serverTime": "2026-10-25T00:00:00.000Z",
+  "signer": {
+    "address": "GSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS2",
+    "displayName": "Owner",
+  },
+  "state": "mismatch",
+  "timeline": [
+    {
+      "actorRole": "owner",
+      "at": "t1",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000384",
+      "kind": "plan_create",
+      "ledgerBlockId": 7,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "summary": "Budget plan created",
+    },
+    {
+      "actorRole": "owner",
+      "at": "t2",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000385",
+      "kind": "pay_confirmed",
+      "stellarTxHash": "00000000000000000000000000000000000000000000000000000000000000c8",
+      "summary": "Payment transaction confirmed",
+    },
+  ],
+  "totalStroops": "10000001",
+  "updatedAt": "u",
+  "version": 1,
+  "versionId": "00000000-0000-4000-8000-000000000003",
+  "versions": [
+    {
+      "createdAt": "c",
+      "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "superseded": false,
+      "version": 1,
+      "versionId": "00000000-0000-4000-8000-000000000003",
+    },
+  ],
+  "viewerRoles": [
+    "owner",
+    "signer",
+  ],
+}
+`;
+
+exports[`getPlanDetail > matches a browser-safe detail snapshot for the operator_review plan state 1`] = `
+{
+  "allowedActions": [
+    "verify_file",
+  ],
+  "approvals": {
+    "approved": 2,
+    "required": 2,
+  },
+  "approvalsDetail": [
+    {
+      "approverName": "Owner",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": true,
+      "reason": null,
+    },
+    {
+      "approverName": "Approver",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": false,
+      "reason": null,
+    },
+  ],
+  "asset": {
+    "kind": "native",
+  },
+  "dashboardState": "needs_review",
+  "deployment": {
+    "asset": {
+      "kind": "native",
+    },
+    "id": "dep",
+    "network": "testnet",
+  },
+  "envelopes": [
+    {
+      "bps": 5000,
+      "expectedShareStroops": "5000000",
+      "label": "Ops",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 0,
+      "recipientAddress": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2",
+    },
+    {
+      "bps": 3000,
+      "expectedShareStroops": "3000000",
+      "label": "Pay",
+      "payout": null,
+      "planningPhpCentavos": "500",
+      "position": 1,
+      "recipientAddress": "GBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB2",
+    },
+    {
+      "bps": 2000,
+      "expectedShareStroops": "2000001",
+      "label": "Sup",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 2,
+      "recipientAddress": "GCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC2",
+    },
+  ],
+  "ledgerBlockId": 7,
+  "orgId": "00000000-0000-4000-8000-000000000001",
+  "payment": null,
+  "paymentReceipt": null,
+  "payoutsVerified": {
+    "total": 3,
+    "verified": 0,
+  },
+  "planId": "00000000-0000-4000-8000-000000000002",
+  "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+  "purpose": "Budget",
+  "serverTime": "2026-10-25T00:00:00.000Z",
+  "signer": {
+    "address": "GSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS2",
+    "displayName": "Owner",
+  },
+  "state": "operator_review",
+  "timeline": [
+    {
+      "actorRole": "owner",
+      "at": "t1",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000384",
+      "kind": "plan_create",
+      "ledgerBlockId": 7,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "summary": "Budget plan created",
+    },
+    {
+      "actorRole": "owner",
+      "at": "t2",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000385",
+      "kind": "pay_confirmed",
+      "stellarTxHash": "00000000000000000000000000000000000000000000000000000000000000c8",
+      "summary": "Payment transaction confirmed",
+    },
+  ],
+  "totalStroops": "10000001",
+  "updatedAt": "u",
+  "version": 1,
+  "versionId": "00000000-0000-4000-8000-000000000003",
+  "versions": [
+    {
+      "createdAt": "c",
+      "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "superseded": false,
+      "version": 1,
+      "versionId": "00000000-0000-4000-8000-000000000003",
+    },
+  ],
+  "viewerRoles": [
+    "owner",
+    "signer",
+  ],
+}
+`;
+
+exports[`getPlanDetail > matches a browser-safe detail snapshot for the payment_confirmed plan state 1`] = `
+{
+  "allowedActions": [
+    "refresh_evidence",
+    "verify_file",
+  ],
+  "approvals": {
+    "approved": 2,
+    "required": 2,
+  },
+  "approvalsDetail": [
+    {
+      "approverName": "Owner",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": true,
+      "reason": null,
+    },
+    {
+      "approverName": "Approver",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": false,
+      "reason": null,
+    },
+  ],
+  "asset": {
+    "kind": "native",
+  },
+  "dashboardState": "pending",
+  "deployment": {
+    "asset": {
+      "kind": "native",
+    },
+    "id": "dep",
+    "network": "testnet",
+  },
+  "envelopes": [
+    {
+      "bps": 5000,
+      "expectedShareStroops": "5000000",
+      "label": "Ops",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 0,
+      "recipientAddress": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2",
+    },
+    {
+      "bps": 3000,
+      "expectedShareStroops": "3000000",
+      "label": "Pay",
+      "payout": null,
+      "planningPhpCentavos": "500",
+      "position": 1,
+      "recipientAddress": "GBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB2",
+    },
+    {
+      "bps": 2000,
+      "expectedShareStroops": "2000001",
+      "label": "Sup",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 2,
+      "recipientAddress": "GCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC2",
+    },
+  ],
+  "ledgerBlockId": 7,
+  "orgId": "00000000-0000-4000-8000-000000000001",
+  "payment": null,
+  "paymentReceipt": null,
+  "payoutsVerified": {
+    "total": 3,
+    "verified": 0,
+  },
+  "planId": "00000000-0000-4000-8000-000000000002",
+  "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+  "purpose": "Budget",
+  "serverTime": "2026-10-25T00:00:00.000Z",
+  "signer": {
+    "address": "GSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS2",
+    "displayName": "Owner",
+  },
+  "state": "payment_confirmed",
+  "timeline": [
+    {
+      "actorRole": "owner",
+      "at": "t1",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000384",
+      "kind": "plan_create",
+      "ledgerBlockId": 7,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "summary": "Budget plan created",
+    },
+    {
+      "actorRole": "owner",
+      "at": "t2",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000385",
+      "kind": "pay_confirmed",
+      "stellarTxHash": "00000000000000000000000000000000000000000000000000000000000000c8",
+      "summary": "Payment transaction confirmed",
+    },
+  ],
+  "totalStroops": "10000001",
+  "updatedAt": "u",
+  "version": 1,
+  "versionId": "00000000-0000-4000-8000-000000000003",
+  "versions": [
+    {
+      "createdAt": "c",
+      "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "superseded": false,
+      "version": 1,
+      "versionId": "00000000-0000-4000-8000-000000000003",
+    },
+  ],
+  "viewerRoles": [
+    "owner",
+    "signer",
+  ],
+}
+`;
+
+exports[`getPlanDetail > matches a browser-safe detail snapshot for the payment_pending plan state 1`] = `
+{
+  "allowedActions": [
+    "refresh_evidence",
+    "verify_file",
+  ],
+  "approvals": {
+    "approved": 2,
+    "required": 2,
+  },
+  "approvalsDetail": [
+    {
+      "approverName": "Owner",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": true,
+      "reason": null,
+    },
+    {
+      "approverName": "Approver",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": false,
+      "reason": null,
+    },
+  ],
+  "asset": {
+    "kind": "native",
+  },
+  "dashboardState": "pending",
+  "deployment": {
+    "asset": {
+      "kind": "native",
+    },
+    "id": "dep",
+    "network": "testnet",
+  },
+  "envelopes": [
+    {
+      "bps": 5000,
+      "expectedShareStroops": "5000000",
+      "label": "Ops",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 0,
+      "recipientAddress": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2",
+    },
+    {
+      "bps": 3000,
+      "expectedShareStroops": "3000000",
+      "label": "Pay",
+      "payout": null,
+      "planningPhpCentavos": "500",
+      "position": 1,
+      "recipientAddress": "GBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB2",
+    },
+    {
+      "bps": 2000,
+      "expectedShareStroops": "2000001",
+      "label": "Sup",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 2,
+      "recipientAddress": "GCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC2",
+    },
+  ],
+  "ledgerBlockId": 7,
+  "orgId": "00000000-0000-4000-8000-000000000001",
+  "payment": null,
+  "paymentReceipt": null,
+  "payoutsVerified": {
+    "total": 3,
+    "verified": 0,
+  },
+  "planId": "00000000-0000-4000-8000-000000000002",
+  "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+  "purpose": "Budget",
+  "serverTime": "2026-10-25T00:00:00.000Z",
+  "signer": {
+    "address": "GSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS2",
+    "displayName": "Owner",
+  },
+  "state": "payment_pending",
+  "timeline": [
+    {
+      "actorRole": "owner",
+      "at": "t1",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000384",
+      "kind": "plan_create",
+      "ledgerBlockId": 7,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "summary": "Budget plan created",
+    },
+    {
+      "actorRole": "owner",
+      "at": "t2",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000385",
+      "kind": "pay_confirmed",
+      "stellarTxHash": "00000000000000000000000000000000000000000000000000000000000000c8",
+      "summary": "Payment transaction confirmed",
+    },
+  ],
+  "totalStroops": "10000001",
+  "updatedAt": "u",
+  "version": 1,
+  "versionId": "00000000-0000-4000-8000-000000000003",
+  "versions": [
+    {
+      "createdAt": "c",
+      "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "superseded": false,
+      "version": 1,
+      "versionId": "00000000-0000-4000-8000-000000000003",
+    },
+  ],
+  "viewerRoles": [
+    "owner",
+    "signer",
+  ],
+}
+`;
+
+exports[`getPlanDetail > matches a browser-safe detail snapshot for the pending_approval plan state 1`] = `
+{
+  "allowedActions": [
+    "edit_plan",
+    "pay_blocked_until_approved",
+    "verify_file",
+  ],
+  "approvals": {
+    "approved": 2,
+    "required": 2,
+  },
+  "approvalsDetail": [
+    {
+      "approverName": "Owner",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": true,
+      "reason": null,
+    },
+    {
+      "approverName": "Approver",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": false,
+      "reason": null,
+    },
+  ],
+  "asset": {
+    "kind": "native",
+  },
+  "dashboardState": "planned",
+  "deployment": {
+    "asset": {
+      "kind": "native",
+    },
+    "id": "dep",
+    "network": "testnet",
+  },
+  "envelopes": [
+    {
+      "bps": 5000,
+      "expectedShareStroops": "5000000",
+      "label": "Ops",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 0,
+      "recipientAddress": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2",
+    },
+    {
+      "bps": 3000,
+      "expectedShareStroops": "3000000",
+      "label": "Pay",
+      "payout": null,
+      "planningPhpCentavos": "500",
+      "position": 1,
+      "recipientAddress": "GBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB2",
+    },
+    {
+      "bps": 2000,
+      "expectedShareStroops": "2000001",
+      "label": "Sup",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 2,
+      "recipientAddress": "GCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC2",
+    },
+  ],
+  "ledgerBlockId": 7,
+  "orgId": "00000000-0000-4000-8000-000000000001",
+  "payment": null,
+  "paymentReceipt": null,
+  "payoutsVerified": {
+    "total": 3,
+    "verified": 0,
+  },
+  "planId": "00000000-0000-4000-8000-000000000002",
+  "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+  "purpose": "Budget",
+  "serverTime": "2026-10-25T00:00:00.000Z",
+  "signer": {
+    "address": "GSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS2",
+    "displayName": "Owner",
+  },
+  "state": "pending_approval",
+  "timeline": [
+    {
+      "actorRole": "owner",
+      "at": "t1",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000384",
+      "kind": "plan_create",
+      "ledgerBlockId": 7,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "summary": "Budget plan created",
+    },
+    {
+      "actorRole": "owner",
+      "at": "t2",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000385",
+      "kind": "pay_confirmed",
+      "stellarTxHash": "00000000000000000000000000000000000000000000000000000000000000c8",
+      "summary": "Payment transaction confirmed",
+    },
+  ],
+  "totalStroops": "10000001",
+  "updatedAt": "u",
+  "version": 1,
+  "versionId": "00000000-0000-4000-8000-000000000003",
+  "versions": [
+    {
+      "createdAt": "c",
+      "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "superseded": false,
+      "version": 1,
+      "versionId": "00000000-0000-4000-8000-000000000003",
+    },
+  ],
+  "viewerRoles": [
+    "owner",
+    "signer",
+  ],
+}
+`;
+
+exports[`getPlanDetail > matches a browser-safe detail snapshot for the rejected plan state 1`] = `
+{
+  "allowedActions": [
+    "edit_plan",
+    "verify_file",
+  ],
+  "approvals": {
+    "approved": 2,
+    "required": 2,
+  },
+  "approvalsDetail": [
+    {
+      "approverName": "Owner",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": true,
+      "reason": null,
+    },
+    {
+      "approverName": "Approver",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": false,
+      "reason": null,
+    },
+  ],
+  "asset": {
+    "kind": "native",
+  },
+  "dashboardState": "closed",
+  "deployment": {
+    "asset": {
+      "kind": "native",
+    },
+    "id": "dep",
+    "network": "testnet",
+  },
+  "envelopes": [
+    {
+      "bps": 5000,
+      "expectedShareStroops": "5000000",
+      "label": "Ops",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 0,
+      "recipientAddress": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2",
+    },
+    {
+      "bps": 3000,
+      "expectedShareStroops": "3000000",
+      "label": "Pay",
+      "payout": null,
+      "planningPhpCentavos": "500",
+      "position": 1,
+      "recipientAddress": "GBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB2",
+    },
+    {
+      "bps": 2000,
+      "expectedShareStroops": "2000001",
+      "label": "Sup",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 2,
+      "recipientAddress": "GCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC2",
+    },
+  ],
+  "ledgerBlockId": 7,
+  "orgId": "00000000-0000-4000-8000-000000000001",
+  "payment": null,
+  "paymentReceipt": null,
+  "payoutsVerified": {
+    "total": 3,
+    "verified": 0,
+  },
+  "planId": "00000000-0000-4000-8000-000000000002",
+  "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+  "purpose": "Budget",
+  "serverTime": "2026-10-25T00:00:00.000Z",
+  "signer": {
+    "address": "GSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS2",
+    "displayName": "Owner",
+  },
+  "state": "rejected",
+  "timeline": [
+    {
+      "actorRole": "owner",
+      "at": "t1",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000384",
+      "kind": "plan_create",
+      "ledgerBlockId": 7,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "summary": "Budget plan created",
+    },
+    {
+      "actorRole": "owner",
+      "at": "t2",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000385",
+      "kind": "pay_confirmed",
+      "stellarTxHash": "00000000000000000000000000000000000000000000000000000000000000c8",
+      "summary": "Payment transaction confirmed",
+    },
+  ],
+  "totalStroops": "10000001",
+  "updatedAt": "u",
+  "version": 1,
+  "versionId": "00000000-0000-4000-8000-000000000003",
+  "versions": [
+    {
+      "createdAt": "c",
+      "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "superseded": false,
+      "version": 1,
+      "versionId": "00000000-0000-4000-8000-000000000003",
+    },
+  ],
+  "viewerRoles": [
+    "owner",
+    "signer",
+  ],
+}
+`;
+
+exports[`getPlanDetail > matches a browser-safe detail snapshot for the superseded plan state 1`] = `
+{
+  "allowedActions": [
+    "verify_file",
+  ],
+  "approvals": {
+    "approved": 2,
+    "required": 2,
+  },
+  "approvalsDetail": [
+    {
+      "approverName": "Owner",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": true,
+      "reason": null,
+    },
+    {
+      "approverName": "Approver",
+      "decidedAt": "r",
+      "decision": "approved",
+      "isViewer": false,
+      "reason": null,
+    },
+  ],
+  "asset": {
+    "kind": "native",
+  },
+  "dashboardState": "closed",
+  "deployment": {
+    "asset": {
+      "kind": "native",
+    },
+    "id": "dep",
+    "network": "testnet",
+  },
+  "envelopes": [
+    {
+      "bps": 5000,
+      "expectedShareStroops": "5000000",
+      "label": "Ops",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 0,
+      "recipientAddress": "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2",
+    },
+    {
+      "bps": 3000,
+      "expectedShareStroops": "3000000",
+      "label": "Pay",
+      "payout": null,
+      "planningPhpCentavos": "500",
+      "position": 1,
+      "recipientAddress": "GBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB2",
+    },
+    {
+      "bps": 2000,
+      "expectedShareStroops": "2000001",
+      "label": "Sup",
+      "payout": null,
+      "planningPhpCentavos": null,
+      "position": 2,
+      "recipientAddress": "GCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC2",
+    },
+  ],
+  "ledgerBlockId": 7,
+  "orgId": "00000000-0000-4000-8000-000000000001",
+  "payment": null,
+  "paymentReceipt": null,
+  "payoutsVerified": {
+    "total": 3,
+    "verified": 0,
+  },
+  "planId": "00000000-0000-4000-8000-000000000002",
+  "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+  "purpose": "Budget",
+  "serverTime": "2026-10-25T00:00:00.000Z",
+  "signer": {
+    "address": "GSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS2",
+    "displayName": "Owner",
+  },
+  "state": "superseded",
+  "timeline": [
+    {
+      "actorRole": "owner",
+      "at": "t1",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000384",
+      "kind": "plan_create",
+      "ledgerBlockId": 7,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "summary": "Budget plan created",
+    },
+    {
+      "actorRole": "owner",
+      "at": "t2",
+      "auditHash": "0000000000000000000000000000000000000000000000000000000000000385",
+      "kind": "pay_confirmed",
+      "stellarTxHash": "00000000000000000000000000000000000000000000000000000000000000c8",
+      "summary": "Payment transaction confirmed",
+    },
+  ],
+  "totalStroops": "10000001",
+  "updatedAt": "u",
+  "version": 1,
+  "versionId": "00000000-0000-4000-8000-000000000003",
+  "versions": [
+    {
+      "createdAt": "c",
+      "planSha256": "0000000000000000000000000000000000000000000000000000000000000001",
+      "superseded": false,
+      "version": 1,
+      "versionId": "00000000-0000-4000-8000-000000000003",
+    },
+  ],
+  "viewerRoles": [
+    "owner",
+    "signer",
+  ],
+}
+`;

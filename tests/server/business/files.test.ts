@@ -17,7 +17,7 @@ vi.mock('@/server/db/client', () => ({
   getServiceClient: () => ({
     from: (table: string) => {
       const filters: Record<string, unknown> = {};
-      const query: Record<string, any> = {
+      const query: Record<string, unknown> = {
         select: () => query,
         eq: (column: string, value: unknown) => { filters[column] = value; return query; },
         order: () => query,
@@ -88,7 +88,9 @@ function formRequest(path: string, fileBytes: Uint8Array, type = 'application/pd
   });
 }
 
-async function body(response: Response): Promise<any> { return response.json(); }
+async function body(response: Response): Promise<{ data?: Record<string, unknown>; error?: { code?: string } }> {
+  return response.json();
+}
 
 beforeEach(() => {
   state.userId = '00000000-0000-4000-8000-000000000010';
@@ -104,7 +106,7 @@ describe('F-15 document routes', () => {
     const response = await upload(formRequest(`/api/orgs/${ORG_A}/documents`, PDF), context());
     const result = await body(response);
     expect(response.status).toBe(201);
-    expect(result.data.documentId).toBe(DOC_ID);
+    expect(result.data?.documentId).toBe(DOC_ID);
     expect(state.events).toEqual(['storage', 'record']);
     expect(state.storage.size).toBe(1);
   });
@@ -129,7 +131,7 @@ describe('F-15 document routes', () => {
     });
     const response = await download(new Request(`http://localhost:3000/api/orgs/${ORG_A}/documents/${DOC_ID}/download`), context());
     expect(response.status).toBe(200);
-    expect((await body(response)).data.url).toBe('https://storage.example/signed');
+    expect((await body(response)).data?.url).toBe('https://storage.example/signed');
     expect(state.signedUrlOptions).toEqual([{
       key: `orgs/${ORG_A}/docs/00000000-0000-4000-8000-000000000030`,
       expiresIn: 300,
@@ -149,12 +151,12 @@ describe('F-15 document routes', () => {
     const makeVerifyRequest = (bytes: Uint8Array) => formRequest(`/api/orgs/${ORG_A}/verify-file`, bytes, 'application/pdf', 'receipt.pdf');
 
     const same = await verify(makeVerifyRequest(PDF), context());
-    expect((await body(same)).data.match).toBe(true);
+    expect((await body(same)).data?.match).toBe(true);
     const altered = PDF.slice();
     altered[altered.length - 1] ^= 1;
     const different = await verify(makeVerifyRequest(altered), context());
     const differentBody = await body(different);
-    expect(differentBody.data.match).toBe(false);
+    expect(differentBody.data?.match).toBe(false);
     expect(JSON.stringify(differentBody).toLowerCase()).not.toContain('tampered');
   });
 
@@ -166,6 +168,6 @@ describe('F-15 document routes', () => {
     });
     const response = await verify(formRequest(`/api/orgs/${ORG_A}/verify-file`, PDF), context());
     expect(response.status).toBe(403);
-    expect((await body(response)).error.code).toBe('FORBIDDEN');
+    expect((await body(response)).error?.code).toBe('FORBIDDEN');
   });
 });

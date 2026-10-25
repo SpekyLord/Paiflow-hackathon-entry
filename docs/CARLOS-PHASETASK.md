@@ -123,7 +123,7 @@ Every task lists requirement IDs, a deliverable, owned paths, dependencies or ha
     - Non-secret excerpts: kinds, topics and field names. Addresses are shortened.
     - Never include the token or a signed envelope.
 
-- [ ] **C-03 Server-only Paiflow adapter and configuration validation**
+- [x] **C-03 Server-only Paiflow adapter and configuration validation** — Mocked + Local live; evidence in §7
   - **Requirements:** PRD §K.1, REQ-DEP-01 AC4, REQ-ESC-01 AC6.
   - **Deliverable:** `src/server/paiflow/{config,client,errors}.ts` with `import "server-only"`, ported from starter `lib/paiflow.ts` and `lib/http.ts`:
     - **Config validation:**
@@ -139,7 +139,7 @@ Every task lists requirement IDs, a deliverable, owned paths, dependencies or ha
     - There is no `NEXT_PUBLIC_` Paiflow variable.
   - **Evidence:** test output.
 
-- [ ] **C-04 Pure helpers: amounts, envelopes, explorer, assets**
+- [x] **C-04 Pure helpers: amounts, envelopes, explorer, assets** — Mocked; evidence in §7
   - **Requirements:** INV-10, REQ-ESC-01 AC3, PRD §J.
   - **Deliverable:**
     - `src/lib/amount.ts`: `toStroops`, `fromStroops` (starter), plus `parseHorizonBalance` that accepts `"0.0000000"`.
@@ -154,7 +154,7 @@ Every task lists requirement IDs, a deliverable, owned paths, dependencies or ha
     - Floats are never used.
   - **Evidence:** test output (Mocked).
 
-- [ ] **C-05 Payment API client and fixture-backed mock controllers (HO-06)**
+- [x] **C-05 Payment API client and fixture-backed mock controllers (HO-06)** — Mocked (fixture mode); evidence in §7
   - **Requirements:** the PRD §J MVP money screens.
   - **Deliverable:**
     - `src/client/api/payments.ts`, typed per [Francis §3.5](FRANCIS-PHASETASK.md#contract-endpoints).
@@ -189,7 +189,7 @@ Every task lists requirement IDs, a deliverable, owned paths, dependencies or ha
     - **Recipients and bps are labelled operator-attested** (Paiflow does not return them).
   - **Evidence:** capability check output for R1, R2 and D1 (no token).
 
-- [ ] **C-07 Pay prepare route (approval-gated)**
+- [x] **C-07 Pay prepare route (approval-gated)** — Mocked + DB; evidence in §7
   - **Requirements:** REQ-ESC-01 behaviour 1–5, AC1, AC4; **REQ-BUD-02 AC4**; REQ-BUD-03; INV-01, INV-03, INV-04.
   - **Deliverable:** `POST …/budget-plans/:planId/pay/prepare`, which does the following in order:
     1. Same-origin check, session, rate limit `prepare`.
@@ -210,7 +210,7 @@ Every task lists requirement IDs, a deliverable, owned paths, dependencies or ha
     - A non-signer or a wallet mismatch → 403.
   - **Evidence:** test output.
 
-- [ ] **C-08 Pay submit route**
+- [x] **C-08 Pay submit route** — Mocked + DB; evidence in §7
   - **Requirements:** REQ-ESC-01 behaviour 6–8, AC2, AC3; INV-02, INV-06.
   - **Deliverable:** `POST …/pay/submit`, which does the following in order:
     1. Body ≤ 210,000 bytes and `signedXdr` ≤ 200,000 chars.
@@ -229,7 +229,7 @@ Every task lists requirement IDs, a deliverable, owned paths, dependencies or ha
     - PENDING, UNKNOWN or 502 never shows "confirmed" (REQ-ESC-02 AC1).
   - **Evidence:** test output.
 
-- [ ] **C-09 Read-only check and explicit same-envelope resubmit (CL-05)**
+- [x] **C-09 Read-only check and explicit same-envelope resubmit (CL-05)** — Mocked + DB; evidence in §7
   - **Requirements:** REQ-REC-01 AC1–AC3, REQ-ESC-02 AC2, PRD §G.4, INV-05…INV-08, D-13.
   - **Deliverable:**
     - **`pay/check`.** Calls `transactions.get(originalHash)` with at most 6 lookups in a 30 s window, backoff capped at 8 s, honouring `Retry-After`, then `recordStatusCheck`:
@@ -246,7 +246,7 @@ Every task lists requirement IDs, a deliverable, owned paths, dependencies or ha
     - FAILED moves the plan back to `approved` only after it is recorded.
   - **Evidence:** test output.
 
-- [ ] **C-10 Event ingestion: pagination, cursors, dedupe**
+- [x] **C-10 Event ingestion: pagination, cursors, dedupe** — Mocked + DB; evidence in §7
   - **Requirements:** PRD §G.6, §H.3 #12–13, INV-08.
   - **Deliverable:** `src/server/paiflow/events.ts`:
     - It uses `acquireReconcileLease` per deployment.
@@ -262,7 +262,7 @@ Every task lists requirement IDs, a deliverable, owned paths, dependencies or ha
     - A page cap is never treated as completeness.
   - **Evidence:** test output.
 
-- [ ] **C-11 Payment receipt and per-envelope Split verifier (pure functions)**
+- [x] **C-11 Payment receipt and per-envelope Split verifier (pure functions)** — Mocked + DB; real Split payout shape still unknown (B-04); evidence in §7
   - **Requirements:** REQ-PAY-01, REQ-BUD-03 AC1, PRD §H.1, §H.2, **§H.5**, INV-03, D-13.
   - **Deliverable:** `src/server/paiflow/verify.ts` returns `VerificationInput` ([Francis §3.6](FRANCIS-PHASETASK.md#contract-persistence)):
     - **Payment receipt, H.1 + H.2.** `transactions.get(original)` is SUCCESS with matching hash and `testnet`. A `RECEIVE`/`deposit` event in that tx has `from === signerAddress`, `amount === totalStroops` (string compare) and a native asset.
@@ -297,7 +297,7 @@ Every task lists requirement IDs, a deliverable, owned paths, dependencies or ha
     - Two runners never double-process (lease test).
   - **Evidence:** test output; the chosen mechanism.
 
-- [ ] **C-13 Wallet summary route**
+- [x] **C-13 Wallet summary route** — Mocked + DB + Local live; evidence in §7
   - **Requirements:** REQ-WAL-01 AC1–AC3, G-05.
   - **Deliverable:** `GET /api/wallet/summary`:
     - It takes `getWalletContext(userId)`.
@@ -314,7 +314,7 @@ Every task lists requirement IDs, a deliverable, owned paths, dependencies or ha
 
 ### Phase C — Browser wallet, real controllers, negative paths [MVP]
 
-- [ ] **C-14 Freighter browser module**
+- [x] **C-14 Freighter browser module** — Mocked; no real Freighter signature yet (C-02(a)); evidence in §7
   - **Requirements:** REQ-ACC-02 behaviour 2, REQ-ESC-01 behaviour 6, PRD §F.4 "Wallet change".
   - **Deliverable:** `src/client/wallet/freighter.ts`, ported from starter `lib/wallet.ts`:
     - `connect` and `refresh`, with bounded timeouts.
@@ -325,7 +325,7 @@ Every task lists requirement IDs, a deliverable, owned paths, dependencies or ha
   - **Acceptance:** the starter `tests/wallet.test.ts` cases are ported, plus `signMessage` tests (mocked Freighter).
   - **Evidence:** test output.
 
-- [ ] **C-15 Real controllers and integration examples (HO-10)**
+- [x] **C-15 Real controllers and integration examples (HO-10)** — Mocked; evidence in §7
   - **Requirements:** the PRD §J MVP screens, REQ-REC-01 AC1.
   - **Deliverable:** live implementations of `useFreighter`, `useWalletBinding` (Francis's challenge and bind routes plus C-14), `usePayment` (plan scope), `usePlanEvidence`, `useWalletSummary` and `useOperatorConsole`.
     - They rehydrate from the server after a reload.
@@ -338,7 +338,7 @@ Every task lists requirement IDs, a deliverable, owned paths, dependencies or ha
     - A reload mid-attempt shows the same attempt and original hash (REQ-REC-01 AC1, mocked).
   - **Evidence:** test output; HO-10 note.
 
-- [ ] **C-16 Operator review routes**
+- [x] **C-16 Operator review routes** — Mocked + Local live; evidence in §7
   - **Requirements:** PRD §D.1 Operator, §G.4 `NOT_FOUND`.
   - **Deliverable:** `GET /api/operator/reviews` and `POST /api/operator/reviews/:reviewId`, calling `resolveOperatorReview` with a mandatory justification and evidence.
   - **Depends on:** HO-05.
@@ -348,7 +348,7 @@ Every task lists requirement IDs, a deliverable, owned paths, dependencies or ha
     - No outcome prepares a replacement payment.
   - **Evidence:** test output.
 
-- [ ] **C-17 Credential isolation and payment negative-path suite (input to G7)**
+- [x] **C-17 Credential isolation and payment negative-path suite (input to G7)** — Mocked + Local live; evidence in §7
   - **Requirements:** REQ-ESC-01 AC6, REQ-BUD-02 AC4, PRD §K.1, §K.10.
   - **Deliverable:**
     - **`scripts/check-browser-bundle.mjs`** (starter pattern) extended to also fail on `SUPABASE_SERVICE_ROLE_KEY`, service-role JWT-like strings, and the `[FIXTURE]` marker in a production build.
@@ -503,9 +503,9 @@ const op = useOperatorConsole();
 - **Pass criteria (Mocked level; no Testnet needed):**
   - [ ] `npm test`, `npm run typecheck`, `npm run lint` and `npm run build` pass on Node 22.22.2.
   - [ ] Every C-07…C-13 acceptance test passes, with SDK call counts asserted. This **includes 0 calls when the plan is not fully approved**.
-  - [ ] Each H.1, H.2 and H.5 verifier check has a pass and a fail fixture. Envelope checks on unknown payload fields return `pending`.
-  - [ ] Every MVP §3.7 hook works in fixture mode **and** compiles in live mode.
-  - [ ] Route responses validate against Francis's DTO types. A snapshot shows no XDR after submit and no request IDs or tokens.
+  - [x] Each H.1, H.2 and H.5 verifier check has a pass and a fail fixture. Envelope checks on unknown payload fields return `pending`.
+  - [x] Every MVP §3.7 hook works in fixture mode **and** compiles in live mode.
+  - [x] Route responses validate against Francis's DTO types. A snapshot shows no XDR after submit and no request IDs or tokens.
 - **Evidence:** test runner output (labelled **Mocked**), commit hash, and the list of tests per requirement.
 
 <a id="g5"></a>
@@ -610,3 +610,10 @@ const op = useOperatorConsole();
 | 13:56 | DB test (C-07…C-12) | `npm run test:db` (`3270851`, `d418552`): the real prepare/submit/check handlers, `reconcilePlan` and `ingestEvents` through Francis's `createFinancialDb` against the SQL on the dedicated test project, Paiflow faked, every test rolled back. 9/9 pass: `PLAN_NOT_APPROVED` with 0 Paiflow calls; non-signer 403; prepare → submit → SUCCESS → `payment_confirmed` → reconcile → `distribution_verified` (4 verified rows); CL-06 reuse; 2 of 3 stays `payment_confirmed`; a short payout → `mismatch`; changed body kept as `BODY_CHANGED`; lost submit + 404 stay unresolved; event dedupe and cursor; lease exclusivity; wallet context. Row counts identical before and after. | DB (cyfai-sme-dev) | User (test writes allowed in chat) |
 | 13:56 | Bug found and fixed | `get_wallet_context` returns a plain object, but the wrapper expected `{ok, value}`, so `GET /api/wallet/summary` answered 500. Wrapper fixed in Francis's `financial-core.ts` (`d418552`, CR for Francis); no SQL change. | DB (cyfai-sme-dev) | — |
 | 13:56 | Local live smoke (C-03, C-06, C-07…C-09, C-12, C-13, C-16, C-17) | `node tests/live/payments-smoke.live.mjs` (`68ec1c4`) on `npm run dev` with the F-18 demo accounts: 38/38 pass after the fix (35/38 before). 401 everywhere without a session; owner wallet summary 200 (binding null, so balance `unavailable`, never 0); operator routes 403 for the owner, 200 for the operator; 403 cross-origin and refusal of unknown plans on every payment route; 413 oversize; registration without a token is 503 and the registry is unchanged; 422 empty justification; no secret in any response. **Not covered:** anything that reaches Paiflow (no token), Freighter signing and Testnet transactions (C-02, C-18). | Local live | — |
+| 14:13 | G1: §3.6 coverage | Confirmed: Francis's §3.6 persistence interface covers every persistence need of C-06…C-13. Two change requests were needed and were made in his files with the user's approval in chat, for Francis to accept, reshape or move: **CR-C1** `getLatestAttempt(scope)` (`b3d4d12`), a read of the plan's newest attempt including terminal ones, needed by C-12 because `getOpenAttempt` skips `success` and `getPaymentContext` needs a member; **CR-C2** `getWalletContext` reads `get_wallet_context` as a plain result (`d418552`), because the SQL returns the context object without an `{ok, value}` envelope and the wrapper turned every read into 500. No other CR: evidence/refresh returns his F-17 plan detail exactly as §3.5 specifies. | Mocked + DB | User (in chat) |
+| 14:13 | HO-03 / C-02(a) | **Not done.** No real Freighter `signMessage` signature has been verified server-side; every signing test uses generated test keypairs, and no page uses the binding hook yet. It needs a person with a Testnet Freighter account in a real browser (Carlos or Shanti). A dev-only spike page is on branch `carlos/c02-freighter-spike` (not merged to `main`): it runs challenge → Freighter `signMessage` → bind and shows the raw `signedMessage` type and length, never the value. A 200 from `/api/wallet/bind` means Francis's server verification passed; then send him the type/encoding. | — | — |
+| 14:13 | Session on integration status | `GET /api/integration/status` now requires a session (`0bd6224`); `integration/status` moved from `KNOWN_GAPS` to `MUST_BE_401` in Francis's sweep test at his request (`82401e8`); the sweep passes. | Mocked | — |
+| 14:13 | HO-07 / HO-08 | **Blocked:** no R1/R2/D1 deployment record from Shanti and no Paiflow token yet. When both arrive: put the token in `.env.local`, sign in as the operator, `POST /api/operator/deployments` with R1's UUID and ordered recipients, and send Francis the capability-check result (no token) for G2. | — | — |
+| 14:13 | HO-04 | **Blocked** on the R1 rehearsal payment (needs ⚠ AUTH). After it, `POST …/evidence/refresh` ingests the payment's events into `paiflow_events`; read the Split payout rows (kind, topic, field names), send them to Francis, then set `SPLIT_PAYOUT_SHAPE` in `src/server/paiflow/verify.ts`. Until then envelope checks stay `awaiting_events`. | — | — |
+| 14:13 | Ticks | Ticked with their level: C-03, C-04, C-05, C-07…C-11, C-13…C-17, and G3 bullets 3–5. Not ticked: C-01 (Node 22.22.2 not used), C-02, C-06 (no R1/R2/D1 capability output), C-12 (needs R1 progress, G5), C-18, G3 bullets 1–2 (Node 22; C-12's R1 criterion). No Testnet evidence exists. | — | — |
+| 14:13 | Neutral naming | At the user's request, government wording was replaced with neutral organisation wording in live files (`1bff663` UI, `73ff731` Francis-owned code/docs, `22df15c`); history and stored values left as they were. | — | User (in chat) |

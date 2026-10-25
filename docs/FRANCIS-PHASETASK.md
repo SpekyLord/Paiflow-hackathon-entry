@@ -767,10 +767,10 @@ The MVP is complete only when G1–G5 and G7 pass **and** the Testnet rehearsal 
 - **Owner:** Francis.
 - **Prerequisites:** F-01 merged (HO-01); this document's §2–§5 read by Carlos and Shanti.
 - **Pass criteria:**
-  - [ ] Carlos confirms §3.6 covers every persistence need of C-06…C-13, or files CRs.
-  - [ ] Shanti confirms §3.4 and §3.7 cover every MVP screen in her §3.
+  - [x] Carlos confirms §3.6 covers every persistence need of C-06…C-13, or files CRs. — confirmed in Carlos's log (§7) with CR-01 and CR-02, both accepted
+  - [x] Shanti confirms §3.4 and §3.7 cover every MVP screen in her §3. — confirmed in Shanti's message to Francis (gaps listed and built as CR-03); the confirmation is not yet in her own evidence log
   - [ ] Ownership matrix §2 is accepted, with no file claimed by two people.
-  - [ ] `npm run lint` and `npm run build` pass on `main` with `src/contracts/**` present.
+  - [x] `npm run lint` and `npm run build` pass on `main` with `src/contracts/**` present. — clean fresh-clone build and lint on `main`, §11
 - **Evidence:** a time-stamped note in §11 naming the three confirmations, the merged commit hash, and any CR IDs.
 
 <a id="g2"></a>
@@ -779,11 +779,11 @@ The MVP is complete only when G1–G5 and G7 pass **and** the Testnet rehearsal 
 - **Owner:** Francis (accountable). Shanti supplies the flow evidence; Carlos supplies the capability-check evidence.
 - **Prerequisites:** G1; F-02, F-03, F-05…F-13, F-18, F-19; C-02(a) (a real Freighter signature, from Carlos's scratch page or Shanti's S-12 screen); S-02 Split deployment R1 CONFIRMED; S-04 token delivered.
 - **Pass criteria:**
-  - [ ] Migrations are applied to the **agreed** database under ⚠ AUTH (F-19). Every new table has RLS on, and financial tables have no client policies.
-  - [ ] Demo accounts, the organisation and its memberships are provisioned (owner, approvers, operator). Sign-in returns a session with org roles, and unauthenticated calls to an SME route return 401.
-  - [ ] Wallet binding works end to end with a real Freighter signature. A replayed challenge is refused (REQ-ACC-02 AC1). Under B-03, if it is not done, G2 fails.
+  - [x] Migrations are applied to the **agreed** database under ⚠ AUTH (F-19). Every new table has RLS on, and financial tables have no client policies. — §11
+  - [x] Demo accounts, the organisation and its memberships are provisioned (owner, approvers, operator). Sign-in returns a session with org roles, and unauthenticated calls to an SME route return 401. — §11
+  - [x] Wallet binding works end to end with a real Freighter signature. A replayed challenge is refused (REQ-ACC-02 AC1). Under B-03, if it is not done, G2 fails. — real Freighter signature verified and bound; replay refused (§11)
   - [ ] Shanti's handoff record exists for Split R1: deployment UUID, ordered recipients with bps, CONFIRMED.
-  - [ ] Carlos's capability check passes for R1: network testnet, deposit trigger, native input, execute not `unsupported`. The registry row's recipients and bps equal the handoff.
+  - [x] Carlos's capability check passes for R1: network testnet, deposit trigger, native input, execute not `unsupported`. The registry row's recipients and bps equal the handoff. — the operator registration route (Carlos's capability check) accepted the deployment as available; recipients taken from the on-chain payout event (§11). Shanti's handoff record (previous line) is still missing from her log
 - **Evidence:** migration file names plus who authorised them and when, table/policy listing output, a 401 test output, the binding row ID and address (public), a link to Shanti's handoff entry, and Carlos's capability-check output (no token).
 
 <a id="g7"></a>
@@ -792,7 +792,7 @@ The MVP is complete only when G1–G5 and G7 pass **and** the Testnet rehearsal 
 - **Owner:** Francis. Carlos runs C-17 and supplies its output.
 - **Prerequisites:** G5.
 - **Pass criteria (each with test output or a recorded manual check):**
-  - [ ] 401 on every plan, approval, document, payment and wallet route without a session (REQ-ACC-01 AC1).
+  - [x] 401 on every plan, approval, document, payment and wallet route without a session (REQ-ACC-01 AC1). — route sweep with an empty known-gaps list, including wallet, operator and integration routes (§11)
   - [x] 403 for non-members of the org. (proven: DB tests, guard tests, route tests; see §11) A non-approver cannot approve, and a non-signer cannot prepare.
   - [ ] **REQ-BUD-02 AC4:** `pay/prepare` before full approval returns 403 `PLAN_NOT_APPROVED`, and Paiflow is **not** called (mock call count = 0, plus the T-03 log).
   - [x] RLS: an `anon` or `authenticated` client cannot select (proven in DB incl. `storage.objects` for `sme-files`, §11) `payment_attempts`, `wallet_challenges`, `operator_reviews` or SME file objects.
@@ -806,7 +806,7 @@ The MVP is complete only when G1–G5 and G7 pass **and** the Testnet rehearsal 
     - the CYFER audit hash is never labelled as a Stellar hash
     - no "immutable" or "anchored on Stellar" claims
     - PHP figures are labelled as planning figures
-  - [ ] Inherited gaps (PRD §K.12) are unreachable from the SME build (F-20).
+  - [x] Inherited gaps (PRD §K.12) are unreachable from the SME build (F-20). — all retired routes answer 404 (§11)
 - **Evidence:** test runner output, bundle scan output, log excerpt check (statement only, no secrets), screenshot set, and the reviewer's name.
 
 ---
@@ -849,7 +849,7 @@ The phases below are listed in order:
   - **Verification:** `npm run lint` and `npm run build`. Unit tests are added after C-01 provides Vitest.
   - **Evidence:** commit hash and command output.
 
-- [ ] **F-02 Read-only live schema inventory (Q-10, B-01)**
+- [ ] **F-02 Read-only live schema inventory (Q-10, B-01)** — SUPERSEDED, not performed: the demo uses an empty dedicated project, so the shared project's drift no longer matters
   - **Requirements:** PRD §I.13.1, C-09.
   - **Purpose and deliverable:** a list of the live tables, columns, constraints, policies, functions and buckets, using only read-only `information_schema`/`pg_catalog` queries (SQL editor, or the Supabase MCP once it reconnects).
   - **Owns:** findings in §11.
@@ -868,7 +868,7 @@ The phases below are listed in order:
     - The §3.5 contract is unchanged.
   - **Evidence:** the decision note.
 
-- [ ] **F-04 Decide the DB test environment (B-02, B-12)**
+- [x] **F-04 Decide the DB test environment (B-02, B-12)** — Francis chose and applied the dedicated project `cyfai-sme-dev`; Carlos's DB tests already use it (explicit written confirmation from Carlos and Shanti not recorded)
   - **Requirements:** PRD §M.1, Claude.md DB rule.
   - **Purpose and deliverable:** choose between (a) local Supabase via the CLI and Docker (check Docker; the `supabase` CLI is a dev dependency request to Carlos) and (b) a dedicated, disposable Supabase project. Record which project the demo uses.
   - **Acceptance:**
@@ -903,7 +903,7 @@ The phases below are listed in order:
     - A Split registry row requires recipients that are distinct, `bps > 0` and total 10,000.
     - (SHOULD) A past-deadline escrow deployment cannot be reserved.
 
-- [ ] **F-07 Migration 005: financial evidence tables (for Carlos)**
+- [x] **F-07 Migration 005: financial evidence tables (for Carlos)** — HO-04 received: the real Split payout event needed no schema change (`data` stays generic jsonb); all §3.6 rules proven in DB tests
   - **Requirements:** REQ-ESC-01/02, PAY-01, REC-01, BUD-03, INV-01…INV-10.
   - **Deliverable:** `005_sme_financial_evidence.sql`, containing:
     - `payment_attempts` (PRD §I.5 plus `budget_plan_id`, `plan_version_id`, `fee_stroops`, `resolution`, `signature_requested_at`, `submit_outcome jsonb`), with exactly one of `budget_plan_id`/`deal_id`, a unique `original_tx_hash`, and partial unique indexes `(budget_plan_id)` and `(deal_id) WHERE state NOT IN ('success','failed','prepare_failed','reconciled')`
@@ -1106,7 +1106,7 @@ The phases below are listed in order:
     - Grep shows no import of retired modules.
     - None of the §K.12 gap routes is reachable.
 
-- [ ] **F-21 Tests for owned systems**
+- [x] **F-21 Tests for owned systems** — 27 rolled-back DB tests, 2 real-concurrency tests, route and sweep tests, copy guard, guard-removal spot checks, and the real Freighter signature; evidence in §11
   - **Requirements:** every MVP Francis-owned row of the PRD §M.2 table.
   - **Deliverable:** `tests/server/business/**` (routes with a mocked persistence layer) and `tests/db/**` (RPC tests on the B-12 database, if authorised), covering:
     - REQ-ACC-01/02
@@ -1222,5 +1222,6 @@ The phases below are listed in order:
 | ~15:45 | F-20 ticked | After Shanti's S-10 push (old pages gone) I deleted the inherited routes `audit`, `auth` (root), `auth/login`, `auth/logout`, `blockchain` (+`nodes`, `validate`), `budget`, `consensus` (+approve, reject), `documents` (+`[id]`), `summarize`, `verify`; the libraries `lib/{ai,audit,auth,blockchain,nodes,supabase,types}.ts` and `utils/constants.ts`; `test-supabase.ts` and `scripts/seed-demo-data.js` (`test-phase0.ts` was already gone). Kept: the new `auth/{sign-in,sign-out,me}`, `orgs/**`, `wallet/**`, `operator/**`, `integration/status`, `lib/hash.ts`. Grep finds no import of any removed module; `tsc` (ignoring the stale `.next` cache of the running dev server), eslint and 508 tests pass; the route sweep now has an empty known-gaps list and a test that the retired routes stay deleted. Live on the running app: every retired path now answers 404, `/api/auth/me` 401, `/sign-in` and `/plans` 200. **Not done by me:** `@anthropic-ai/sdk` and the `ANTHROPIC_API_KEY`/`NODE2_*`/`NODE3_*` example entries (Carlos owns `package.json` and `.env.local.example`); `npm run build` was not re-run because the dev server is using `.next` (it passed before the deletion). | Mocked + Manual (local server) |
 | ~16:00 | Final checks on `main` (F-22 docs part, G7 input; F-22 stays unticked) | Fresh clone of `main` at `186b586`, `npm ci`, **`npm run build` passes on Node 22.22.2** and `npm run check:bundle` passes (no credential markers, no Paiflow SDK runtime, no fixture markers in the browser bundle). (A first attempt failed only because the scratch path exceeded the Windows path limit; rerun from a short path.) On the working tree: `tsc` and eslint clean, 508 tests pass, live app answers (401 without a session, 200 on `/sign-in` and `/plans`). README status and AI disclosure and `Claude.md` commands updated to match reality: one recorded Testnet run, no claim of a finished rehearsal, the removed summariser disclosed, Node 22 noted. **Why F-22 is not ticked:** G7 still has open items (logs reviewed during rehearsal, copy review with Shanti, T-03 over live HTTP). **Carlos's ERP CRs:** his CR-03..CR-07 (`list_money_movements`, `suppliers`, summary route, plan documents, purchase orders) are beyond the MVP; numbering collides with my CR-03 (directory routes), so I log his as CR-ERP-03..07 and defer all of them until after the demo. | Mocked + Manual |
 | ~16:10 | G7: logs review and automated copy review | **Logs:** the dev-server log of the whole live session (276 lines, including sign-ins, the wallet binding, plan creation, approvals, `pay/prepare` x2, `pay/submit`, `pay/check`) was searched for the Paiflow token value and pattern, service-role key, anon key, DB password, the demo passwords, XDR-like blobs, an 88-char base64 signature, a Stellar secret-key pattern and a JWT: **none found, no error or warning lines.** (`pay/prepare` was called twice and the DB holds one attempt: the duplicate-click guard.) **Copy:** a scan of all non-comment source for "tampered", "tamper-proof", "immutable", "anchored/stored on Stellar", "guaranteed", SDG/taxes/citizen found one overclaim, the site description in `src/app/layout.tsx` ("Tamper-proof document records"), now "Verifiable document records". New `tests/server/business/copy-guard.test.ts` keeps it out (with a sensitivity check). Wallet page labels ("Received (verified)", "Refunded (verified)", "Only payouts with verified evidence are counted") are fine. The `/sign-in` page text renders and says Testnet simulation. **Still open for the copy criterion:** the human review with Shanti (S-23) of rendered screens, including the PHP planning-figure label and the audit-hash vs Stellar-hash labels. | Mocked + Manual |
+| ~16:25 | Checklist housekeeping | Ticked on evidence already in this log: F-04, F-07, F-21; G1 criteria 1, 2 and 4; G2 criteria 1, 2, 3 and 5; G7 criteria 1 and 10 (401 on every route; inherited routes unreachable). **Left open on purpose:** F-00 and G1 criterion 3 (nobody has confirmed the ownership matrix; one working-tree overlap and Carlos's approved edits of Francis-owned files happened), F-02 (superseded), F-22 and the rest of G7 (human copy review, T-03 over live HTTP), G2 criterion 4 (Shanti's R1 handoff record is not logged). | Human |
 | ~13:10 | F-05…F-10 (not ticked) | Drafts, **not applied and not executed**: `supabase/migrations/002`…`008` (identity/wallets, deployments, plans, evidence tables, documents + private bucket, ledger/`append_evidence`, business RPCs). Syntax unchecked: no local Postgres, and Docker is not running. F-07 columns are provisional until HO-04. F-11 (financial RPCs) not started. | Mocked |
 | 13:14 | F-21 (partial) | Expanded `tests/db/business-financial.db.mjs`; **22/22 pass** on `cyfai-sme-dev`. Added `register_deployment` operator gate and Split-recipient validation cases (bps total, duplicate, malformed address, order, zero share), valid recipient-order preservation, a guard-sensitivity probe that drops the recipient CHECK only inside a savepoint and confirms invalid registration then rolls back, and a two-session advisory-lock wait probe for `append_evidence`. The runner reports 0 leftover plans/orgs. This is a rollback-safe lock-serialization probe, **not** a committed parallel-write test. Remaining F-21 work: route tests, guard-removal spot checks for other key rules, and true committed-session concurrency coverage on a disposable DB. | DB (cyfai-sme-dev) |

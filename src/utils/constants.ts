@@ -1,48 +1,5 @@
 // App-wide constants (categories, statuses, etc.)
 
-import { DocumentCategory, DocumentStatus, UserRole, ActionType, ApprovalStatus } from '../lib/types';
-
-// Document categories
-export const DOCUMENT_CATEGORIES = [
-  { value: DocumentCategory.ORDINANCE, label: 'Policy' },
-  { value: DocumentCategory.BUDGET, label: 'Budget' },
-  { value: DocumentCategory.RESOLUTION, label: 'Resolution' },
-  { value: DocumentCategory.CONTRACT, label: 'Contract' },
-  { value: DocumentCategory.PERMIT, label: 'Permit' },
-  { value: DocumentCategory.OTHER, label: 'Other' },
-] as const;
-
-// Document statuses
-export const DOCUMENT_STATUSES = [
-  { value: DocumentStatus.PENDING_APPROVAL, label: 'Pending Approval', color: 'yellow' },
-  { value: DocumentStatus.PUBLISHED, label: 'Published', color: 'green' },
-  { value: DocumentStatus.REJECTED, label: 'Rejected', color: 'red' },
-] as const;
-
-// User roles
-export const USER_ROLES = [
-  { value: UserRole.SUPER_ADMIN, label: 'Super Admin' },
-  { value: UserRole.ADMIN, label: 'Admin' },
-  { value: UserRole.USER, label: 'User' },
-] as const;
-
-// Action types for audit trail
-export const ACTION_TYPES = [
-  { value: ActionType.UPLOAD, label: 'Upload', color: 'blue' },
-  { value: ActionType.APPROVE, label: ' Approve', color: 'green' },
-  { value: ActionType.REJECT, label: 'Reject', color: 'red' },
-  { value: ActionType.PUBLISH, label: 'Publish', color: 'green' },
-  { value: ActionType.VERIFY, label: 'Verify', color: 'purple' },
-  { value: ActionType.ACCESS, label: 'Access', color: 'gray' },
-] as const;
-
-// Approval statuses
-export const APPROVAL_STATUSES = [
-  { value: ApprovalStatus.PENDING, label: 'Pending', color: 'yellow' },
-  { value: ApprovalStatus.APPROVED, label: 'Approved', color: 'green' },
-  { value: ApprovalStatus.REJECTED, label: 'Rejected', color: 'red' },
-] as const;
-
 // File upload constraints
 export const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB in bytes
 

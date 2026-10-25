@@ -467,6 +467,93 @@ test('service_role: can read tables and call RPCs, cannot delete evidence or wri
   await q('reset role');
 });
 
+
+// ---------- G7 / F-21 gap closers (all rolled back) ----------
+test('G7-4: anon and authenticated cannot read objects in the private sme-files bucket', async () => {
+  await q("insert into storage.objects(bucket_id, name) values ('sme-files', $1)", [`test/${randomUUID()}`]);
+  eq((await q("select count(*)::int c from storage.objects where bucket_id='sme-files'")).rows[0].c >= 1, true, 'object visible to the owner role');
+  for (const role of ['anon', 'authenticated']) {
+    await q(`set local role ${role}`);
+    let seen = -1;
+    await q('savepoint st');
+    try { seen = (await q("select count(*)::int c from storage.objects where bucket_id='sme-files'")).rows[0].c; }
+    catch (e) { assert(/permission denied/.test(e.message), `${role}: unexpected error ${e.message}`); seen = 0; }
+    await q('rollback to savepoint st');
+    await q('reset role');
+    eq(seen, 0, `${role} sees no sme-files objects`);
+  }
+});
+
+test('REQ-DOC-01 AC2: a ledger failure leaves no document row and no audit row', async () => {
+  const f = await base({ createPlan: false });
+  await q(`create function public.zz_fail_block() returns trigger language plpgsql as $$ begin raise exception 'injected ledger failure'; end $$`);
+  await q('create trigger zz_fail_block_trg before insert on public.blockchain for each row execute function public.zz_fail_block()');
+  const key = `orgs/${f.orgId}/docs/${randomUUID()}`;
+  await q('savepoint rec');
+  let err = null;
+  try { await call('record_org_document', f.ids.member, f.orgId, 'contract', hex(500), 10, 'text/plain', key, 'a.txt'); } catch (e) { err = e; }
+  await q('rollback to savepoint rec');
+  assert(err && /injected ledger failure/.test(err.message), 'the recording failed when the ledger failed');
+  eq((await q('select count(*)::int c from public.org_documents where org_id=$1', [f.orgId])).rows[0].c, 0, 'no document row');
+  eq((await q('select count(*)::int c from public.transactions where org_id=$1', [f.orgId])).rows[0].c, 0, 'no audit row');
+});
+
+test('§3.6 rule 1-2: column checks and the unique transaction hash', async () => {
+  const f = await base(); await approveAll(f);
+  const id = await toPrepared(f);
+  const a = await attemptRow(id);
+  const ins = (over) => {
+    const v = { amount: '10000000', net: 'testnet', hash: hex(700), fin: null, from: f.addrs.owner, ...over };
+    return [`insert into public.payment_attempts(budget_plan_id, plan_version_id, deployment_id, from_address, amount_stroops, network, original_tx_hash, final_status, state, created_by)
+             values ($1,$2,$3,$4,$5,$6,$7,$8,'failed',$9)`,
+      [f.planId, a.plan_version_id, a.deployment_id, v.from, v.amount, v.net, v.hash, v.fin, f.ids.owner]];
+  };
+  await q('savepoint ok1'); await q(...ins({})); await q('rollback to savepoint ok1');   // the baseline row is valid
+  for (const [name, over] of [
+    ['zero amount', { amount: '0' }], ['leading zero', { amount: '01' }], ['decimal', { amount: '1.5' }], ['negative', { amount: '-5' }],
+    ['40 digits', { amount: '1'.repeat(40) }], ['mainnet', { net: 'mainnet' }],
+    ['upper-case hash', { hash: 'A'.repeat(64) }], ['short hash', { hash: 'ab' }],
+    ['bad final status', { fin: 'DONE' }], ['bad address', { from: 'GBAD' }],
+  ]) {
+    const [sql, params] = ins(over);
+    await sqlFails(sql, params, /violates check constraint/, `rejects ${name}`);
+  }
+  await q('savepoint dup'); await q(...ins({ hash: hex(701) }));
+  const [sql2, params2] = ins({ hash: hex(701) });
+  await sqlFails(sql2, params2, /duplicate key|unique/, 'original_tx_hash is unique');
+  await q('rollback to savepoint dup');
+});
+
+test('F-21 guard-removal spot checks: each key guard really is what blocks the bad action', async () => {
+  // (a) write-once trigger
+  const f = await base(); await approveAll(f);
+  const id = await toPrepared(f);
+  await sqlFails('update public.payment_attempts set prepared_xdr=$2 where id=$1', [id, 'x'], /write-once/, '(a) guard present');
+  await q('alter table public.payment_attempts disable trigger payment_attempts_write_once_trg');
+  await q('update public.payment_attempts set prepared_xdr=$2 where id=$1', [id, 'CHANGED']);
+  eq((await attemptRow(id)).prepared_xdr, 'CHANGED', '(a) without the trigger the XDR changes: the trigger is the guard');
+  await q('alter table public.payment_attempts enable trigger payment_attempts_write_once_trg');
+
+  // (b) one non-terminal attempt per plan: the partial unique index
+  const g = await base(); await approveAll(g);
+  const gid = await toPrepared(g, hex(710));
+  const ga = await attemptRow(gid);
+  const second = [`insert into public.payment_attempts(budget_plan_id, plan_version_id, deployment_id, from_address, amount_stroops, state, created_by)
+                   values ($1,$2,$3,$4,$5,'preparing',$6)`, [g.planId, ga.plan_version_id, ga.deployment_id, ga.from_address, ga.amount_stroops, g.ids.owner]];
+  await sqlFails(second[0], second[1], /payment_attempts_one_open_per_plan_uq|duplicate key/, '(b) index present');
+  await q('drop index public.payment_attempts_one_open_per_plan_uq');
+  await q(second[0], second[1]);
+  eq((await q("select count(*)::int c from public.payment_attempts where budget_plan_id=$1 and state not in ('success','failed','prepare_failed','reconciled')", [g.planId])).rows[0].c, 2, '(b) without the index two open attempts exist: the index is the guard');
+
+  // (c) the approval gate does not trust the plan state: forcing state=approved with an approver pending is still refused
+  const h = await base();
+  okOf(await approve(h, 'owner'), 'one approval');
+  await q("update public.budget_plans set state='approved' where id=$1", [h.planId]);
+  codeOf(await call('begin_payment_attempt', h.planId, h.ids.owner), 'PLAN_NOT_APPROVED', '(c) gate checks the approvals themselves, not only the state');
+  await q("update public.budget_approvals set decision='approved' where version_id=$1", [h.versionId]);
+  okOf(await call('begin_payment_attempt', h.planId, h.ids.owner), '(c) with every approval present the same call succeeds');
+});
+
 // ---------- runner ----------
 let failed = 0;
 for (const t of tests) {

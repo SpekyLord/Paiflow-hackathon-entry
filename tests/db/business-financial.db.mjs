@@ -1,8 +1,8 @@
 // Level: DB (cyfai-sme-dev). Runs the real SQL functions from migrations 002-009 inside transactions that are ALWAYS rolled
 // back, so no data is left behind. Needs SUPABASE_DB_URL in .env.local and a directory that contains the `pg` package.
 // Not part of `npm test` (name ends .db.mjs on purpose). Usage: node tests/db/business-financial.db.mjs <dir-with-pg>
-// Not covered here: true concurrency (two committed sessions). Evidence tables refuse deletes, so a committed
-// concurrency test would leave permanent rows. The SQL relies on the plan row lock; see FRANCIS-PHASETASK G7.
+// Concurrency coverage below probes the chain-tail lock and rolls both sessions back. It does not claim a full
+// committed two-operation concurrency rehearsal; evidence rows are intentionally not deletable.
 import { createHash, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -53,6 +53,19 @@ function planInput(f, over = {}) {
   });
   return { purpose, totalStroops: total, signerUserId: over.signerUserId ?? f.ids.owner, envelopes,
     canonicalText: text, planSha256: over.planSha256 ?? sha(text) };
+}
+
+function deploymentInput(over = {}) {
+  return {
+    deploymentId: randomUUID(),
+    template: 'budget_split',
+    asset: { kind: 'native' },
+    splitRecipients: over.splitRecipients ?? SPLIT.map((e) => ({
+      position: e.position, address: e.recipientAddress, bps: e.bps, label: e.label,
+    })),
+    graphSnapshotSha256: hex(55),
+    capabilitySnapshot: { network: 'testnet', trigger: 'deposit', execute: true },
+  };
 }
 
 let fixtureCounter = 0;
@@ -191,6 +204,46 @@ test('CL-11: two available deployments matching the same envelopes are ambiguous
   codeOf(await call('create_budget_plan', f.ids.owner, f.orgId, planInput(f)), 'NO_SPLIT_DEPLOYMENT', 'none available');
 });
 
+test('register_deployment: operator-only and validates Split recipients before registration', async () => {
+  const f = await base({ createPlan: false });
+  const valid = deploymentInput();
+  codeOf(await call('register_deployment', f.ids.member, valid), 'OPERATOR_REQUIRED', 'non-operator cannot register');
+
+  const invalidRecipients = [
+    { name: 'bps total', recipients: SPLIT.map((e, i) => ({ ...e, bps: i === 0 ? 4900 : e.bps })) },
+    { name: 'duplicate address', recipients: SPLIT.map((e, i) => i === 1 ? { ...e, recipientAddress: SPLIT[0].recipientAddress } : e) },
+    { name: 'invalid address', recipients: SPLIT.map((e, i) => i === 0 ? { ...e, recipientAddress: 'not-a-wallet' } : e) },
+    { name: 'wrong order', recipients: SPLIT.map((e, i) => i === 1 ? { ...e, position: 2 } : e) },
+    { name: 'zero share', recipients: SPLIT.map((e, i) => i === 2 ? { ...e, bps: 0 } : e) },
+  ];
+  for (const sample of invalidRecipients) {
+    const result = await call('register_deployment', f.ids.operator, deploymentInput({ splitRecipients: sample.recipients }));
+    codeOf(result, 'VALIDATION', `reject ${sample.name}`);
+  }
+
+  const registered = okOf(await call('register_deployment', f.ids.operator, valid), 'valid Split registration');
+  eq(registered.id, valid.deploymentId, 'deployment UUID');
+  eq(registered.status, 'available', 'status defaults to available');
+  eq(registered.registered_by, f.ids.operator, 'registered by operator');
+  eq(registered.split_recipients.map((r) => [r.position, r.address, r.bps]),
+    SPLIT.map((r) => [r.position, r.recipientAddress, r.bps]), 'recipient order and shares preserved');
+});
+
+test('recipient-validation guard sensitivity: invalid registration succeeds only with its table CHECK removed', async () => {
+  const f = await base({ createPlan: false });
+  await q('savepoint remove_split_guard');
+  await q('alter table public.paiflow_deployments drop constraint budget_split_needs_valid_recipients');
+  const invalid = SPLIT.map((e, i) => i === 0 ? { ...e, bps: 4900 } : e);
+  const result = okOf(await call('register_deployment', f.ids.operator, deploymentInput({ splitRecipients: invalid })),
+    'mutation probe without recipient CHECK');
+  assert(!((await q('select public.split_recipients_valid($1::jsonb) ok', [JSON.stringify(invalid)])).rows[0].ok),
+    'the probe input violates the validator');
+  assert(result.id, 'removed-guard probe reached registration');
+  await q('rollback to savepoint remove_split_guard');
+  assert((await q("select exists (select 1 from pg_constraint where conrelid='public.paiflow_deployments'::regclass and conname='budget_split_needs_valid_recipients') ok")).rows[0].ok,
+    'rollback restored the guard');
+});
+
 test('begin_payment_attempt: created, then existing on the second call; wallet mismatch refused', async () => {
   const f = await base(); await approveAll(f);
   await q('update public.wallet_bindings set revoked_at=now() where user_id=$1', [f.ids.owner]);
@@ -319,6 +372,40 @@ test('the ledger and audit chain: hashes are recomputable from stored inputs and
   for (const t of tx) assert(t.hash_input && t.tx_hash, 'audit hash_input is stored');
   const recomputed = (await q('select tx_hash = encode(sha256(convert_to(hash_input::text, $2)), $3) ok from public.transactions where plan_id=$1', [f.planId, 'UTF8', 'hex'])).rows;
   assert(recomputed.every((r) => r.ok), 'audit hash recomputes from stored hash_input');
+});
+
+test('append_evidence waits for the chain-tail advisory lock (both DB sessions roll back)', async () => {
+  const { Client } = createRequire(join(resolve(process.argv[2]), 'package.json'))('pg');
+  const second = new Client({ connectionString: env.SUPABASE_DB_URL, ssl: { rejectUnauthorized: false } });
+  let lockHeld = false;
+  let secondInTransaction = false;
+  let append;
+  try {
+    await second.connect();
+    await second.query('begin');
+    secondInTransaction = true;
+    await q("select pg_advisory_lock(hashtext('cyfer_chain_tail'))");
+    lockHeld = true;
+    const { pid } = (await second.query('select pg_backend_pid() pid')).rows[0];
+    append = second.query("select public.append_evidence('plan_create', '{}'::jsonb, null, '{}'::jsonb, 'F-21 lock probe') result");
+
+    let waiting = false;
+    for (let i = 0; i < 50; i++) {
+      const activity = (await q('select wait_event_type, wait_event from pg_stat_activity where pid=$1', [pid])).rows[0];
+      if (activity?.wait_event_type === 'Lock' && activity?.wait_event === 'advisory') { waiting = true; break; }
+      const settled = await Promise.race([append.then(() => true, () => true), new Promise((resolve) => setTimeout(() => resolve(false), 100))]);
+      if (settled) break;
+    }
+    assert(waiting, 'append_evidence blocks on the chain-tail advisory lock');
+    await q("select pg_advisory_unlock(hashtext('cyfer_chain_tail'))");
+    lockHeld = false;
+    const written = (await append).rows[0].result;
+    assert(written.ledgerBlockId && written.auditHash, 'append completes after lock release');
+  } finally {
+    if (lockHeld) await q("select pg_advisory_unlock(hashtext('cyfer_chain_tail'))").catch(() => {});
+    if (secondInTransaction) await second.query('rollback').catch(() => {});
+    await second.end().catch(() => {});
+  }
 });
 
 test('documents: member can record; outsider and bad input are refused; ledger row is written in the same transaction', async () => {

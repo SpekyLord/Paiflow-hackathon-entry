@@ -18,7 +18,7 @@
   - Check the approver gate on the server before preparing a payment or calling release-early (holding the token authorises the release).
 - **Honesty rules:** the Supabase `blockchain` table is an application hash chain, not Stellar, and not public anchoring. Audit `tx_hash` values are not Stellar transaction hashes. A file-hash mismatch does not prove tampering. A payout proves distribution, not good spending. Testnet is a simulation. Courier tracking is mocked. Interoperability means Stellar assets and wallets only.
 - **Do not** run seeds, migrations or `test-supabase.ts` (it writes data and may call the AI API) against a shared database, and do not send testnet transactions, without explicit team approval.
-- **Commands** that exist today: `npm run dev`, `npm run build`, `npm run lint`. There is no `npm test`.
+- **Commands:** `npm run dev`, `npm run build`, `npm run lint`, `npm run typecheck`, `npm test` (Vitest, mocked), `npm run check:bundle`. Database tests are `node tests/db/*.db.mjs <dir-with-pg>` and run only against the dedicated project (see TESTING.md). Use Node 22.22.2 (`source ~/tools/use-node22.sh` on Francis's laptop).
 
 Everything below this line is **historical** guidance for the inherited earlier edition. Keep its coding conventions where the PRD does not override them. Its audience, roles, deadline, demo flow and feature priorities are obsolete.
 

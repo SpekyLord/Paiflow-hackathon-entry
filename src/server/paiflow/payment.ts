@@ -87,6 +87,7 @@ export async function preparePaymentHandler(deps: PaymentDeps, request: Request,
   requireSameOrigin(request);
   const session = await requireSession(deps, request);
   deps.rateLimit("prepare", session.userId);
+  await readJson(request); // the body is {}; reading it enforces the 64 KB cap
   const { scope, context: viewed } = await loadContext(deps, session, params);
   requireSigner(session, viewed);
 

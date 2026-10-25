@@ -4,7 +4,7 @@
 |---|---|
 | Owner | Carlos (Developer 2) |
 | Source of truth | [docs/PRD.MD](PRD.MD) v2.1.0, [Claude.md](../Claude.md). Contracts, ownership and the CR process stay canonical in [FRANCIS-PHASETASK.md](FRANCIS-PHASETASK.md). |
-| Status | Planning only. Every task starts unchecked. |
+| Status | Carlos-side code done at Mocked level for BVA, LOG and SUP (see §5). Items that need a Francis change request, Shanti screens, or the protected payment (G5/G6) stay open and say why. |
 | Scope rule | **Nothing here is promoted into the MVP.** Claude.md forbids promoting optional features. Work on an MVP-tier item below is limited to presenting data the MVP already produces. |
 | Builds on | [CARLOS-PHASETASK.md](CARLOS-PHASETASK.md) (C-01…C-18 done or blocked as recorded there) |
 
@@ -51,7 +51,7 @@ These six modules turn CYFER's existing core (hashed records, unanimous approval
 - Variance therefore exists only in stroops: **approved share** (`expectedShareStroops`) minus **verified observed** (`payout.observedAmountStroops` when `payout.state === 'verified'`).
 - Pending envelopes have no variance yet, and a mismatch is shown as a mismatch, not as a variance.
 
-- [ ] **ERP-BVA-1 Pure selector `budgetVsActual(plan)`**
+- [x] **ERP-BVA-1 Pure selector `budgetVsActual(plan)`**
   - **Deliverable:** `src/lib/budget-vs-actual.ts` returns one row per envelope:
     - `label`, `bps`
     - `plannedPhpCentavos` (passed through, labelled with `STATE_COPY.phpPlanningFigure`)
@@ -70,10 +70,11 @@ These six modules turn CYFER's existing core (hashed records, unanimous approval
     - A mismatch row keeps both amounts.
     - Fixtures from `planDetailFixture(state, { partial })` cover every plan state.
   - **Effort:** about 1–2 h.
-- [ ] **ERP-BVA-2 Hook `useBudgetVsActual(orgId, planId)`**
+- [x] **ERP-BVA-2 Hook `useBudgetVsActual(orgId, planId)`**
   - **Deliverable:** wraps `usePlanEvidence` plus the selector, in both fixture and live mode (`src/client/controllers/**`); exported from the controllers index.
   - **Acceptance:** the swap needs only the env flag; there are no extra network calls.
   - **Effort:** about 1 h.
+- **Done in code:** `src/lib/budget-vs-actual.ts`, hook `useBudgetVsActual` (exported from `@/client/controllers`). Variance is signed (negative when more than approved was observed); `needsReview` flags a payout in operator review, which is not a mismatch.
 - **Ask Shanti:** a per-envelope table on the plan screen, using `STATE_COPY` wording ("Payment confirmed; k of n payouts verified", "{Label} paid — verified").
 - **CR to Francis:** none.
 
@@ -95,7 +96,7 @@ These six modules turn CYFER's existing core (hashed records, unanimous approval
 
 **Why:** finance staff need a list to export. This is a read-only view of data CYFER already has.
 
-- [ ] **ERP-LOG-1 Read of money movements**
+- [ ] **ERP-LOG-1 Read of money movements** (Carlos side built; open until CR-03 is accepted and the RPC is wired)
   - **CR to Francis:** an RPC `list_money_movements(p_org uuid, p_actor uuid, p_limit int, p_before timestamptz)`.
     - Member check, then rows from `payment_attempts` (final status), `payout_verifications` and `paiflow_events`, joined to plans.
     - Shape: `{ at, kind: 'budget_payment'|'envelope_payout', planId, label, amountStroops, stellarTxHash, verification }[]`.
@@ -106,15 +107,16 @@ These six modules turn CYFER's existing core (hashed records, unanimous approval
     - Unverified rows are labelled pending and excluded from totals.
     - No CYFER audit hash appears as a Stellar hash.
   - **Effort:** about 2–3 h after the CR.
-- [ ] **ERP-LOG-2 CSV export**
+- [x] **ERP-LOG-2 CSV export**
   - **Deliverable:** `GET …/money-movements.csv` (or `?format=csv`).
     - Columns: date (UTC and PHT), plan, envelope, amount in XLM (via `fromStroops`), amount in stroops, Stellar hash, explorer link, verification.
     - Formula-injection safe: prefix `=`, `+`, `-` and `@` with `'`.
   - **Acceptance:** the file opens in a spreadsheet, and nothing in it suggests a general ledger.
   - **Effort:** about 1 h.
-- [ ] **ERP-LOG-3 Hook `useMoneyMovements(orgId)`**
+- [x] **ERP-LOG-3 Hook `useMoneyMovements(orgId)`**
   - **Deliverable:** fixture and live, with paging.
   - **Effort:** about 1 h.
+- **Done in code:** `GET /api/orgs/:orgId/money-movements` (`?limit`, `?before`, `?format=csv`) in `src/server/paiflow/movements.ts`; CSV in `movements-csv.ts`; hook `useMoneyMovements`. The live route uses `unavailableMovementsPort` and answers 500 "not available yet" until CR-03 lands, then `route.ts` swaps in a port that calls the RPC. The row shape adds `planPurpose` to Francis's proposed shape (needed for the CSV plan column).
 - **Ask Shanti:** the receipt or expense-log page, with the "not a general ledger" note.
 
 ### ERP-P2P — Purchase-to-Pay · **Should / Stretch** (only after G5, and after the protected payment works, G6)
@@ -145,15 +147,16 @@ These six modules turn CYFER's existing core (hashed records, unanimous approval
 **Why:** purchase-to-pay and payments need a list of payees. It is a **directory, not dynamic onboarding**: paying a new supplier still needs a new Paiflow flow and a fresh approval.
 
 - **CR to Francis:** `suppliers` (`org_id`, `name`, `stellar_address`, `created_by`, `verified_at`, `notes`) and `supplier_documents` (links to `org_documents`); writes by `owner` only; reads by members.
-- [ ] **ERP-SUP-1 Supplier wallet checks** (Carlos, server-only)
+- [x] **ERP-SUP-1 Supplier wallet checks** (Carlos, server-only)
   - **Deliverable:** `src/server/wallet-summary/account-check.ts`:
     - the address matches `G_ADDRESS_PATTERN`;
     - the account exists on Horizon Testnet (`readNativeBalance` pattern, timeout, "unavailable", never false-negative);
     - **only for the USDC stretch**, the trustline exists. XLM needs no trustline.
   - **Acceptance:** a Horizon failure gives "unknown", never "invalid"; the check never blocks a record, it only labels it.
-- [ ] **ERP-SUP-2 Match suppliers to deployment recipients**
+- [x] **ERP-SUP-2 Match suppliers to deployment recipients**
   - **Deliverable:** show which registry deployments already pay a supplier (`split_recipients[].address`), so the operator knows whether a new flow is needed.
   - **Acceptance:** read-only, and it never edits a deployment.
+- **Done in code:** `src/server/wallet-summary/account-check.ts` (`checkSupplierAccount`: `invalid_format` / `not_found` / `unknown` / `exists` with trustline) and `src/lib/supplier-match.ts` (`matchSuppliersToDeployments`). Neither is wired to a route yet because the `suppliers` table (CR-04) does not exist.
 - **Ask Shanti:** the supplier list and detail screens.
 - **Effort:** about 3–4 h after the CR.
 
@@ -186,8 +189,28 @@ These six modules turn CYFER's existing core (hashed records, unanimous approval
 
 ---
 
-## 5. Evidence log (ERP)
+## 5. Change requests and status of the remaining items
+
+Drafted here for Francis to accept or reject. Nothing below is built.
+
+- **CR-03 (ERP-LOG-1):** `list_money_movements(p_org uuid, p_actor uuid, p_limit int, p_before timestamptz)`. Member check (NOT_MEMBER), then rows from `payment_attempts` (final status), `payout_verifications` and `paiflow_events`, joined to plans, newest first. Shape `{ at, kind, planId, planPurpose, label, amountStroops, stellarTxHash, verification }[]`. No XDR, request ids or CYFER audit hashes. Tasks that change: ERP-LOG-1 only (swap `unavailableMovementsPort` for an RPC port, add a rolled-back DB test).
+- **CR-04 (ERP-SUP):** `suppliers` (`org_id`, `name`, `stellar_address`, `created_by`, `verified_at`, `notes`) and `supplier_documents`; writes by `owner`, reads by members. Tasks that change: wire ERP-SUP-1/2 to a route.
+- **CR-05 (ERP-DOC-2, Nice):** `POST /api/orgs/:orgId/documents/:docId/summary` behind `requireOrgMember`, cached per `sha256`, safe fallback without the AI key. Do not reuse the inherited `/api/summarize`.
+- **CR-06 (ERP-DOC-1):** none if the plan detail already exposes the attached documents (id, kind, sha256). If it does not, ask Francis to add `attachments: { documentId, kind, sha256 }[]` to `BudgetPlanDetailDTO`. Shanti builds the list and the "verify a copy" link; no new route, and the wording stays "the bytes match".
+- **CR-07 (ERP-P2P, after G5/G6):** model a purchase order as a deal with `kind: 'purchase_order'` (not a second lifecycle); `PayScope` gains `{ kind: 'deal'; dealId }`; an RPC that answers whether a delivery receipt (`org_documents.kind = 'receipt'`) is linked, hashed and approved by every approver.
+
+**ERP-P2P (blocked, not started).** Needs C-30…C-35, F-30…F-32 and a passed G5/G6, none of which exist. When unblocked, the tests to write first are: release without a delivery receipt gives 409 with 0 Paiflow calls; a changed receipt file fails verify-file as "does not match", never "tampered"; the payee must equal the supplier's registered address.
+
+**ERP-DOC-1, ERP-DOC-2 (open).** Waiting on Shanti's screens (DOC-1) and CR-05 (DOC-2).
+
+### ERP-POL design note (Future, no build)
+
+Rules that could exist: "every owner approves above X stroops", "any two approvers below X", named finance approvers. They belong in Francis's SQL gate (`begin_payment_attempt`, `decide_budget_plan`), so payment routes do not change and still call the gate before any Paiflow call. Carlos's part is tests only: for each rule add a negative-path case (0 Paiflow calls when the rule is not met) and a rolled-back DB case. No policy editor in the MVP or SHOULD tiers.
+
+## 6. Evidence log (ERP)
 
 | Time (PHT) | Task | Evidence (no secrets, no XDR) | Level (Mocked / DB / Local live / Testnet) | Authorised by |
 |---|---|---|---|---|
-| — | — | — | — | — |
+| 2026-10-25 | ERP-BVA-1, ERP-BVA-2 | `tests/client/budget-vs-actual.test.ts` (8 tests: every plan state, partial 2 of 3, mismatch, signed variance, PHP untouched); hook is derived from `usePlanEvidence`, no network call | Mocked | n/a |
+| 2026-10-25 | ERP-LOG-1 (Carlos side), ERP-LOG-2, ERP-LOG-3 | `tests/server/payments/movements.test.ts`, `movements-csv.test.ts`, `tests/client/money-movements.test.ts`; route classified by the auth sweep (`orgs/` prefix, 401 without a session). Not run against a database: the RPC (CR-03) does not exist | Mocked | n/a |
+| 2026-10-25 | ERP-SUP-1, ERP-SUP-2 | `tests/server/payments/supplier-checks.test.ts` (Horizon failure gives unknown; USDC trustline only for USDC; matcher read-only). No real Horizon call | Mocked | n/a |

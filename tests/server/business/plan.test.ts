@@ -7,6 +7,7 @@ vi.mock('server-only', () => ({}));
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { computeAllowedActions, getPlanDetail, getSplitDeployment, listPlanSummaries, resolvePlanFacts, type ActionContext } from '@/server/business/plan-detail';
 import { buildCanonicalPlan, parseCreatePlan } from '@/server/business/plan-input';
+import { PLAN_STATES } from '@/contracts/states';
 import type { HttpError } from '@/server/http/respond';
 
 const A = (c: string) => `G${c.repeat(54)}2`;
@@ -160,6 +161,17 @@ function world(over: { planState?: string; attempt?: Row | null; verifs?: Row[] 
 }
 
 describe('getPlanDetail', () => {
+  it.each(PLAN_STATES)('matches a browser-safe detail snapshot for the %s plan state', async (state) => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-25T00:00:00.000Z'));
+    try {
+      const detail = await getPlanDetail(world({ planState: state, attempt: null, verifs: [] }), ORG, PLAN, { userId: OWNER, isOperator: false });
+      expect(detail).toMatchSnapshot();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('assembles shares (remainder on last), "k of n payouts verified" from verifications only, and viewer roles', async () => {
     const d = await getPlanDetail(world(), ORG, PLAN, { userId: OWNER, isOperator: false });
     expect(d.envelopes.map((e) => e.expectedShareStroops)).toEqual(['5000000', '3000000', '2000001']);

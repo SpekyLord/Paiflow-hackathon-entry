@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { OrgDocumentKind } from '@/contracts/dto';
 import { MAX_UPLOAD_BYTES } from '@/contracts/limits';
-import { requireOrgMember, parseUuid } from '@/server/auth/guards';
+import { requireOrgMember } from '@/server/auth/guards';
 import { recordOrgDocument } from '@/server/db/business';
 import { getOrgDocumentDto, listOrgDocuments } from '@/server/files/repository';
 import { removePrivateFile, uploadPrivateFile } from '@/server/files/storage';

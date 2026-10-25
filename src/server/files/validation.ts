@@ -50,7 +50,9 @@ function assertSignature(mediaType: string, filename: string, bytes: Uint8Array)
       }
       case 'text/plain':
         try {
-          return !bytes.includes(0) && (new TextDecoder('utf-8', { fatal: true }).decode(bytes), true);
+          if (bytes.includes(0)) return false;
+          new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+          return true;
         } catch {
           return false;
         }

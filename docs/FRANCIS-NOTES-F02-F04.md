@@ -76,7 +76,7 @@ Interim rule (B-01) is already safe: the SME migrations only create new objects.
 - **Expiry:** no valid user → `401 UNAUTHENTICATED`; the client sends the user to sign-in. Refresh happens on demand inside `getUser()`; call it before building any response so refreshed cookies can be written.
 - **Next 16:** `cookies()` is async. No middleware is required for this approach (route handlers only), which avoids the Next 16 `middleware`→`proxy` rename. Anything cached must send `Cache-Control: private, no-store` on auth routes.
 - **§3.5 contract is unchanged.**
-- **Needs:** `DEP: @supabase/ssr@0.12.5 | runtime | cookie session | src/server/auth/session.ts` → Carlos (§1.3). Docs checked via Context7 (`/supabase/ssr` v0.12.5). Not yet run against a real project.
+- **Dependency fulfilled:** `@supabase/ssr@0.12.7` is pinned as a runtime dependency in `package.json` and `package-lock.json` for `src/server/auth/session.ts`. Installed by Francis under explicit user authorization on 2026-10-25 (PHT); this was a one-time exception to Carlos's normal manifest ownership. API docs were checked via Context7 (`/supabase/ssr` v0.12.5). Session implementation is still pending F-12; no auth flow has been run against the project.
 
 ## F-04 — DB test environment decision (B-02, B-12) — recommendation only, ⚠ AUTH pending
 

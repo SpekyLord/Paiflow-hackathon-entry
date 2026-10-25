@@ -15,52 +15,44 @@ function Shell({ children }: { children: React.ReactNode }) {
     { href: '/wallet', label: 'Wallet', icon: WalletCards },
     ...(session.isOperator ? [{ href: '/operator', label: 'Operator', icon: ShieldCheck }] : []),
   ];
+  const initial = (session.displayName.trim()[0] ?? 'C').toUpperCase();
 
   return (
-    <div className="min-h-screen bg-[#f4f6f2] text-[#142c27] md:grid md:grid-cols-[248px_minmax(0,1fr)]">
+    <div className="min-h-screen bg-[#d4d4d2] p-0 text-[#10261a] sm:p-5 lg:p-12">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-3">Skip to content</a>
-      <aside className="flex flex-col border-b border-[#dce5de] bg-[#fbfcf9] px-5 py-5 md:min-h-screen md:border-b-0 md:border-r md:px-6 md:py-7">
-        <Link href="/plans" className={`flex items-center gap-3 rounded-lg ${focusRing}`}>
-          <span className="grid size-10 place-items-center rounded-xl bg-[#174b3d] text-sm font-bold tracking-tight text-white" aria-hidden>P.</span>
-          <span>
-            <span className="block text-[17px] font-semibold tracking-[-0.04em]">CYFER</span>
-            <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-[#5f7167]">for SMEs</span>
-          </span>
-        </Link>
-
-        <nav aria-label="Workspace" className="mt-6 flex gap-2 overflow-x-auto md:mt-9 md:flex-col">
-          {navigation.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href || pathname.startsWith(`${href}/`);
-            return (
-              <Link key={href} href={href} aria-current={active ? 'page' : undefined}
-                className={`flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors ${focusRing} ${active ? 'bg-[#e8f0e9] text-[#174b3d]' : 'text-[#4b6256] hover:bg-[#f0f4f0]'}`}>
-                <Icon size={17} strokeWidth={1.8} aria-hidden />{label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="mt-auto hidden rounded-xl border border-[#e1e8e1] bg-white p-4 md:block">
-          <TestnetChip />
-          <p className="mt-2 text-xs leading-5 text-[#5f7167]">Stellar Testnet — simulation, no real money.</p>
-        </div>
-      </aside>
-      <div className="min-w-0">
+      <div className="mx-auto min-h-screen w-full max-w-[1280px] overflow-hidden bg-[#f3f3f2] sm:min-h-0 sm:rounded-[36px]">
         <FixtureBanner />
-        <header className="flex h-[62px] items-center justify-between gap-3 border-b border-[#e0e7e1] bg-[#fbfcf9] px-5 md:h-[72px] md:px-10">
-          <div className="min-w-0 truncate text-xs text-[#5f7167]">
-            <span className="font-semibold text-[#345348]">{org?.name ?? 'No organisation'}</span>
-            {org && <span className="ml-2 rounded bg-[#eef3ee] px-1.5 py-0.5 text-[10px] uppercase tracking-wide">{org.role}</span>}
-          </div>
-          <div className="flex items-center gap-3">
+        <header className="flex flex-wrap items-center gap-x-4 gap-y-3 px-5 pb-2 pt-5 md:px-8 md:pt-6">
+          <Link href="/plans" className={`flex min-w-0 items-center gap-3 rounded-full ${focusRing}`}>
+            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#134223] text-sm font-semibold text-[#b5ee71]" aria-hidden>{initial}</span>
+            <span className="min-w-0">
+              <span className="block truncate text-xl font-medium tracking-[-0.02em] md:text-2xl">Hello, {session.displayName}</span>
+              <span className="block truncate text-[11px] text-[#6a7a6e]">
+                {org?.name ?? 'No organisation'}{org && <span className="ml-1.5 uppercase tracking-wide">· {org.role}</span>}
+              </span>
+            </span>
+          </Link>
+
+          <nav aria-label="Workspace" className="order-last -mx-1 flex w-full gap-1 overflow-x-auto px-1 md:order-none md:mx-auto md:w-auto md:overflow-visible">
+            {navigation.map(({ href, label, icon: Icon }) => {
+              const active = pathname === href || pathname.startsWith(`${href}/`);
+              return (
+                <Link key={href} href={href} aria-current={active ? 'page' : undefined}
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-[13px] font-medium transition-colors ${focusRing} ${active ? 'bg-[#b5ee71] text-[#0f3a1c]' : 'text-[#7a877d] hover:bg-white hover:text-[#10261a]'}`}>
+                  <Icon size={15} strokeWidth={1.8} aria-hidden />{label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="ml-auto flex items-center gap-2 md:ml-0">
             <TestnetChip />
-            <span className="hidden text-xs text-[#4b6256] sm:inline">{session.displayName}</span>
-            <button type="button" onClick={() => void signOut()} className={`inline-flex items-center gap-1.5 rounded-lg border border-[#dfe7df] px-3 py-1.5 text-xs font-medium text-[#3e5a4c] hover:bg-[#f4f7f3] ${focusRing}`}>
-              <LogOut size={13} aria-hidden /> Sign out
+            <button type="button" onClick={() => void signOut()} className={`inline-flex h-10 items-center gap-1.5 rounded-full bg-white px-4 text-xs font-medium text-[#134223] hover:bg-[#e9f5da] ${focusRing}`}>
+              <LogOut size={14} aria-hidden /> Sign out
             </button>
           </div>
         </header>
-        <main id="main" className="mx-auto w-full max-w-[1180px] px-5 py-8 md:px-10 md:py-11">
+        <main id="main" className="w-full px-5 pb-8 pt-4 md:px-8 md:pb-10">
           {children}
         </main>
       </div>

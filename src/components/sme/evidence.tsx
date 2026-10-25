@@ -14,7 +14,12 @@ import { getControllerMode } from '@/client/controllers';
 export const focusRing = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#26715b]';
 export const card = 'rounded-xl border border-[#e2e9e2] bg-white shadow-[0_1px_2px_rgba(25,56,43,0.03)]';
 export const btnPrimary = `inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#174b3d] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[#23624f] disabled:cursor-not-allowed disabled:bg-[#b9c6bf] ${focusRing}`;
-export const btnOutline = `inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#cdd8cf] bg-white px-4 text-[13px] font-semibold text-[#2c4f40] transition-colors hover:bg-[#f4f7f3] disabled:cursor-not-allowed disabled:opacity-50 ${focusRing}`;
+// Dashboard (bento) surfaces used by the overview-style screens.
+export const panel = 'rounded-[28px] bg-white';
+export const panelLime = 'rounded-[28px] bg-[#b5ee71] text-[#0f3a1c]';
+export const btnPill = `inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[#134223] px-5 text-[13px] font-medium text-white transition-colors hover:bg-[#1b5a31] disabled:cursor-not-allowed disabled:opacity-50 ${focusRing}`;
+export const btnPillOutline = `inline-flex h-10 items-center justify-center gap-2 rounded-full border border-[#134223] bg-white px-5 text-[13px] font-medium text-[#134223] transition-colors hover:bg-[#f1f6ec] disabled:cursor-not-allowed disabled:opacity-50 ${focusRing}`;
+export const btnOutline =`inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#cdd8cf] bg-white px-4 text-[13px] font-semibold text-[#2c4f40] transition-colors hover:bg-[#f4f7f3] disabled:cursor-not-allowed disabled:opacity-50 ${focusRing}`;
 export const btnDanger = `inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#d9a79f] bg-white px-4 text-[13px] font-semibold text-[#8f3326] transition-colors hover:bg-[#fcefec] disabled:cursor-not-allowed disabled:opacity-50 ${focusRing}`;
 export const inputCls = `h-11 w-full rounded-lg border border-[#dfe7df] bg-[#fcfdfb] px-3.5 text-sm text-[#25483a] placeholder:text-[#a0aaa3] focus:border-[#6d9a7b] focus:outline-none focus:ring-2 focus:ring-[#d9eadc]`;
 export const labelCls = 'block text-xs font-semibold text-[#365548]';

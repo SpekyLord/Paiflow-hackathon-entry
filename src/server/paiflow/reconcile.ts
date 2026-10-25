@@ -29,7 +29,7 @@ export interface ReconcileOptions {
   planId: string;
   actorUserId: string; // a member: the refreshing user, or the attempt's creator for the worker
   holder: string;
-  // Defaults to the recorded Split payout shape (unknown until B-04 closes).
+  // Undefined (default) = the real Split verifier (HO-04: event recipients + Horizon credits).
   payoutShape?: PayoutEventShape | null;
 }
 
@@ -103,6 +103,12 @@ export async function reconcilePlan(deps: PaymentDeps, options: ReconcileOptions
     await deps.db.recordPaymentReceiptVerification({ attemptId: attempt.id, result: receipt });
     summary.receipt = receipt.state;
 
+    // The Split PAYOUT event carries amount "0", so amounts come from Horizon
+    // credits. Read them only once the payout event is indexed.
+    const hasSplitPayout = events.some((e) => e.txHash === originalTxHash && e.kind === "PAYOUT" && e.topic === "payout");
+    const credits =
+      options.payoutShape === undefined && hasSplitPayout && deps.txCredits ? await deps.txCredits(originalTxHash) : null;
+
     const distribution = verifyDistribution({
       originalTxHash: originalTxHash,
       txStatus,
@@ -110,6 +116,7 @@ export async function reconcilePlan(deps: PaymentDeps, options: ReconcileOptions
       totalStroops: context.value.totalStroops,
       envelopes: context.value.envelopes.map((e) => ({ position: e.position, bps: e.bps, recipientAddress: e.recipientAddress })),
       shape: options.payoutShape,
+      credits,
     });
     for (const { position, result } of distribution.results)
       await deps.db.recordEnvelopePayoutVerification({ planId, attemptId: attempt.id, envelopePosition: position, result });

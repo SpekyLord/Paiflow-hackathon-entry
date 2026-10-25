@@ -46,9 +46,19 @@ export const PAY_PAYOUT_SHAPE: PayoutEventShape = {
   provenance: "source",
 };
 
-// B-04: the Split payout topic and fields were not found in any source. Until
-// the R1 rehearsal records them (C-02(c)), envelope checks stay pending.
+// B-04 (closed by HO-04): the real Split PAYOUT event is ONE event per
+// payment, kind "PAYOUT" topic "payout", data {from, recipients:[{bps, amount,
+// address, is_cash_out}]} with every amount "0". Its amounts prove nothing, so
+// the Split verifier takes recipients, order and bps from the event and the
+// observed amount from Horizon account_credited effects (see verifySplit).
+// This per-recipient shape stays null: it applies only to the Pay flow.
 export const SPLIT_PAYOUT_SHAPE: PayoutEventShape | null = null;
+
+// A native credit to one account within the original transaction (Horizon).
+export interface HorizonCredit {
+  address: string;
+  amountStroops: string;
+}
 
 const NATIVE: AssetRef = { kind: "native" };
 
@@ -191,8 +201,11 @@ export function verifyDistribution(
     totalStroops: string;
     envelopes: readonly DistributionEnvelope[];
     shape?: PayoutEventShape | null;
+    // Horizon account_credited effects of the original tx; null = not read.
+    credits?: readonly HorizonCredit[] | null;
   },
 ) {
+  if (input.shape === undefined) return verifySplit(input);
   const byPosition = new Map(input.envelopes.map((e) => [e.position, e]));
   const results = splitShares(input.totalStroops, input.envelopes).map((share) => {
     const envelope = byPosition.get(share.position)!;
@@ -208,6 +221,102 @@ export function verifyDistribution(
       }),
     };
   });
+  return summarize(results);
+}
+
+interface SplitInput extends Base {
+  totalStroops: string;
+  envelopes: readonly DistributionEnvelope[];
+  credits?: readonly HorizonCredit[] | null;
+}
+
+// HO-04 Split verification. (1) recipients, order and bps come from the PAYOUT
+// event and must equal the plan's envelopes; (2) the observed amount is the
+// Horizon native credit to that recipient; (3) an event amount is never an
+// observed amount, nothing is verified without a Horizon credit, and a
+// different credit is a mismatch.
+function verifySplit(input: SplitInput) {
+  const ordered = [...input.envelopes].sort((a, b) => a.position - b.position);
+  const shares = splitShares(input.totalStroops, ordered);
+  const expectedByAddress = new Map<string, bigint>();
+  for (const share of shares) {
+    const env = ordered.find((e) => e.position === share.position)!;
+    expectedByAddress.set(
+      env.recipientAddress,
+      (expectedByAddress.get(env.recipientAddress) ?? BigInt(0)) + BigInt(share.shareStroops),
+    );
+  }
+  const credited = new Map<string, bigint>();
+  for (const c of input.credits ?? [])
+    credited.set(c.address, (credited.get(c.address) ?? BigInt(0)) + BigInt(c.amountStroops));
+
+  const listed = input.events
+    .filter((e) => e.txHash === input.originalTxHash && e.kind === "PAYOUT" && e.topic === "payout")
+    .map((event) => ({ event, recipients: splitRecipients(event.data) }))
+    .filter((x): x is { event: PaiflowEventRecord; recipients: SplitRecipient[] } => x.recipients !== null);
+  const matching = listed.find((x) => recipientsEqualPlan(x.recipients, ordered));
+  const chosen = matching ?? listed[0] ?? null;
+
+  const results = shares.map((share) => {
+    const env = ordered.find((e) => e.position === share.position)!;
+    const base = start(input, env.recipientAddress, share.shareStroops);
+    if (base.done) return { position: share.position, result: base.value };
+    const v = base.value;
+    const done = (state: VerificationInput["state"], note: string | null) => ({
+      position: share.position,
+      result: { ...v, state, note },
+    });
+    if (!chosen) return done("awaiting_events", "Split payout event not yet indexed.");
+    v.eventIds = [chosen.event.eventId];
+    if (!matching) {
+      v.checks.event = "fail";
+      v.checks.party = "fail";
+      return done("mismatch", "Payout recipients, order or shares differ from the approved plan.");
+    }
+    v.checks.event = "pass";
+    v.checks.party = "pass";
+    v.checks.direction = "pass";
+    if (!input.credits || input.credits.length === 0)
+      return done("awaiting_events", "Horizon credit for this payout not yet read.");
+    // Several envelopes may share one address; compare the combined credit.
+    const observed = credited.get(env.recipientAddress) ?? BigInt(0);
+    const expected = expectedByAddress.get(env.recipientAddress)!;
+    v.observedAmountStroops = observed.toString();
+    v.checks.asset = "pass"; // only native credits are read
+    v.checks.amount = observed === expected ? "pass" : "fail";
+    if (observed !== expected)
+      return done("mismatch", `Expected ${expected.toString()} stroops credited, observed ${observed.toString()}.`);
+    return done("verified", null);
+  });
+  return summarize(results);
+}
+
+interface SplitRecipient {
+  address: string;
+  bps: number;
+}
+
+// Recipients of a Split PAYOUT event, in order; null if the data is not that shape.
+function splitRecipients(data: unknown): SplitRecipient[] | null {
+  const list = record(data).recipients;
+  if (!Array.isArray(list) || list.length === 0) return null;
+  const out: SplitRecipient[] = [];
+  for (const item of list) {
+    const r = record(item);
+    if (typeof r.address !== "string" || typeof r.bps !== "number") return null;
+    out.push({ address: r.address, bps: r.bps });
+  }
+  return out;
+}
+
+function recipientsEqualPlan(recipients: readonly SplitRecipient[], plan: readonly DistributionEnvelope[]) {
+  return (
+    recipients.length === plan.length &&
+    recipients.every((r, i) => r.address === plan[i].recipientAddress && r.bps === plan[i].bps)
+  );
+}
+
+function summarize<T extends { result: VerificationInput }>(results: T[]) {
   const verified = results.filter((r) => r.result.state === "verified").length;
   return {
     results,

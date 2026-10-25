@@ -5,6 +5,7 @@ import type { PaiflowDeployment } from "@paiflow/sdk";
 import { paiflowDeployment } from "@/server/paiflow/client";
 import { toSafePaiflowError } from "@/server/paiflow/errors";
 import { fail } from "@/server/paiflow/route-kit";
+import { readTxCredits } from "@/server/wallet-summary/horizon";
 
 // Everything a payment route touches outside itself, so tests can pass fakes
 // and count Paiflow calls.
@@ -26,6 +27,9 @@ export interface PaymentDeps {
   rateLimit(bucket: RateBucket, key: string): void;
   // Francis's F-17 plan detail for this viewer.
   planDetail(orgId: string, planId: string, userId: string): Promise<BudgetPlanDetailDTO>;
+  // Horizon native credits of the original tx (HO-04); null when unreadable.
+  // Optional so existing fakes keep working: absent means "not read".
+  txCredits?(txHash: string): Promise<{ address: string; amountStroops: string }[] | null>;
 }
 
 export type RateBucket = "prepare" | "submit" | "check";
@@ -70,5 +74,6 @@ export async function liveDeps(): Promise<PaymentDeps> {
     // Shared per-process buckets (global + per user) from Francis's F-12.
     rateLimit: (bucket, key) => limit(bucket, key),
     planDetail: detailFor,
+    txCredits: (txHash) => readTxCredits(txHash),
   };
 }

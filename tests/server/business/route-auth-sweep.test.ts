@@ -23,11 +23,11 @@ const MUST_BE_401 = [/^orgs(\/|$)/, /^operator\//, /^wallet\//, /^auth\/me$/, /^
 
 // KNOWN GAPS, listed so they stay visible. Remove an entry when its route is fixed or deleted.
 //  - the inherited earlier-edition routes are still reachable until F-20 (PRD §K.12); Shanti's HO-12 comes first.
-const KNOWN_GAPS = [
-  'audit', 'auth', 'auth/login', 'auth/logout', 'blockchain', 'blockchain/nodes', 'blockchain/validate',
-  'budget', 'consensus', 'consensus/[documentId]/approve', 'consensus/[documentId]/reject',
-  'documents', 'documents/[id]', 'summarize', 'verify',
-];
+const KNOWN_GAPS: string[] = []; // F-20 retired the inherited routes; nothing is left unguarded.
+
+// The inherited government-edition routes must stay gone (PRD §K.12).
+const RETIRED = ['audit', 'auth', 'auth/login', 'auth/logout', 'blockchain', 'blockchain/nodes', 'blockchain/validate', 'budget', 'consensus',
+  'consensus/[documentId]/approve', 'consensus/[documentId]/reject', 'documents', 'documents/[id]', 'summarize', 'verify'];
 
 const METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
 const MULTIPART = [/^orgs\/\[orgId\]\/documents$/, /^orgs\/\[orgId\]\/verify-file$/];
@@ -49,6 +49,10 @@ describe('route authentication sweep', () => {
 
   it('every route is classified (an unclassified route has no declared auth stance)', () => {
     expect(routes.filter((r) => classify(r) === 'unclassified')).toEqual([]);
+  });
+
+  it('the retired inherited routes stay deleted (PRD K.12)', () => {
+    expect(RETIRED.filter((r) => routes.includes(r))).toEqual([]);
   });
 
   it('known gaps still exist (delete the entry when you fix or remove the route)', () => {

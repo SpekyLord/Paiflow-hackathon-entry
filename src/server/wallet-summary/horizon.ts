@@ -31,3 +31,39 @@ export async function readNativeBalance(
     clearTimeout(timer);
   }
 }
+
+// Native account_credited effects of one transaction (public Horizon data).
+// Null on any failure or odd page: never an empty list for "not read", so a
+// failed read cannot be mistaken for "nothing was credited". Amounts are stroops.
+export async function readTxCredits(
+  txHash: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<{ address: string; amountStroops: string }[] | null> {
+  if (!/^[a-f0-9]{64}$/.test(txHash)) return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetchImpl(`${HORIZON_TESTNET}/transactions/${txHash}/effects?limit=200`, {
+      signal: controller.signal,
+      cache: "no-store",
+      headers: { accept: "application/json" },
+    });
+    if (!res.ok) return null;
+    const body = (await res.json()) as {
+      _embedded?: { records?: { type?: string; account?: string; asset_type?: string; amount?: string }[] };
+    };
+    const records = body._embedded?.records;
+    if (!Array.isArray(records)) return null;
+    const credits: { address: string; amountStroops: string }[] = [];
+    for (const r of records) {
+      if (r.type !== "account_credited" || r.asset_type !== "native") continue;
+      if (typeof r.account !== "string" || !G_ADDRESS_PATTERN.test(r.account) || typeof r.amount !== "string") return null;
+      credits.push({ address: r.account, amountStroops: parseHorizonBalance(r.amount) });
+    }
+    return credits;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}

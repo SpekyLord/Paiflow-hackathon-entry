@@ -554,6 +554,31 @@ test('F-21 guard-removal spot checks: each key guard really is what blocks the b
   okOf(await call('begin_payment_attempt', h.planId, h.ids.owner), '(c) with every approval present the same call succeeds');
 });
 
+
+test('release_deployment_after_plan: operator only, only after distribution_verified, audited, and the flow can be reused', async () => {
+  const f = await base(); await approveAll(f);
+  const op = f.ids.operator;
+  codeOf(await call('release_deployment_after_plan', f.ids.owner, f.planId), 'OPERATOR_REQUIRED', 'not an operator');
+  codeOf(await call('release_deployment_after_plan', op, f.planId), 'STATE_CONFLICT', 'plan is only approved, still needs its flow');
+  const id = await toSigned(f);
+  okOf(await call('record_status_check', id, 'r', false, found('SUCCESS')), 'success');
+  codeOf(await call('release_deployment_after_plan', op, f.planId), 'STATE_CONFLICT', 'paid but payouts not verified');
+  for (const i of [0, 1, 2]) okOf(await call('record_envelope_payout_verification', f.planId, id, i, verif(f, i)), `payout ${i}`);
+  eq(await planState(f), 'distribution_verified', 'verified');
+  const r = okOf(await call('release_deployment_after_plan', op, f.planId), 'release');
+  eq(r.deploymentId, f.deploymentId, 'returns the deployment');
+  eq((await q('select status from public.paiflow_deployments where id=$1', [f.deploymentId])).rows[0].status, 'available', 'flow available again');
+  eq((await q('select count(*)::int c from public.deployment_reservations where deployment_id=$1 and active', [f.deploymentId])).rows[0].c, 0, 'no active reservation');
+  eq((await q("select count(*)::int c from public.transactions where plan_id=$1 and action_type='operator_review' and description like 'Deployment released%'", [f.planId])).rows[0].c, 1, 'audit row written');
+  // the finished plan's evidence is untouched
+  eq((await q("select count(*)::int c from public.payout_verifications where attempt_id=$1 and state='verified'", [id])).rows[0].c, 3, 'the three envelope verifications are intact');
+  eq((await attemptRow(id)).state, 'success', 'attempt still success');
+  codeOf(await call('release_deployment_after_plan', op, f.planId), 'NOT_FOUND', 'cannot release twice');
+  // a new plan can now take the same flow
+  const v = okOf(await call('create_budget_plan', f.ids.owner, f.orgId, planInput(f, { purpose: 'second plan on the same flow' })), 'second plan');
+  assert(v.planId !== f.planId, 'a different plan');
+});
+
 // ---------- runner ----------
 let failed = 0;
 for (const t of tests) {

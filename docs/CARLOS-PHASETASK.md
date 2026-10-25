@@ -545,4 +545,11 @@ const pay = usePayment({ kind: 'plan', orgId, planId });
 
 | Time (PHT) | Task/Gate | Evidence (no secrets, no XDR) | Level (Mocked / Testnet / Human) | Authorised by (Testnet/deps) |
 |---|---|---|---|---|
-| — | — | — | — | — |
+| 12:30 | C-01 deps | `@paiflow/sdk@0.2.0` (exact), `@stellar/stellar-sdk@17.3.0`, `@stellar/freighter-api@6.0.1`, `server-only`, `vitest@4.1.12`, `vite@8.3.5` installed with npm. Dependency-only commit `9b7f595`. **Node v24.11.1, not 22.22.2** (engine warning; B-10 still open). | Mocked | Carlos (lockfile change, in chat) |
+| 12:31 | C-01 scripts | `test`, `typecheck`, `check:bundle` scripts and `vitest.config.ts` (`9ce1a28`); tsconfig target ES2020 for bigint literals (`3fcd00e`) | Mocked | — |
+| 12:38 | C-01 Next 16 check | `npm run build` passes on Next 16.1.6 with a throwaway route that calls `paiflowDeployment` and `toSafePaiflowError` (SDK bundled server-side only; none in `.next/static`). Probe not committed. | Mocked | — |
+| 12:34 | C-04 | `src/lib/amount.ts`, `src/lib/stellar/{envelope,asset}.ts`, `src/lib/explorer.ts` (`39431ce`, `2077efd`). Changed body rejected, signature-only change accepted, fee-bump refused. Split shares not implemented here (waits on Francis `split.ts`). | Mocked | — |
+| 12:37 | C-03 | `src/server/paiflow/{config,client,errors}.ts` (`231ed8b`) and `GET /api/integration/status` (`90a72bb`). Console spy test: token never logged. Status route has no session gate yet (waits on F-03). No live capability call yet (needs HO-07/HO-08). | Mocked | — |
+| 12:40 | C-14 | `src/client/wallet/freighter.ts` (`3f5b58c`). Starter wallet cases ported; `signChallenge` output verified with `Keypair.verifyMessage` against a test key. **Not a real Freighter signature** (C-02(a) still open). | Mocked | — |
+| 12:42 | C-17 (part) | Bundle scan extended (`6f57a77`); `npm run check:bundle` passes on the current production build. Route negative-path tests wait on C-06…C-16. | Mocked | — |
+| 12:43 | Totals | `npm run lint` (0 errors, 6 inherited warnings), `npm run typecheck`, `npm test` (5 files, 105 tests), `npm run build`, `npm run check:bundle` all pass on Node v24.11.1 | Mocked | — |

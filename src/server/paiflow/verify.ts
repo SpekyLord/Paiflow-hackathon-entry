@@ -1,7 +1,7 @@
 import "server-only";
 import type { AssetRef, GAddress } from "@/contracts/dto";
-import type { VerificationState } from "@/contracts/states";
 import { splitShares } from "@/contracts/split";
+import type { PaiflowEventRecord, VerificationInput } from "@/server/db/financial-core";
 import { matchesNativeAsset } from "@/lib/stellar/asset";
 
 // Pure payment-receipt (PRD §H.1 + §H.2) and per-envelope Split payout (§H.5)
@@ -9,42 +9,10 @@ import { matchesNativeAsset } from "@/lib/stellar/asset";
 // recordPaymentReceiptVerification / recordEnvelopePayoutVerification (§3.6).
 // A missing field is never a pass, and missing events never mean "failed".
 
-export type CheckName =
-  | "finality"
-  | "originalHash"
-  | "deployment"
-  | "network"
-  | "event"
-  | "party"
-  | "asset"
-  | "amount"
-  | "direction";
-export type CheckResult = "pass" | "fail" | "pending";
-
-// Mirrors VerificationInput in FRANCIS-PHASETASK §3.6.
-export interface VerificationInput {
-  state: VerificationState;
-  stellarTxHash: string | null;
-  expectedAddress: GAddress;
-  expectedAmountStroops: string;
-  observedAmountStroops: string | null;
-  asset: AssetRef;
-  eventIds: string[];
-  checks: Record<CheckName, CheckResult>;
-  note: string | null;
-}
-
-// Mirrors PaiflowEventRecord in FRANCIS-PHASETASK §3.6.
-export interface PaiflowEventRecord {
-  eventId: string;
-  id: string;
-  kind: string;
-  topic: string | null;
-  ledger: number;
-  txHash: string;
-  occurredAt: string;
-  data: unknown;
-}
+export type { PaiflowEventRecord, VerificationInput };
+type Checks = VerificationInput["checks"];
+export type CheckName = keyof Checks;
+export type CheckResult = Checks[CheckName];
 
 // Result of transactions.get(originalTxHash) on the plan's deployment.
 export type TxStatusEvidence =

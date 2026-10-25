@@ -1,39 +1,153 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, Check, Info } from 'lucide-react';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { ArrowLeft, Info } from 'lucide-react';
+import type { SplitDeploymentDTO } from '@/contracts/dto';
+import { STATE_COPY } from '@/contracts/state-copy';
+import { ApiClientError } from '@/client/http';
+import { toStroops } from '@/lib/amount';
+import * as data from '@/components/sme/data';
+import { useSession } from '@/components/sme/session';
+import { ErrorNotice, Loading, TestnetNote, btnPrimary, focusRing, inputCls, labelCls } from '@/components/sme/evidence';
+
+// S-15. Recipients, order and bps come from the deployed Split and are read-only.
+// The owner edits only labels and optional PHP planning figures.
+const ERROR_TEXT: Record<string, string> = {
+  NO_SPLIT_DEPLOYMENT: 'No prepared Split matches. Ask the operator.',
+  ENVELOPES_MISMATCH_DEPLOYMENT: 'The envelopes do not match the registered Split deployment. Reload and try again.',
+  BPS_TOTAL_INVALID: 'Envelope shares must total exactly 10,000 basis points.',
+  APPROVER_SET_INVALID: 'The approver set must include at least one person other than the owner. Ask the operator.',
+};
+
+/** Pesos in, integer centavos out. Never converted to or from XLM. */
+function pesosToCentavos(input: string): string | null | 'invalid' {
+  const v = input.trim();
+  if (v === '') return null;
+  const m = /^(\d{1,15})(?:\.(\d{1,2}))?$/.exec(v);
+  if (!m) return 'invalid';
+  return (BigInt(m[1]) * BigInt(100) + BigInt((m[2] ?? '').padEnd(2, '0') || '0')).toString();
+}
+
+interface UiError { code?: string; message: string; fields?: Record<string, string> }
 
 export default function NewBudgetPlanPage() {
+  const router = useRouter();
+  const { session, org } = useSession();
+  const [deployment, setDeployment] = useState<SplitDeploymentDTO | null>(null);
+  const [loadError, setLoadError] = useState<UiError | null>(null);
   const [purpose, setPurpose] = useState('');
   const [amount, setAmount] = useState('');
-  const [preview, setPreview] = useState(false);
+  const [labels, setLabels] = useState<string[]>([]);
+  const [php, setPhp] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<UiError | null>(null);
+
+  const orgId = org?.orgId;
+  useEffect(() => {
+    if (!orgId) return;
+    data.getSplitDeployment(orgId).then(
+      (d) => {
+        setDeployment(d);
+        setLabels(d.recipients.map((r) => r.label ?? `Envelope ${r.position + 1}`));
+        setPhp(d.recipients.map(() => ''));
+      },
+      (e) => setLoadError(e instanceof ApiClientError
+        ? { code: e.safe.code, message: ERROR_TEXT[e.safe.code] ?? e.safe.message }
+        : { message: 'Could not load the Split deployment.' }),
+    );
+  }, [orgId]);
+
+  if (!org) return <p className="text-sm">Your account is not a member of an organisation yet.</p>;
+  if (org.role !== 'owner') return <ErrorNotice message="Only the organisation owner can create a budget plan." />;
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!deployment || !org) return;
+    setError(null);
+    let totalStroops: string;
+    try { totalStroops = toStroops(amount.trim()); } catch (e) { setError({ message: (e as Error).message }); return; }
+    const envelopes = [];
+    for (const [i, r] of deployment.recipients.entries()) {
+      const centavos = pesosToCentavos(php[i] ?? '');
+      if (centavos === 'invalid') {
+        setError({ message: `Enter the ${labels[i]} planning figure as pesos, for example 50000 or 50000.50.` });
+        return;
+      }
+      envelopes.push({ position: r.position, label: labels[i].trim(), bps: r.bps, recipientAddress: r.address, planningPhpCentavos: centavos });
+    }
+    setBusy(true);
+    try {
+      const created = await data.createPlan(org.orgId, { purpose: purpose.trim(), totalStroops, signerUserId: session.userId, envelopes });
+      router.push(`/plans/${created.planId}?created=1`);
+    } catch (e) {
+      setBusy(false);
+      if (e instanceof ApiClientError) setError({ code: e.safe.code, message: ERROR_TEXT[e.safe.code] ?? e.safe.message, fields: e.fields });
+      else setError({ message: 'Could not save the plan.' });
+    }
+  }
 
   return (
     <div className="mx-auto max-w-[760px]">
-      <Link href="/plans" className="inline-flex items-center gap-2 text-xs font-medium text-[#728279] hover:text-[#245742] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#26715b]"><ArrowLeft size={14} /> Back to budget plans</Link>
-      <div className="mt-7"><div className="mb-3 text-[10px] font-semibold uppercase tracking-[0.17em] text-[#78887f]">Budget plan · preview</div><h1 className="font-serif text-[34px] font-semibold tracking-[-0.04em] text-[#173b30] md:text-[40px]">Start a budget plan</h1><p className="mt-2 text-sm leading-6 text-[#718078]">Describe the plan and check how the fixed Split envelopes divide the amount.</p></div>
+      <Link href="/plans" className={`inline-flex items-center gap-2 rounded text-xs font-medium text-[#5f7167] hover:text-[#245742] ${focusRing}`}><ArrowLeft size={14} aria-hidden /> Back to budget plans</Link>
+      <h1 className="mt-7 font-serif text-[34px] font-semibold tracking-[-0.04em] text-[#173b30] md:text-[40px]">New budget plan</h1>
+      <p className="mt-2 text-sm leading-6 text-[#5f7167]">Recipients and shares are fixed by the deployed flow. Changing them needs a new flow and fresh approval.</p>
 
-      <form onSubmit={(event) => { event.preventDefault(); setPreview(true); }} className="mt-7 rounded-xl border border-[#e2e9e2] bg-white p-5 shadow-[0_1px_2px_rgba(25,56,43,0.03)] md:p-7">
-        <label htmlFor="purpose" className="block text-xs font-semibold text-[#365548]">Plan purpose</label>
-        <input id="purpose" value={purpose} onChange={(event) => { setPurpose(event.target.value); setPreview(false); }} maxLength={120} required placeholder="e.g. October operating budget" className="mt-2 h-11 w-full rounded-lg border border-[#dfe7df] bg-[#fcfdfb] px-3.5 text-sm text-[#25483a] placeholder:text-[#a0aaa3] focus:border-[#6d9a7b] focus:outline-none focus:ring-2 focus:ring-[#d9eadc]" />
+      {loadError && <div className="mt-6"><ErrorNotice message={loadError.message} code={loadError.code} /></div>}
+      {!loadError && !deployment && <Loading label="Loading the prepared Split…" />}
 
-        <label htmlFor="amount" className="mt-6 block text-xs font-semibold text-[#365548]">Total amount <span className="font-normal text-[#849188]">· XLM</span></label>
-        <div className="mt-2 flex h-11 items-center rounded-lg border border-[#dfe7df] bg-[#fcfdfb] focus-within:border-[#6d9a7b] focus-within:ring-2 focus-within:ring-[#d9eadc]"><input id="amount" type="number" min="0.0000001" step="0.0000001" value={amount} onChange={(event) => { setAmount(event.target.value); setPreview(false); }} required placeholder="0.00" className="h-full min-w-0 flex-1 bg-transparent px-3.5 font-mono text-sm text-[#25483a] placeholder:text-[#a0aaa3] focus:outline-none" /><span className="px-3 text-xs font-semibold text-[#849188]">XLM</span></div>
-
-        <div className="mt-7 border-t border-[#edf0ec] pt-5"><div className="flex items-center justify-between"><div><h2 className="text-xs font-semibold text-[#365548]">Split envelopes</h2><p className="mt-1 text-xs text-[#87948c]">Shares are fixed by the selected deployment.</p></div><span className="rounded-full bg-[#edf4ed] px-2.5 py-1 text-[10px] font-semibold text-[#497456]">100% allocated</span></div>
-          <div className="mt-4 space-y-2.5">
-            {[
-              { name: 'Operations', percent: '50%', bps: '5,000 bps', color: '#4c8060' },
-              { name: 'Payroll', percent: '30%', bps: '3,000 bps', color: '#91ad8b' },
-              { name: 'Supplies', percent: '20%', bps: '2,000 bps', color: '#c1d0b7' },
-            ].map((item) => <div key={item.name} className="flex items-center gap-3 rounded-lg border border-[#edf0ec] px-3.5 py-3"><span className="size-2.5 rounded-full" style={{ background: item.color }} /><span className="flex-1 text-xs font-medium text-[#476052]">{item.name}</span><span className="w-20 text-right font-mono text-xs text-[#536a5c]">{item.percent}</span><span className="hidden w-20 text-right text-[10px] text-[#98a39b] sm:block">{item.bps}</span></div>)}
+      {deployment && (
+        <form onSubmit={submit} className="mt-7 space-y-6 rounded-xl border border-[#e2e9e2] bg-white p-5 md:p-7">
+          <div>
+            <label htmlFor="purpose" className={labelCls}>Plan purpose</label>
+            <input id="purpose" required maxLength={200} value={purpose} onChange={(e) => setPurpose(e.target.value)} placeholder="e.g. October operating budget" className={`${inputCls} mt-2`} />
           </div>
-        </div>
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3"><p className="flex items-start gap-2 text-[11px] leading-5 text-[#86938b]"><Info size={14} className="mt-0.5 shrink-0" />Preview only · nothing is saved or submitted</p><button type="submit" className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#174b3d] px-4 text-xs font-semibold text-white transition-colors hover:bg-[#23624f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#26715b]">Preview plan <Check size={14} /></button></div>
-      </form>
+          <div>
+            <label htmlFor="amount" className={labelCls}>Total amount (XLM, Testnet)</label>
+            <input id="amount" inputMode="decimal" required value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="1" className={`${inputCls} mt-2 font-mono`} />
+            <p className="mt-1.5 text-[11px] text-[#6d7f75]">Up to 7 decimal places. Testnet — simulation, no real money.</p>
+          </div>
 
-      {preview && <section aria-live="polite" className="mt-4 rounded-xl border border-[#cbdccf] bg-[#f4f9f3] p-5"><div className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#67806d]">Plan preview</div><div className="mt-2 flex flex-wrap items-baseline justify-between gap-2"><h2 className="text-sm font-semibold text-[#254b38]">{purpose}</h2><span className="font-mono text-sm font-semibold text-[#254b38]">{Number(amount || 0).toLocaleString('en-PH', { maximumFractionDigits: 7 })} XLM</span></div><div className="mt-3 text-xs leading-5 text-[#6d7f70]">Operations {Number(amount || 0) * 0.5} XLM · Payroll {Number(amount || 0) * 0.3} XLM · Supplies {Number(amount || 0) * 0.2} XLM</div><p className="mt-3 border-t border-[#dce9dc] pt-3 text-[11px] text-[#768a78]">This preview is local to your browser. Approval and saving will be connected after the workspace backend is ready.</p></section>}
+          <fieldset>
+            <legend className={labelCls}>Split envelopes</legend>
+            <p className="mt-1 text-xs text-[#5f7167]">Address, share and order are read-only. You can rename an envelope and add an optional PHP planning figure.</p>
+            <div className="mt-3 space-y-3">
+              {deployment.recipients.map((r, i) => (
+                <div key={r.position} className="rounded-lg border border-[#edf0ec] p-3.5">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label htmlFor={`label-${i}`} className="text-[11px] font-semibold text-[#365548]">Envelope {i + 1} label</label>
+                      <input id={`label-${i}`} required maxLength={80} value={labels[i] ?? ''} onChange={(e) => setLabels((l) => l.map((v, j) => (j === i ? e.target.value : v)))} className={`${inputCls} mt-1.5 h-10`} />
+                    </div>
+                    <div>
+                      <label htmlFor={`php-${i}`} className="text-[11px] font-semibold text-[#365548]">PHP planning figure <span className="font-normal text-[#6d7f75]">(optional)</span></label>
+                      <input id={`php-${i}`} inputMode="decimal" value={php[i] ?? ''} onChange={(e) => setPhp((l) => l.map((v, j) => (j === i ? e.target.value : v)))} placeholder="0.00" aria-describedby={`php-note-${i}`} className={`${inputCls} mt-1.5 h-10 font-mono`} />
+                      <p id={`php-note-${i}`} className="mt-1 text-[10px] text-[#6d7f75]">{STATE_COPY.phpPlanningFigure}</p>
+                    </div>
+                  </div>
+                  <dl className="mt-3 space-y-1 text-xs text-[#52625a]">
+                    <div className="flex gap-1.5"><dt className="font-semibold">Share</dt><dd className="font-mono">{r.bps / 100}% ({r.bps} bps)</dd></div>
+                    <div className="flex gap-1.5"><dt className="font-semibold">Address</dt><dd className="break-all font-mono">{r.address}</dd></div>
+                  </dl>
+                </div>
+              ))}
+            </div>
+          </fieldset>
+
+          <p className="text-xs text-[#52625a]"><span className="font-semibold">Split deployment</span> <span className="break-all font-mono">{deployment.deploymentId}</span></p>
+
+          <div aria-live="polite" className="space-y-2">
+            {error && <ErrorNotice message={error.message} code={error.code} />}
+            {error?.fields && Object.entries(error.fields).map(([k, v]) => <p key={k} className="text-xs text-[#7e2f23]">{k}: {v}</p>)}
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="flex items-start gap-2 text-[11px] leading-5 text-[#5f7167]"><Info size={14} className="mt-0.5 shrink-0" aria-hidden />Saving records the plan and its hash. Approvers must then approve it.</p>
+            <button type="submit" disabled={busy} className={btnPrimary}>{busy ? 'Saving…' : 'Save plan'}</button>
+          </div>
+          <TestnetNote />
+        </form>
+      )}
     </div>
   );
 }

@@ -434,4 +434,6 @@ Start this **only after the MVP gate G5 passes**. It never blocks the MVP or the
 
 | Time (PHT) | Task/Gate | Evidence (no secrets) | Level (Fixture / Testnet / Human) |
 |---|---|---|---|
-| — | — | — | — |
+| 2026-10-25 ~14:30 | S-10 (partial) | Removed `(public)` and `(admin)` pages and `components/{admin,audit,budget,consensus,documents,public}`; added `(sme)` shell with nav, org, TESTNET chip, sign-out; `/` redirects to `/plans`. **Not closed:** `src/utils/constants.ts` still imports `src/lib/types.ts` because the old route `src/app/api/documents/route.ts` imports it; it goes with F-20. | Fixture (typecheck, lint, build pass; not exercised in a browser) |
+| 2026-10-25 ~14:30 | S-11, S-12, S-13, S-14, S-15, S-16, S-17, S-18, S-20, S-21 | Screens built against `src/contracts/**` and the controller hooks; `npm run build`, `npm run lint` (0 errors), `tsc --noEmit` and `npm run check:bundle` pass (no fixture marker in the production bundle). Not yet clicked through in a browser, so none ticked. | Fixture (build checks only) |
+| — | S-01..S-05 | Not started by this log: these are human steps on the Paiflow website and Freighter. | Human (pending) |

@@ -23,9 +23,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CYFER - Verified Civic Records",
+  title: "CYFER for SMEs",
   description:
-    "Blockchain-powered government document transparency platform for tamper-proof document management and citizen verification.",
+    "Budget plans, approvals, verified payouts and document checks for SMEs on Stellar Testnet.",
 };
 
 export default function RootLayout({
@@ -36,6 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
+        suppressHydrationWarning
         className={`${interTight.variable} ${newsreader.variable} ${jetbrainsMono.variable} antialiased`}
       >
         <ToastProvider>{children}</ToastProvider>

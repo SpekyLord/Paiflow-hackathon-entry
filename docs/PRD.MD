@@ -1,6 +1,8 @@
 # CYFER for SMEs — Escrow, Budget Tracking and Verified Payouts
 
-> **Paiflow holds and routes the money. CYFER proves why it moved.**
+> **Paiflow moves the money. CYFER proves what was approved and what was paid.**
+
+CYFER for SMEs is the original CYFER (tamper-proof records, unanimous multi-approval, audit trail, budget transparency) built for small and medium enterprises, plus a non-custodial Stellar wallet and Paiflow-powered payments. Protected payments (escrow) are one tool inside the platform, built to prevent scams. They are not the whole product.
 
 ---
 
@@ -8,7 +10,7 @@
 
 | Field | Value |
 |---|---|
-| Version | 2.0.0 |
+| Version | 2.1.0 (re-tiered to the revised 25 Oct 2026 team brief: budget plan with Split is the MVP; protected payment is a Should-have) |
 | Date | 2026-10-25 |
 | Status | **Draft for team review.** Product direction is approved; technical design is proposed and is not yet implemented. |
 | Event | Paiflow × Web3 Iloilo hackathon, 25 October 2026, Stellar Testnet |
@@ -25,7 +27,7 @@ When sources disagree, the higher source wins:
 
 1. **Paiflow platform constraints**: starter `llms.md`, starter `README.md` and `AGENTS.md`, the Paiflow Guide (updated 17 Oct 2026), and starter source code (`lib/paiflow.ts`, `lib/recovery.ts`, `lib/transaction.ts`, `lib/wallet.ts`, `lib/confirmation.ts`, `lib/http.ts`, `app/api/pay/route.ts`). The product cannot override these.
 2. **Event rules**: the Paiflow × Web3 Iloilo Event Primer (updated 23 Oct 2026). These cover pitch format, testnet-only use and credential handling.
-3. **Product decision**: the team brief "CYFER for SMEs: Escrow, Budget Tracking and Verified Payouts" (25 Oct 2026). It sets audience, scope and priorities.
+3. **Product decision**: the team brief "CYFER for SMEs: Escrow, Budget Tracking and Verified Payouts" (25 Oct 2026, revised edition with the Must / Should / Nice tiers). It sets audience, scope and priorities.
 4. **Verified current repository state**: source, schema and policies, cited by `path:line`.
 5. **Historical repository documents**: the old PRD, `docs/PHASETASK.MD`, `TESTING.md`, `UPDATE.md`, `README.md` and the files in `docs/`. These are context only. Their checkboxes and reported test results are **not** fresh verification.
 
@@ -45,7 +47,11 @@ Sources consulted for this revision: all of the above, plus the Windows Setup Gu
 
 | Term | Definition |
 |---|---|
-| Deal | A CYFER business record for one escrow relationship between one client (buyer) and one freelancer (seller). |
+| Budget plan | A versioned, hashed CYFER record of a purpose, its envelopes, their shares and the total payment. It must be approved by every designated approver before the payment can be signed. |
+| Envelope | One recipient of a budget plan: a label (for example Operations, Payroll, Supplies), a share in bps and a wallet address. Each envelope is a separate wallet. |
+| Split | The Paiflow flow `On Receive → Split`. Recipients are percentage shares that total exactly 10,000 bps, all in the same mode, with no duplicate addresses. |
+| Protected payment | The Paiflow flow `On Receive → Condition time_before → Pay payee / Pay payer`. Money is held until a condition is met, and refunded to the payer at the deadline. Also called escrow. |
+| Deal | A CYFER business record for one protected-payment relationship between one payer (for example a client, an SME or a customer) and one payee (for example a freelancer, supplier, contractor or SME). Commission is the worked example. |
 | Terms version | An immutable, hashed snapshot of the deal terms. Any change creates a new version. |
 | Deliverable version | One submitted file. CYFER records its SHA-256, size, media type and storage key. |
 | Deployment | A confirmed Paiflow deployment, identified by its UUID. It is neither the flow ID nor the `C…` contract address. Recipients, deadline, asset and held balance are fixed per deployment. |
@@ -68,8 +74,8 @@ Sources consulted for this revision: all of the above, plus the Windows Setup Gu
 
 | ID | Decision | Basis |
 |---|---|---|
-| D-01 | Commission escrow is the **only** live MVP template. Online selling is a Should-have, and its courier tracking is mocked and labelled as mocked. | Brief §9, §11 recommendation |
-| D-02 | XLM is the MVP asset. USDC is a Stretch goal and needs a separate deployment. | Brief §8; Guide "Optional: use USDC" |
+| D-01 | The **budget plan with a fixed three-envelope Split (Operations 50%, Payroll 30%, Supplies 20%)** is the live MVP and the primary demo flow. The protected payment (commission example) is a Should-have add-on shown after it. Online selling, supplier deposit and contractor milestone are Nice-to-have, and online selling's courier tracking is mocked and labelled as mocked. | Brief §9 (Must / Should / Nice) and §11 open-question recommendation ("budget flow is the live demo, protected payment the add-on") |
+| D-02 | XLM is the MVP asset. USDC is Nice-to-have, needs a separate deployment per asset and a trustline on every payer and recipient wallet, and is attempted only if time allows. | Brief §8; Guide "Optional: use USDC" |
 | D-03 | Escrow graph uses `time_before`, with explicit Pay to buyer on False. No Hold. No Return to owner. | `llms.md` Condition, Hold and Return to owner sections; Freelance escrow example |
 | D-04 | One manually created deployment is reserved for exactly one active demo deal. | `llms.md` §1 and Condition; Event Primer §04 |
 | D-05 | Financial evidence is stored **server-side** in Supabase. The starter's browser storage is a teaching pattern and is insufficient here. | Guide §11; starter README "Recover" |
@@ -78,6 +84,10 @@ Sources consulted for this revision: all of the above, plus the Windows Setup Gu
 | D-08 | PHP planning figures are kept separate from crypto amounts. There is no exchange rate, conversion or fiat custody. | Brief §5 and §10 |
 | D-09 | The CYFER ledger is described as an **application hash chain**, never as public-chain anchoring. | `src/lib/blockchain.ts:80-123` writes only to Supabase |
 | D-10 | A wallet becomes bound to an account only through a server-verified signed challenge. | Guide §09 requires "verified wallet ownership" |
+| D-11 | CYFER never holds funds or keys. For each payment the SME picks one money tool: **Split** (budget allocation to envelopes), **Pay** (a fixed payee such as a supplier or payroll wallet) or **Protected payment** (held until a condition). Only Split is MVP. | Brief §3 |
+| D-12 | Recipients, percentages, deadline and asset are fixed per deployment (Dev mode is off during the event). A new payee, a changed envelope or a new protected payment is a **new flow** with a **fresh approval**. Per-payment flow creation is Future. | Brief §4, §10; `llms.md` |
+| D-13 | A confirmed transaction and a verified payout are separate checks. A budget plan shows "Distribution verified" only when every envelope payout has passed §H. If a payment times out, CYFER checks the **original** transaction hash and never sends another payment. | Brief §4 |
+| D-14 | Interoperability means Stellar assets and Stellar wallets only. It does not mean bridging to other blockchains, and the wallet does not hold Bitcoin or Ethereum. Swaps (Soroswap) are Future. | Brief §7, §8 |
 
 ### A.6 Contradictions found and how they are resolved
 
@@ -87,7 +97,8 @@ Sources consulted for this revision: all of the above, plus the Windows Setup Gu
 | C-02 | Brief §5: "CYFER stores only the public G… address". MVP needs an authenticated account bound to that wallet. | A public address is a stored identifier. Account binding needs a signed challenge (REQ-ACC-02). |
 | C-03 | Brief §7 and §9 call the hash "tamper-proof" and say "anchors it". The CYFER ledger is a Supabase table. | Use "hash recorded in CYFER's append-only application ledger". Do not claim immutability or public anchoring (§K.9). |
 | C-04 | Brief §8 lists Verification and Freighter as "Live" and the hosted page as "available". | Those are intended demo goals. Nothing is live until §M evidence exists. |
-| C-05 | Brief §3 calls the receipt step "publish receipt", while §9 marks the public receipt page Nice-to-have. | The receipt page is **Stretch** (REQ-RCPT-01). MVP shows evidence on the authenticated deal page. |
+| C-05 | Brief §3 calls the last step "publish receipt"; §9 lists the public receipt page as Should-have. | The receipt page is **Should** (REQ-RCPT-01). MVP shows verified evidence, with transaction hashes, on the authenticated budget-plan page. |
+| C-10 | PRD v2.0.0 made commission escrow the only MVP and budget plans a Should-have. The revised brief reverses this. | v2.1.0 follows the brief (D-01). Escrow requirements keep their IDs but are re-tiered to SHOULD. |
 | C-06 | Brief §7: "Recipients are fixed at deploy time, so the server can only release to the seller early or wait." | That holds for the release-early API. The deploying wallet can also release the before side (`llms.md` Condition), and token holders are trusted. Both facts are stated in §K.4. |
 | C-07 | Inherited budget code uses PHP floats (`src/app/(admin)/admin/budget/page.tsx:73`, `src/app/api/budget/route.ts:50`). | Payments use stroop strings and `bigint`. PHP planning values move to integer centavos (§I.8). |
 | C-08 | Inherited verify route returns "may have been tampered" for any non-match (`src/app/api/verify/route.ts:67`). | A non-match means "no matching record". It is not proof of tampering (REQ-DLV-02). |
@@ -105,11 +116,12 @@ Sources consulted for this revision: all of the above, plus the Windows Setup Gu
 
 | ID | Question | Owner | Blocks |
 |---|---|---|---|
-| Q-01 | Who deploys the escrow flow and holds the Paiflow token today? | Team | Slice S2 |
-| Q-02 | Which people and wallets play client, freelancer and deployer? | Team | S2, demo |
-| Q-03 | Is USDC attempted today, or XLM only? (Recommendation: XLM only.) | Team | Stretch |
-| Q-04 | Q&A answer for "client never approves" (proposed wording in §N.3). | Team | Pitch |
-| Q-05 | Keep the "CYFER" name with "for SMEs", or rebrand? | Team | Stretch landing page |
+| Q-01 | Who deploys the flows (Split first, then the protected payment) and holds the Paiflow token today? | Team | Slice S2 |
+| Q-02 | Who plays each wallet role in the demo: owner, approvers, signer, the three envelope recipients, and (Should) payer, payee and deployer? | Team | S2, demo |
+| Q-03 | Is USDC attempted today, or XLM only? (Recommendation: XLM only.) | Team | Stretch (USDC) |
+| Q-04 | Q&A answer for "what if the payer never approves?" (proposed wording in §N.3). | Team | Pitch |
+| Q-05 | Keep the "CYFER" name with "for SMEs", or rebrand? | Team | Landing page (SHOULD) |
+| Q-12 | Is the budget flow the live demo with the protected payment as the add-on? **Resolved: yes**, per the brief's recommendation (D-01). Revisit only if S7 or S8 slips. | Team | Demo order |
 | Q-06 | Does `transactions.get(txHash)` resolve a **release-early** transaction hash, or only execute hashes? | Spike against API README | REQ-PAY-01 |
 | Q-07 | Does `GET /balances` (in the staging path list) report a condition's held balance, and in what shape? | Spike | REQ-WAL-01 |
 | Q-08 | What is the exact Freighter `signMessage` encoding (SEP-53) for the pinned `@stellar/freighter-api` version, and which server-side verification library will be used? | Spike | REQ-ACC-02 |
@@ -123,12 +135,13 @@ Sources consulted for this revision: all of the above, plus the Windows Setup Gu
 
 ### B.1 Problem [APPROVED]
 
-SMEs, freelancers and their customers lack a cheap way to trust each other with money. They also rarely have a clear record of where funds went:
+SMEs often cannot show where their money went, and cannot fully trust everyone they pay or get paid by:
 
-- **Deliver first, never get paid.** A student artist, writer or programmer finishes a commission and the client disappears.
-- **Pay first, never receive.** A buyer pays an online seller and nothing arrives.
-- **Untracked funds.** Small-business budgets live in chat threads and spreadsheets, so nobody can show who approved a spend or whether a payout matched the plan.
-- **Disputes without evidence.** "I sent the file" and "I never received it" are hard to settle.
+- **Untracked funds.** Budgets run through chat messages and spreadsheets, so nobody can easily show what was planned, what was spent and who agreed to it.
+- **Weak approvals.** One person can move money without a record that the owners or finance team agreed.
+- **Altered or disputed documents.** An invoice, contract or receipt can be edited after the fact, and "which version did we agree to?" is hard to prove.
+- **Payment scams.** Paying upfront for something never delivered, or delivering and never being paid, is a risk with any supplier, contractor, freelancer or online customer the SME cannot fully trust. Commissions and online selling are only two examples.
+- **No shared proof.** Partners, investors and customers cannot independently check the records.
 
 No market statistics are claimed. Any statistic used in the pitch needs a cited source first.
 
@@ -136,45 +149,74 @@ No market statistics are claimed. Any statistic used in the pitch needs a cited 
 
 | User | Need |
 |---|---|
-| Client (buyer) of a commission | Pay only when the agreed work arrives, and get the money back if it does not arrive by the deadline. |
-| Freelancer (seller) | See that the money is held before starting, and have evidence of what was delivered. |
-| SME owner | Split incoming funds into planned envelopes with recorded approval, and see planned versus verified payouts. |
+| SME owner | Record a budget plan, split incoming funds into envelopes with recorded approval, sign one payment, and see planned versus verified payouts. |
 | Co-owner or finance approver | Approve a budget plan before money moves. |
-| Receipt viewer (Stretch) | Check published evidence of a deal without an account. |
+| Envelope recipient (department, payroll wallet, supplier wallet) | Receive a planned share, and have evidence that the payout matched the approved plan. |
+| Payer in a protected payment (SME, client or customer) | Pay only when the agreed work or goods arrive, and get the money back if they do not arrive by the deadline (Should). |
+| Payee in a protected payment (supplier, contractor, freelancer or SME) | See that the money is held before starting, and have evidence of what was delivered (Should). |
+| Partners, investors and customers | Check the records and transaction hashes independently, through receipt pages (Should). |
 
 ### B.3 Value proposition
 
-Paiflow holds the deposit on-chain and can pay only fixed recipients. CYFER binds that money movement to hashed terms, a hashed deliverable, an explicit approval of that exact deliverable, and independently verified payout evidence. **CYFER never holds funds or wallet keys.**
+**One platform for records, approvals and money.** CYFER keeps the records, approvals and audit trail. Paiflow moves the money. CYFER binds each money movement to a hashed plan or document, an approval by every designated approver, and independently verified payout evidence. **CYFER never holds funds or wallet keys.**
+
+| Does | CYFER (our app) | Paiflow |
+|---|---|---|
+| | Hashes plans and documents, runs approvals, logs every action, verifies payouts, shows the dashboard | Receives the payment on-chain, pays only fixed recipients, splits by percentage, can hold funds until a condition |
+| Does not | Hold funds or wallet keys | Decide whether a spend was a good one |
+
+For each payment the SME picks the money tool it needs:
+
+| Tool | Paiflow flow | Use it for | Tier |
+|---|---|---|---|
+| Split | On Receive → Split | Budget allocation to departments, envelopes or partners | **MVP** |
+| Pay | On Receive → Pay | A fixed payee such as a supplier or a payroll wallet | STRETCH (REQ-MOV-01) |
+| Protected payment | On Receive → time condition → Pay payee or Pay payer | Any payment where delivery or approval should come first | SHOULD |
+
+Scam protection comes from tamper detection on documents plus protected payments held until a condition is met.
 
 ### B.4 Why Paiflow is necessary
 
-Without Paiflow, CYFER is only a document log, and the client would still have to "pay first and trust". Paiflow provides the parts CYFER cannot provide itself:
+Without Paiflow, CYFER is only a record and approval log. The SME would still have to move the money by hand and the payer would still have to "pay first and trust". Paiflow provides the parts CYFER cannot provide itself:
 
-- on-chain holding of the deposit
+- on-chain receipt of the payment and fixed-percentage splitting to envelopes
 - recipients fixed at deploy time
-- deadline-driven fallback to the buyer
-- token-authorised early release
+- on-chain holding of a deposit, with a deadline-driven fallback to the payer (protected payment)
+- token-authorised early release (protected payment)
 
-The core experience (fund, hold, release or refund) **is** the Paiflow flow. CYFER supplies authorisation, evidence and verification around it.
+The core experience (pay, split, hold, release or refund) **is** the Paiflow flow. CYFER supplies approval, evidence and verification around it.
 
 ### B.5 Goals and measurable demo outcomes
 
+MVP goals (the brief's "Must have"):
+
 | ID | Outcome | Evidence required |
 |---|---|---|
-| G-01 | One commission deal funded from the client's Freighter wallet on Testnet, using the team's own deployment | Deployment UUID; deposit Stellar tx hash; SUCCESS status for that hash |
-| G-02 | Held status shown before release | RECEIVE event for the deposit hash, with no payout event yet. The held-balance source must be verified (Q-07). |
-| G-03 | Freelancer deliverable recorded | Deliverable SHA-256, size and type; ledger block; audit entry |
-| G-04 | Client approval bound to the deliverable version | Approval row referencing `terms_version_id` and `deliverable_version_id` |
-| G-05 | Early release with a verified seller payout | Release tx hash; PAYOUT evidence to the configured seller for the expected amount (§H) |
-| G-06 | Tamper check | Same file: "matches the recorded deliverable". Altered file: "no match". Neither result is presented as proof of quality or fraud. |
-| G-07 | Wallet page | Testnet chip, XLM balance, escrow status, history with hashes |
+| G-01 | One budget plan (Operations 50%, Payroll 30%, Supplies 20%) recorded, hashed and added to the CYFER ledger | Plan SHA-256; ledger block; audit entry |
+| G-02 | Every designated approver approves, and the payment cannot be signed before then | Approval rows referencing the plan hash; a refused signing attempt before full approval |
+| G-03 | The authorised wallet signs one Split payment in Freighter on Testnet, using the team's own deployment | Deployment UUID; deposit Stellar tx hash; SUCCESS status for that hash |
+| G-04 | Each envelope payout is verified and the dashboard shows Planned, Approved, Pending or Verified distribution | PAYOUT evidence per envelope at the expected share (§H.5); payout tx hashes |
+| G-05 | Wallet page | Testnet chip, XLM balance, payment status, history with hashes |
+| G-06 | Tamper check | Same file: "matches the recorded hash". Altered file: "no match". Neither result is presented as proof of quality or fraud. |
+
+SHOULD goals:
+
+| ID | Outcome | Evidence required |
+|---|---|---|
+| G-07 | One protected payment funded from the payer's Freighter wallet, with held status shown before release | Deployment UUID; deposit hash; RECEIVE event with no payout event yet. The held-balance source must be verified (Q-07). |
+| G-08 | Payee deliverable recorded, and the payer's approval bound to that version | Deliverable SHA-256; ledger block; approval row referencing `terms_version_id` and `deliverable_version_id` |
+| G-09 | Early release with a verified payee payout, and the refund-at-deadline rule shown (explained or recorded) | Release tx hash; PAYOUT evidence to the configured payee (§H); refund hash if recorded (T-10) |
+| G-10 | Public receipt page with transaction hashes, and SME-focused landing copy | Receipt allow-list test (REQ-RCPT-01); copy review |
 
 ### B.6 Non-goals
 
 - Fiat on-ramp, peso conversion or PHP custody.
-- KYC, tax, invoicing compliance or a legal dispute process.
+- KYC, tax, payroll law, invoicing compliance or a legal dispute process. Real SME use would need all of these.
 - Arbitration, multisig dispute resolution or partial releases (Future).
-- Automatic per-deal deployment provisioning (Future).
+- Automatic per-deal or per-payment deployment provisioning (Future).
+- Swap (Paiflow's Soroswap Swap block, so a payer could pay in one asset and the recipient receive another). It adds slippage and a failed swap reverts the payment (Future).
+- Holding Bitcoin, Ethereum or any non-Stellar asset.
+- Judging whether a spend was a good one.
 - Bridging to other blockchains. "Interoperability" means Stellar assets and Stellar wallets only.
 - Judging work quality. A payout proves distribution, not good work.
 - Mainnet or real funds.
@@ -182,14 +224,16 @@ The core experience (fund, hold, release or refund) **is** the Paiflow flow. CYF
 
 ### B.7 Honest limitations [CONSTRAINT]
 
-1. **One deployment is one escrow relationship.** Recipients, deadline and held balance are shared by every deposit to that deployment.
-2. **Recipients are fixed at deploy time.** There is one buyer and one seller per deployment, and Dev mode is off for the event.
-3. **The refund is time-based only.** A client who never approves is refunded at the deadline, **even if the seller delivered**. CYFER evidence can support a dispute but cannot move money.
-4. **Release relies on trusted authority.** Whoever holds the deployment token can trigger an early release to the seller, and the deploying wallet can also release the before side. CYFER's route checks narrow who can ask, but they do not remove that authority.
+1. **Recipients and shares are fixed at deploy time.** Dev mode is off for the event, so a new payee, a new split or a new protected payment needs a new flow. For budgets, a change to envelopes means a new deployment and a fresh approval. The demo covers one budget plan and one protected payment. Per-payment flow creation is Future.
+2. **One protected-payment deployment shares one balance and one deadline.** It is one payer-payee relationship, not one escrow per order.
+3. **The refund is time-based only.** A payer who never approves is refunded at the deadline, **even if the payee delivered**. CYFER evidence can support a dispute but cannot move money. Multisig arbitration is Future.
+4. **Release relies on trusted authority.** Whoever holds the deployment token can trigger an early release to the payee only, and the deploying wallet can also release the before side. CYFER's route checks narrow who can ask, but they do not remove that authority. Every release is logged in the audit trail.
 5. **Automation is polled.** After-side release and indexed events can lag by a minute or more.
-6. **Testnet only.** Balances have no real-money value; the pitch calls this a "simulation".
+6. **Testnet only.** Balances have no real-money value; say "simulation" and never claim real-fund handling.
 7. **A hash proves byte equality only.** It does not prove quality, authorship or truthful delivery.
-8. **Courier tracking is not real.** It is mocked and labelled as mocked.
+8. **A payout is not proof of good spending.** The chain proves distribution, not that the money was well used or the work done.
+9. **Courier tracking is not real.** There is no courier API integration. It is mocked and labelled as mocked.
+10. **Stellar assets and wallets only.** The wallet cannot hold or bridge other blockchains' coins. A missing USDC trustline makes the whole payment revert.
 
 ---
 
@@ -247,7 +291,8 @@ All facts below were read from source on 2026-10-25. Nothing was built, run or t
 |---|---|
 | Paiflow server module, SDK, Freighter, Stellar SDK | REQ-ESC-*, REQ-WAL-* |
 | Wallet binding | REQ-ACC-02 |
-| Deal, terms, deliverable and approval tables | §I |
+| Budget plan, envelope and plan-approval tables; SME document records | REQ-BUD-*, REQ-DOC-01, §I |
+| Deal, terms, deliverable and approval tables (protected payment) | §I |
 | Server-side payment-attempt and recovery records | REQ-ESC-02, REQ-REC-01 |
 | Release route with authorisation and locking | REQ-REL-01 |
 | Payout verifier | REQ-PAY-01 |
@@ -276,16 +321,18 @@ None was re-run for this PRD, and none relates to SME features. No SME feature e
 
 | Role | Bound to | Owns | Can | Cannot |
 |---|---|---|---|---|
-| Client (buyer) | Account + verified wallet = deployment's False-branch recipient | Their deal participation, approvals | Create a deal (as initiator), accept terms, fund escrow, approve or reject a deliverable version, request release | Release without a valid approval; change recipients |
-| Freelancer (seller) | Account + verified wallet = True-branch recipient | Deliverable versions | Accept terms, upload deliverables, view escrow state | Approve their own deliverable; request release |
-| SME owner | Account + organisation membership `owner` | Organisation, budget plans | Create budget plans and envelopes, link a Split deployment, sign the budget payment | Count their own approval as everyone's |
-| Budget approver | Organisation membership `approver` | Their approval rows | Approve or reject a specific plan version | Edit plans; sign payments on the owner's behalf |
+| SME owner | Account + organisation membership `owner` | Organisation, budget plans, SME documents | Create budget plans and envelopes, link a Split deployment, upload documents, sign the budget payment (when their bound wallet is the authorised signer) | Count their own approval as everyone's |
+| Designated approver (co-owner or finance) | Organisation membership `approver` | Their approval rows | Approve or reject a specific plan version | Edit plans; sign payments on the owner's behalf |
+| Authorised signer | Account + verified wallet = the wallet registered as payer for the plan | Payment attempts | Sign one Split payment in Freighter after the plan is fully approved | Sign before every approver has approved; change envelopes |
+| Envelope recipient | A funded Stellar address registered in the plan; an account is optional | Nothing in CYFER | Receive the planned share; be named in the plan and its receipt | Change shares or addresses |
+| Payer in a protected payment (client, SME or customer; "buyer" in the graph) | Account + verified wallet = deployment's False-branch recipient | Their deal participation, approvals | Create a deal (as initiator), accept terms, fund the protected payment, approve or reject a deliverable version, request release | Release without a valid approval; change recipients |
+| Payee in a protected payment (freelancer, supplier, contractor or SME; "seller" in the graph) | Account + verified wallet = True-branch recipient | Deliverable versions | Accept terms, upload deliverables, view held state | Approve their own deliverable; request release |
 | Operator | Server-side role (`operator`) in an allowlist, never self-assigned | Deployment registry, recovery queue | Register and reserve deployments, review uncertain attempts, mark evidence after manual chain review (with justification) | Sign any transaction for a user; create replacement payments; read private deliverable contents unless needed for review |
-| Receipt viewer | None (public) | Nothing | Read deliberately published receipt fields (Stretch) | Anything else |
+| Receipt viewer (partner, investor, customer) | None (public) | Nothing | Read deliberately published receipt fields (Should) | Anything else |
 
 ### D.2 Object ownership and tenant boundaries
 
-- A **deal** belongs to exactly two participants: `client_user_id` and `seller_user_id`. Only participants and operators can read it.
+- A **deal** (protected payment) belongs to exactly two participants: the payer (`client_user_id`) and the payee (`seller_user_id`). Only participants and operators can read it.
 - **Organisations** isolate budget data. Every budget row carries `organisation_id`, and access requires membership.
 - Recipients' public addresses are visible only to deal or organisation members. They are not public unless published on a receipt.
 - Server routes use the service role, which **bypasses RLS** (`src/lib/supabase.ts:18`). Every route must therefore run explicit ownership checks. RLS is defence in depth for anon and authenticated clients, not the primary control.
@@ -294,23 +341,31 @@ None was re-run for this PRD, and none relates to SME features. No SME feature e
 
 | Mechanism | What it proves | Where |
 |---|---|---|
-| **Application approval** (CYFER UCP, client approval) | A logged-in CYFER user clicked approve on a specific version. It moves no money. | CYFER database + ledger |
-| **Wallet signature** (Freighter) | The holder of a Stellar key authorised **this exact transaction** (a deposit) or signed a binding challenge. | Stellar network / CYFER verifier |
+| **Application approval** (CYFER UCP for budget plans, payer approval for protected payments) | A logged-in CYFER user clicked approve on a specific version. It moves no money. | CYFER database + ledger |
+| **Wallet signature** (Freighter) | The holder of a Stellar key authorised **this exact transaction** (a budget payment or a deposit) or signed a binding challenge. | Stellar network / CYFER verifier |
 | **On-chain multisig** | Threshold signers approved release through the contract. This is **not used** in the MVP; v1 has no multisig-approval endpoint. | Paiflow contract (Future) |
 
-Release-early requires **no** customer signature. The client's CYFER approval is the only guard before CYFER's server calls it, which is why REQ-APR-01 and REQ-REL-01 are strict.
+Release-early (protected payment) requires **no** customer signature. The payer's CYFER approval is the only guard before CYFER's server calls it, which is why REQ-APR-01 and REQ-REL-01 are strict. A Split payment has no release step: the payer's wallet signature plus the all-approver gate (REQ-BUD-02, enforced in the prepare route) are the controls.
 
 ---
 
 ## E. Functional requirements
 
-Priorities: **MVP** (must), **SHOULD**, **STRETCH**, **FUTURE**. All requirements are [PROPOSED] design meeting [APPROVED] scope.
+Priorities: **MVP** (the brief's "Must have"), **SHOULD** ("Should have"), **STRETCH** ("Nice to have"), **FUTURE**. All requirements are [PROPOSED] design meeting [APPROVED] scope.
+
+Requirement IDs and subsection numbers are kept stable from v2.0.0; the priority tag in each heading is authoritative. The budget-first MVP is E.1, E.2, E.4 (shared payment mechanics), E.5 (REQ-DOC-01, REQ-DLV-02), E.9–E.12. Protected-payment requirements (E.3, E.4 deal parts, E.5 deliverables, E.6–E.8) are SHOULD. E.13 is SHOULD. E.14 and E.15 are STRETCH.
+
+| Tier | Requirements |
+|---|---|
+| MVP | REQ-ACC-01, REQ-ACC-02, REQ-DEP-01, REQ-ESC-01 and REQ-ESC-02 (payment mechanics shared with Split), REQ-DOC-01, REQ-DLV-02 (file verification), REQ-PAY-01, REQ-REC-01, REQ-WAL-01, REQ-BUD-01, REQ-BUD-02, REQ-BUD-03 |
+| SHOULD | REQ-DEAL-01, REQ-DEAL-02, deal-specific parts of REQ-ESC-01/02, REQ-DLV-01, REQ-APR-01, REQ-REL-01, REQ-REF-01, REQ-RCPT-01 |
+| STRETCH | REQ-SELL-01, REQ-TPL-01, REQ-MOV-01, USDC deployments |
 
 ### E.1 Account access and wallet binding
 
 **REQ-ACC-01 — Authenticated accounts (MVP)**
 - *Rationale:* Release decisions need an identified actor.
-- *Story:* As a client or freelancer, I sign in so CYFER can tie my actions to me.
+- *Story:* As an owner, approver, payer or payee, I sign in so CYFER can tie my actions to me.
 - *Preconditions:* Supabase Auth is configured.
 - *Behaviour:* Email-and-password sign-in through Supabase Auth. Server routes validate the session token on every request. Roles come from server-side tables, never from `user_metadata`.
 - *Failure / recovery:* Expired session returns 401 and the user re-authenticates. Financial records are unaffected.
@@ -339,13 +394,13 @@ Priorities: **MVP** (must), **SHOULD**, **STRETCH**, **FUTURE**. All requirement
 ### E.2 Deployment matching and reservation
 
 **REQ-DEP-01 — Deployment registry and reservation (MVP)**
-- *Rationale:* One deployment is one relationship (D-04). The SDK does not create deployments.
-- *Story:* As an operator, I register the manually deployed escrow and reserve it for one deal.
-- *Preconditions:* A confirmed Paiflow deployment exists, created manually by the deployer with the D-03 graph.
+- *Rationale:* One deployment is one relationship (D-04), and recipients are fixed per deployment (D-12). The SDK does not create deployments.
+- *Story:* As an operator, I register the manually deployed Split (MVP) or protected-payment flow (SHOULD) and reserve it for one budget plan or one deal.
+- *Preconditions:* A confirmed Paiflow deployment exists, created manually by the deployer: `On Receive → Split` with the three envelopes for budget plans, or the D-03 graph for protected payments.
 - *Behaviour:*
-  - The operator records the deployment UUID, network `testnet`, input asset, template `commission_escrow`, condition `nodeId`, deadline `at`, seller address, buyer address and graph snapshot hash.
-  - On deal creation, CYFER requires an exact match (asset, seller wallet, buyer wallet, deadline) to an **unreserved** deployment. It then creates a reservation guarded by a partial unique index (one active reservation per deployment).
-  - Server checks `capabilities.get()`: `network === 'testnet'`, `triggerType === 'deposit'`, `inputAsset` matches, `operations.execute` and `operations.releaseEarly` are not `unsupported`.
+  - The operator records the deployment UUID, network `testnet`, input asset, template (`budget_split` or `commission_escrow`), graph snapshot hash, and either the Split recipients with their bps (Split) or condition `nodeId`, deadline `at`, payee address and payer address (protected payment).
+  - On budget-plan creation, CYFER requires the plan's envelopes to equal the registered recipients and bps exactly (REQ-BUD-01). On deal creation, CYFER requires an exact match (asset, payee wallet, payer wallet, deadline) to an **unreserved** deployment. Either way it then creates a reservation guarded by a partial unique index (one active reservation per deployment).
+  - Server checks `capabilities.get()`: `network === 'testnet'`, `triggerType === 'deposit'`, `inputAsset` matches, `operations.execute` is not `unsupported`, and for protected payments `operations.releaseEarly` is not `unsupported`.
 - *Failure / recovery:*
   - No match: deal creation is refused with "No prepared escrow matches these parties and deadline. Ask the operator."
   - Capability mismatch: the deployment is marked `unusable`.
@@ -357,10 +412,10 @@ Priorities: **MVP** (must), **SHOULD**, **STRETCH**, **FUTURE**. All requirement
   - AC3: A deployment with a past deadline cannot be reserved.
   - AC4: The configured deployment comes from server config or the registry, never from discovery order or browser input.
 
-### E.3 Deal creation and versioned terms
+### E.3 Deal creation and versioned terms (protected payment, SHOULD)
 
-**REQ-DEAL-01 — Create deal with hashed terms (MVP)**
-- *Story:* As a client, I create a commission deal whose terms are hashed and recorded.
+**REQ-DEAL-01 — Create deal with hashed terms (SHOULD)**
+- *Story:* As a payer, I create a commission deal (the worked example; supplier deposit and contractor milestone use the same mechanics) whose terms are hashed and recorded.
 - *Preconditions:* Both parties have accounts and verified wallets; a matching deployment is available.
 - *Behaviour:*
   - Terms are canonical JSON: title, description, deliverable description, amount in stroops, asset, deadline (ISO with timezone, equal to the deployment `at`), seller and buyer addresses, deployment UUID, template.
@@ -372,17 +427,19 @@ Priorities: **MVP** (must), **SHOULD**, **STRETCH**, **FUTURE**. All requirement
   - AC2: Funding is blocked until both parties have accepted the current `terms_version`.
   - AC3: An amount is stored only as an integer stroop string.
 
-**REQ-DEAL-02 — Terms changes (MVP)**
+**REQ-DEAL-02 — Terms changes (SHOULD)**
 - *Behaviour:* Any edit creates a new version and voids prior acceptances and approvals. Edits are refused once a deposit attempt exists. The deadline, parties and asset cannot change after reservation, because they are fixed in the deployment.
 - *Acceptance:*
   - AC1: Editing v1 produces v2 with a new hash and requires both acceptances again.
   - AC2: Editing after funding returns 409.
 
-### E.4 Escrow funding
+### E.4 Payment funding (shared mechanics, MVP; protected-payment specifics, SHOULD)
 
-**REQ-ESC-01 — Fund escrow through prepare → sign → submit (MVP)**
-- *Story:* As the client, I fund the escrow in Freighter and see it held.
-- *Preconditions:* Deal `ready_to_fund`; the caller is the client; the session wallet binding equals the deployment's buyer address; deadline ≥ now + safety margin (proposed 10 min, configurable); no non-terminal attempt exists for this deal.
+The prepare → sign → submit → confirm mechanics below are **MVP** because the budget payment (REQ-BUD-03) uses them unchanged against the Split deployment. In that case "deal" reads as "budget plan", "client" as the authorised signer, and the preconditions are the plan-specific ones in REQ-BUD-03. The deal-specific preconditions (deal state, terms acceptance, payer/payee roles, deadline margin) and the held-status wording apply to protected payments and are **SHOULD**.
+
+**REQ-ESC-01 — Fund a deployment through prepare → sign → submit (MVP mechanics; deal parts SHOULD)**
+- *Story:* As the payer (or the authorised budget signer), I sign the payment in Freighter and see its status. For a protected payment I also see the funds held.
+- *Preconditions:* For a protected payment: deal `ready_to_fund`; the caller is the payer; the session wallet binding equals the deployment's payer (buyer) address; deadline ≥ now + safety margin (proposed 10 min, configurable); no non-terminal attempt exists for this deal. For a budget payment: plan `approved` for the current plan hash, the caller's bound wallet is the authorised signer, and no non-terminal attempt exists for this plan.
 - *Behaviour:*
   1. The server acquires a per-deal lock (row lock or advisory lock).
   2. It calls `execute.prepare({ from: clientAddress, amount: termsAmount })`.
@@ -402,8 +459,8 @@ Priorities: **MVP** (must), **SHOULD**, **STRETCH**, **FUTURE**. All requirement
   - AC5: Funding is refused when the deadline is closer than the safety margin.
   - AC6: A Paiflow token never appears in any response, bundle or log.
 
-**REQ-ESC-02 — Deposit confirmation (MVP)**
-- *Behaviour:* The deal moves to `funded_held` only when:
+**REQ-ESC-02 — Deposit confirmation (MVP mechanics; held state SHOULD)**
+- *Behaviour:* For a budget payment, the plan moves from "Payment pending" toward "Distribution verified" only through REQ-BUD-03 and §H.5. For a protected payment the deal moves to `funded_held` only when:
   - `transactions.get(originalHash)` returns `SUCCESS` with matching hash and network, **and**
   - a RECEIVE event for that hash is found for the reserved deployment with the expected amount (§H.2).
 
@@ -412,10 +469,19 @@ Priorities: **MVP** (must), **SHOULD**, **STRETCH**, **FUTURE**. All requirement
   - AC1: Status `PENDING`, `UNKNOWN`, `NOT_FOUND`, timeout or 502 never shows "held".
   - AC2: `FAILED` returns the deal to `ready_to_fund` only after the failure is recorded. A new attempt then requires deliberate user action.
 
-### E.5 Deliverable submission and hashing
+### E.5 Documents, deliverables and hashing
 
-**REQ-DLV-01 — Submit deliverable (MVP)**
-- *Story:* As the freelancer, I upload my deliverable and CYFER records its hash.
+**REQ-DOC-01 — Record a hashed SME document (MVP)**
+- *Rationale:* The brief's records are hashed SME documents (contracts, invoices, budget plans, receipts), and the tamper check is a Must-have.
+- *Story:* As an owner, I upload an SME document so its SHA-256 is recorded and anyone with access can later check a file against it.
+- *Preconditions:* Caller is an organisation member; the document kind is `contract`, `invoice`, `receipt`, `plan_attachment` or `other`.
+- *Behaviour:* Same size limit, type allowlist, server-side hashing and **private** bucket as REQ-DLV-01. CYFER creates the `org_documents` row (§I.6), appends a ledger block and an audit entry. A budget plan (REQ-BUD-01) is itself hashed from its canonical JSON and may reference attached documents.
+- *Acceptance:*
+  - AC1: The same bytes produce the same hash, and the file cannot be fetched without membership or a short-lived signed URL.
+  - AC2: A ledger or audit failure leaves no document row.
+
+**REQ-DLV-01 — Submit deliverable (SHOULD, protected payment)**
+- *Story:* As the payee (for example a freelancer), I upload my deliverable and CYFER records its hash.
 - *Preconditions:* Caller is the seller; deal `funded_held` (or `funded_unindexed`); deadline in the future.
 - *Behaviour:*
   - Enforce a size limit (proposed 10 MB) and a type allowlist (PDF, PNG, JPEG, ZIP, TXT, DOCX) **before** buffering the whole body where possible.
@@ -427,8 +493,8 @@ Priorities: **MVP** (must), **SHOULD**, **STRETCH**, **FUTURE**. All requirement
   - AC2: The same bytes produce the same hash.
   - AC3: A new upload creates version n+1 and does not alter n.
 
-**REQ-DLV-02 — Verify a file against the recorded deliverable (MVP)**
-- *Behaviour:* A participant uploads a candidate file for a specific deal. CYFER hashes it and compares the result with the **selected** deliverable version, not every document in the system.
+**REQ-DLV-02 — Verify a file against a recorded document or deliverable (MVP)**
+- *Behaviour:* An organisation member uploads a candidate file against a specific recorded SME document (REQ-DOC-01) or budget-plan version; a deal participant does the same against a specific deliverable version (SHOULD). CYFER hashes it and compares the result with the **selected** record, not every document in the system. This is the demo's tamper check.
 - *Display:*
   - Match: "Matches deliverable v{n} recorded {time}. This confirms the bytes are identical. It does not confirm quality, authorship or that delivery was truthful."
   - Non-match: "Does not match deliverable v{n}. The file differs from what was recorded. This alone does not prove tampering."
@@ -438,9 +504,9 @@ Priorities: **MVP** (must), **SHOULD**, **STRETCH**, **FUTURE**. All requirement
   - AC3: Verification of another deal's deliverable is refused (403).
   - AC4: Request size and rate are limited (§K.5).
 
-### E.6 Approval bound to a version
+### E.6 Approval bound to a version (protected payment, SHOULD)
 
-**REQ-APR-01 — Client approves a specific deliverable (MVP)**
+**REQ-APR-01 — Payer approves a specific deliverable (SHOULD)**
 - *Story:* As the client, I approve exactly the deliverable I reviewed.
 - *Preconditions:* Caller is the client; deal `delivered`; request includes `terms_version_id`, `deliverable_version_id` and the `deliverable_sha256` shown on screen.
 - *Behaviour:* The server checks that all three equal the **current** versions, then inserts an `approval` row inside the same transaction that moves the deal to `approved`. A ledger block and an audit entry are appended. Rejection records a reason and returns the deal to `funded_held` (seller may resubmit).
@@ -453,9 +519,9 @@ Priorities: **MVP** (must), **SHOULD**, **STRETCH**, **FUTURE**. All requirement
   - AC3: Concurrent approve and reject requests leave exactly one decision.
   - AC4: A new terms version voids any approval.
 
-### E.7 Early release
+### E.7 Early release (protected payment, SHOULD)
 
-**REQ-REL-01 — Authorised early release (MVP)**
+**REQ-REL-01 — Authorised early release (SHOULD)**
 - *Story:* As the client, after approving I trigger payment to the freelancer.
 - *Preconditions:* Deal `approved`; caller is the client (or the system acting on the client's recorded approval); a valid approval references the current versions; deposit verified (`funded_held`); `now < deadline − release_margin` (proposed 2 min); no release attempt exists for this deal.
 - *Behaviour:*
@@ -474,9 +540,9 @@ Priorities: **MVP** (must), **SHOULD**, **STRETCH**, **FUTURE**. All requirement
   - AC3: An uncertain outcome never triggers an automatic re-call.
   - AC4: The audit entry records actor, approval ID, deployment, `nodeId`, request ID and returned hash.
 
-### E.8 Deadline refund
+### E.8 Deadline refund (protected payment, SHOULD)
 
-**REQ-REF-01 — After-side refund tracking (MVP)**
+**REQ-REF-01 — After-side refund tracking (SHOULD)**
 - *Behaviour:*
   - At `deadline` (no verified release), the deal moves to `awaiting_refund`, displayed as "Deadline reached. Paiflow's automation should refund the client; this is polled and may take several minutes."
   - CYFER polls events with bounded cadence (§G.6) for a PAYOUT to the buyer address for the deal amount.
@@ -490,7 +556,7 @@ Priorities: **MVP** (must), **SHOULD**, **STRETCH**, **FUTURE**. All requirement
 ### E.9 Payout verification
 
 **REQ-PAY-01 — Verify payout or refund (MVP)**
-- *Behaviour:* §H. The result is `verified`, `pending_evidence`, `mismatch` or `operator_review`. Only `verified` unlocks "Paid to seller" or "Refunded to client".
+- *Behaviour:* §H. The result is `verified`, `pending_evidence`, `mismatch` or `operator_review`. Only `verified` unlocks "Distribution verified" (budget plan, §H.5), or "Paid to payee" / "Refunded to payer" (protected payment). A confirmed transaction alone never qualifies.
 - *Acceptance:* Each §H check has a passing and a failing test with fixtures.
 
 ### E.10 Payment recovery
@@ -514,19 +580,22 @@ Priorities: **MVP** (must), **SHOULD**, **STRETCH**, **FUTURE**. All requirement
   - connection state and TESTNET chip
   - the bound address (and a warning if Freighter's current address differs)
   - spendable XLM balance (read from Horizon or Stellar RPC public data)
-  - escrow status per deal (the deal state, not a balance claim)
+  - payment status per budget plan, and escrow status per deal when protected payments exist (the state, not a balance claim)
   - history: deposits, releases, refunds and budget payouts, each with its Stellar tx hash, explorer link and verification state
+  - the wallet's role in each plan or deal (budget owner, payer, payee or envelope recipient)
 
-  **Three separate panels:** wallet balance, funds held in escrow (from verified deal state or Q-07), and cumulative verified payouts.
+  The wallet reads public data only and never holds a secret key. It accepts Stellar-network assets only (XLM for the MVP). A USDC balance is shown only if USDC is attempted and a trustline exists.
+
+  **Three separate panels:** wallet balance, funds held in escrow (from verified deal state or Q-07; empty until protected payments exist), and cumulative verified payouts.
 - *Acceptance:*
   - AC1: No panel sums across them.
   - AC2: The CYFER audit `tx_hash` is never shown as a Stellar hash.
   - AC3: A balance read failure shows "unavailable", never zero.
 
-### E.12 Budget plans and envelopes (SHOULD)
+### E.12 Budget plans and envelopes (MVP, the primary demo flow)
 
-**REQ-BUD-01 — Budget plan with fixed Split (SHOULD)**
-- *Preconditions:* An organisation exists; a manually deployed `On Receive → Split` deployment on XLM with three percentage recipients: Operations 5000 bps, Payroll 3000 bps, Supplies 2000 bps; distinct funded addresses; total exactly 10,000.
+**REQ-BUD-01 — Budget plan with fixed Split (MVP)**
+- *Preconditions:* An organisation exists; a manually deployed `On Receive → Split` deployment on XLM with three percentage recipients: Operations 5000 bps (owner's operating wallet), Payroll 3000 bps (payroll wallet), Supplies 2000 bps (supplier wallet); distinct funded addresses; all recipients in the same mode; total exactly 10,000.
 - *Behaviour:*
   - The owner records a plan version (purpose, envelopes with labels, bps, recipient addresses, optional PHP planning figures in integer centavos, total payment in stroops).
   - CYFER checks the envelopes **equal** the deployment's registered recipients and bps. Any mismatch blocks the plan, because recipients cannot change per payment.
@@ -535,7 +604,7 @@ Priorities: **MVP** (must), **SHOULD**, **STRETCH**, **FUTURE**. All requirement
   - AC1: bps ≠ 10,000, duplicate addresses or a mismatch with the deployment are refused.
   - AC2: PHP figures are labelled "planning figure (PHP), not a crypto amount", and no conversion is shown.
 
-**REQ-BUD-02 — Unanimous approval (SHOULD)**
+**REQ-BUD-02 — Unanimous approval (MVP)**
 - *Behaviour:*
   - The approver set is snapshotted at plan submission. Each approver approves or rejects the **plan version hash**.
   - The plan becomes `approved` only when every snapshotted approver has approved that version. One rejection gives `rejected`.
@@ -545,25 +614,40 @@ Priorities: **MVP** (must), **SHOULD**, **STRETCH**, **FUTURE**. All requirement
   - AC1: Concurrent last approvals publish once.
   - AC2: Approving a superseded version is refused.
   - AC3: The owner cannot be the only approver unless the org explicitly has one member (proposal: require ≥ 1 approver other than the owner).
+  - AC4: The Split payment's prepare route returns 403 and calls Paiflow zero times unless the plan is `approved` for its current hash (demo step: show that payment cannot proceed before every approver has approved).
 
-**REQ-BUD-03 — Budget payment and distribution verification (SHOULD)**
+**REQ-BUD-03 — Budget payment and distribution verification (MVP)**
 - *Behaviour:*
-  - The owner's bound wallet pays through REQ-ESC-01 mechanics against the Split deployment.
-  - Dashboard states: **Planned → Approved → Payment pending → Distribution verified** (or `mismatch`).
-  - Each recipient's payout is verified (§H) at its expected share, with remainder rounding to the last recipient per contract rules.
-- *Acceptance:* A confirmed payment with one recipient unverified shows "Payment confirmed; 2 of 3 payouts verified", never "Distributed".
+  - The authorised signer's bound wallet pays through REQ-ESC-01 mechanics against the Split deployment: one payment is signed in Freighter and Paiflow splits it on-chain.
+  - CYFER verifies the **original** transaction first, then each recipient's payout, and shows the result next to the plan. A confirmed transaction and a verified payout are separate checks. If the payment times out, CYFER checks the original transaction hash and never sends another payment (D-13).
+  - Dashboard states: **Planned → Approved → Pending → Verified distribution** (or `mismatch`), mapped in §F.5.
+  - Each recipient's payout is verified (§H.5) at its expected share, with remainder rounding to the last recipient per contract rules.
+- *Acceptance:*
+  - AC1: A confirmed payment with one recipient unverified shows "Payment confirmed; 2 of 3 payouts verified", never "Distributed".
+  - AC2: A changed envelope, recipient or percentage cannot be paid against the existing deployment (new deployment and fresh approval, D-12).
 
-### E.13 Optional receipt publication (STRETCH)
+### E.13 Receipt publication (SHOULD)
 
-**REQ-RCPT-01 — Public receipt (STRETCH)**
-- *Behaviour:* After a terminal verified outcome, both parties opt in. The receipt shows only allow-listed fields (§K.8) at an unguessable slug, and either party can withdraw it. It **excludes** signed envelopes, preparation XDR, private files, emails, internal IDs and credentials.
+**REQ-RCPT-01 — Public receipt (SHOULD)**
+- *Behaviour:* After a terminal verified outcome, the organisation owner (budget plan) or both parties (protected payment) opt in. The receipt shows only allow-listed fields (§K.8) at an unguessable slug, including plan or terms hashes, deadlines, transaction hashes and payout events, so anyone with the link can check the transactions on a Stellar explorer. Either side can withdraw it. It **excludes** signed envelopes, preparation XDR, private files, emails, internal IDs and credentials.
 - *Acceptance:* A response-schema test confirms only allow-listed fields are present.
 
-### E.14 Mocked online-selling workflow (SHOULD)
+### E.14 More protected-payment examples (STRETCH)
 
-**REQ-SELL-01 — Online-selling template with mocked courier (SHOULD)**
+**REQ-TPL-01 — Supplier deposit and contractor milestone templates (STRETCH)**
+- *Behaviour:* The same escrow mechanics (REQ-DEAL, REQ-ESC, REQ-DLV-01, REQ-APR-01, REQ-REL-01) on a **separate** reserved deployment per relationship, with preset wording and evidence:
+
+| Template | Payer → payee | Released when | Evidence in CYFER |
+|---|---|---|---|
+| Supplier deposit | SME → supplier | The SME confirms the goods arrived | Purchase order and delivery receipt hashes |
+| Contractor milestone | SME → contractor | The approvers sign off the work | Deliverable hash and approval log |
+| Commissioning a freelancer (the SHOULD-tier worked example) | SME or client → freelancer | The client approves the delivered work | Brief and deliverable hashes |
+
+- *Acceptance:* Each template uses its own deployment, because one deployment is one relationship (D-04).
+
+**REQ-SELL-01 — Online-selling template with mocked courier (STRETCH)**
 - *Behaviour:*
-  - Same escrow mechanics on a **separate** reserved deployment, with buyer and seller roles.
+  - Same escrow mechanics on a **separate** reserved deployment, with customer (payer) and SME (payee) roles.
   - Listing and order terms are hashed.
   - Courier status comes from a local mock that the operator advances. Every screen showing it carries the visible label **"MOCK courier status — not a real courier integration"**.
   - Release still requires the buyer's explicit confirmation (the mock alone never triggers release).
@@ -571,11 +655,19 @@ Priorities: **MVP** (must), **SHOULD**, **STRETCH**, **FUTURE**. All requirement
   - AC1: The mock label is present on every courier element.
   - AC2: The mock "delivered" state without buyer confirmation cannot call release.
 
+### E.15 Moving funds with Pay (STRETCH)
+
+**REQ-MOV-01 — Pay a fixed payee, or return unused funds (STRETCH)**
+- *Behaviour:* The same authorised wallet can pay a supplier, send a budget share to a department wallet, or return unused funds. Each movement is one Paiflow `On Receive → Pay` payment to a fixed recipient (or a Split), is approved first, and appears in the audit trail. Because recipients are fixed when a flow is deployed, a new payee means a new flow (D-12).
+- *Acceptance:* A movement to an address that is not the registered recipient of the deployment is refused before any prepare call.
+
 ---
 
 ## F. State models
 
-### F.1 Deal / business state
+The budget-plan states (F.5) are the MVP business state. F.1 (protected-payment deals) is SHOULD. F.2 (payment attempt) and F.3 (payout verification) are MVP and shared by both.
+
+### F.1 Deal / business state (protected payment, SHOULD)
 
 States: `draft → terms_pending → ready_to_fund → funding → funded_unindexed → funded_held → delivered → approved → release_requested → release_uncertain → payout_verified`. Terminal and side states: `awaiting_refund`, `refunded_verified`, `rejected_deliverable` (returns to `funded_held`), `operator_review`, `cancelled` (only before any deposit attempt).
 
@@ -624,6 +716,19 @@ States: `draft → terms_pending → ready_to_fund → funding → funded_uninde
 | awaiting_events | Final tx, payout events not yet indexed | Matching events → verified; wrong recipient, amount or asset → mismatch; threshold exceeded → operator_review |
 | verified | All §H checks passed | Terminal |
 | mismatch | Evidence contradicts expectation | Operator review; UI shows "Evidence mismatch" |
+
+### F.5 Budget-plan state (MVP)
+
+States: `draft → pending_approval → approved → payment_pending → payment_confirmed → distribution_verified`. Side states: `rejected`, `superseded` (a newer plan version exists), `mismatch`, `operator_review`.
+
+| Dashboard state | Plan state(s) | Entered when | Wording |
+|---|---|---|---|
+| **Planned** | `draft`, `pending_approval` | Plan recorded: canonical JSON hashed, ledger block and audit entry written, approver set snapshotted | "Planned: waiting for approvals (n of m)" |
+| **Approved** | `approved` | Every snapshotted approver approved this plan hash (REQ-BUD-02) | "Approved: ready for the authorised signer" |
+| **Pending** | `payment_pending`, `payment_confirmed` | A payment attempt exists (F.2). `payment_confirmed` means the original transaction is `SUCCESS` but payouts are not all verified | "Payment pending" or "Payment confirmed; k of 3 payouts verified" |
+| **Verified distribution** | `distribution_verified` | Every envelope payout passed §H.5 | "Distribution verified" |
+
+Guards: payment is refused unless the plan is `approved` for its current hash; a rejection gives `rejected`; editing creates a new version and voids prior approvals (`superseded`). Evidence that contradicts the plan gives `mismatch`, which is never shown as distributed.
 
 ### F.4 Edge cases
 
@@ -719,6 +824,8 @@ No idempotency key or reconcile endpoint is documented for release-early (D-07).
 
 ### H.2 Deposit (RECEIVE)
 
+For a budget payment "client" below means the authorised signer's bound wallet, and "terms amount" means the plan's total.
+
 5. RECEIVE event with `txHash` = original hash.
 6. **Payer** equals the client's bound address (from the decoded event data, or from the transaction source if events do not carry it, per Q-11).
 7. **Asset** equals the deployment input asset (native XLM for MVP).
@@ -741,15 +848,30 @@ No idempotency key or reconcile endpoint is documented for release-early (D-07).
 | Funds held | Confirmed deposit, no payout events yet, before deadline (plus balance check if Q-07 allows) | "Held in escrow" |
 | Seller payout verified | H.1 + H.3 for release | "Paid to seller — verified" |
 
-### H.5 Split distribution (SHOULD)
+### H.5 Split distribution (MVP)
 
-Expected share per recipient = `amount × bps / 10000` (bigint floor), with the remainder going to the last recipient, per Split rules in `llms.md`. Each recipient is verified independently.
+H.1 and H.2 (finality, original hash, deployment, network, RECEIVE event for the payment) apply first. H.3 describes the protected-payment payout and refund; for a Split, this section replaces it.
+
+Expected share per recipient = `amount × bps / 10000` (bigint floor), with the remainder going to the last recipient, per Split rules in `llms.md`. Each recipient is verified independently:
+
+1. A PAYOUT event for the original deposit to the registered envelope address.
+2. The amount equals that envelope's expected share exactly (stroop string compare). A shortfall or surplus is a mismatch, recorded with both values.
+3. Pagination and delayed indexing follow H.3 items 12–13.
+4. The plan shows "Distribution verified" only when **all** envelopes pass. Otherwise it shows "Payment confirmed; k of n payouts verified" or "Evidence mismatch — under review".
+
+| Fact | Proven by | UI wording |
+|---|---|---|
+| Payment confirmed | H.1 + H.2 | "Payment confirmed" |
+| Envelope paid | H.1 + H.5 for that envelope | "Operations paid — verified" |
+| Distribution verified | H.5 for every envelope | "Distribution verified" |
+
+Payout proves distribution, not that the money was well spent.
 
 ---
 
 ## I. Data and integration design [PROPOSED]
 
-All schema here is **proposed**. Nothing has been migrated. The Postgres guidance applied follows Supabase docs:
+All schema here is **proposed**. Nothing has been migrated. Tiers: organisations, wallets, deployments, payment attempts, `payout_verifications`, `event_cursors`, audit changes, ledger fix, budget plans (I.8) and `org_documents` (I.6) are **MVP**. Deals, terms, deliverables, approvals and release attempts (I.3, I.6, I.7) are **SHOULD**. Public receipts (I.12) are **SHOULD**. The Postgres guidance applied follows Supabase docs:
 
 - RLS enabled on every new table, with `to authenticated` role scoping.
 - Policies use `(select auth.uid())` and index their filter columns.
@@ -770,13 +892,13 @@ All schema here is **proposed**. Nothing has been migrated. The Postgres guidanc
 
 ### I.3 Deals and versioned terms
 
-- `deals(id, template text check in ('commission_escrow','online_selling'), client_user_id, seller_user_id, deployment_id fk, state text, current_terms_version_id, current_deliverable_version_id, created_at, updated_at)`.
+- `deals(id, template text check in ('commission_escrow','supplier_deposit','contractor_milestone','online_selling'), client_user_id, seller_user_id, deployment_id fk, state text, current_terms_version_id, current_deliverable_version_id, created_at, updated_at)`.
 - `deal_terms_versions(id, deal_id, version int, canonical_json jsonb, terms_sha256 char(64), amount_stroops text check (amount_stroops ~ '^[1-9][0-9]{0,38}$'), asset jsonb, deadline_at timestamptz, created_by, created_at, unique(deal_id, version))`.
 - `terms_acceptances(terms_version_id, user_id, accepted_at, primary key(...))`.
 
 ### I.4 Deployment registry and reservations
 
-- `paiflow_deployments(id uuid pk = Paiflow deployment UUID, network, template, input_asset jsonb, condition_node_id text, deadline_at, seller_address, buyer_address, split_recipients jsonb null, graph_snapshot_sha256, status check in ('available','reserved','retired','unusable'), registered_by, registered_at)`.
+- `paiflow_deployments(id uuid pk = Paiflow deployment UUID, network, template (`budget_split`, `commission_escrow`, …), input_asset jsonb, condition_node_id text, deadline_at, seller_address, buyer_address, split_recipients jsonb null, graph_snapshot_sha256, status check in ('available','reserved','retired','unusable'), registered_by, registered_at)`.
 - `deployment_reservations(id, deployment_id, deal_id or budget_plan_id, active boolean, created_at, closed_at)` with a unique partial index `(deployment_id) where active`.
 
 No credentials are stored in these tables; the token stays in server env.
@@ -802,7 +924,9 @@ Retention: keep for the life of the project plus at least 90 days after a termin
 
 ### I.6 Deliverables
 
-`deliverable_versions(id, deal_id, version, sha256 char(64), size_bytes bigint, media_type, storage_key, original_filename, uploaded_by, created_at, unique(deal_id, version))`. The storage bucket `deliverables` is **private**.
+`deliverable_versions(id, deal_id, version, sha256 char(64), size_bytes bigint, media_type, storage_key, original_filename, uploaded_by, created_at, unique(deal_id, version))` (SHOULD). The storage bucket `deliverables` is **private**.
+
+`org_documents(id, org_id, kind text check in ('contract','invoice','receipt','plan_attachment','other'), sha256 char(64), size_bytes bigint, media_type, storage_key, original_filename, uploaded_by, created_at)` (MVP, REQ-DOC-01), in the same private bucket family. Writes are server-only.
 
 ### I.7 Approvals
 
@@ -835,9 +959,9 @@ Today `addBlock` reads the latest block and then inserts (`src/lib/blockchain.ts
 
 Proposed fix: a Postgres function that locks the chain tail (`pg_advisory_xact_lock`) and computes or inserts within one transaction. The secondary-node anon-key upsert (`src/lib/blockchain.ts:129-149`) is excluded from SME claims.
 
-### I.12 Optional public receipts (STRETCH)
+### I.12 Public receipts (SHOULD)
 
-`public_receipts(slug text unique (≥128-bit random), deal_id, published_fields jsonb, published_by_client_at, published_by_seller_at, withdrawn_at)`.
+`public_receipts(slug text unique (≥128-bit random), deal_id or budget_plan_id, published_fields jsonb, published_by_client_at, published_by_seller_at (or published_by_owner_at for a budget plan), withdrawn_at)`.
 
 ### I.13 Migration requirements (not executed)
 
@@ -876,7 +1000,12 @@ All endpoints share these properties:
 | POST `/api/deals/:id/release` | Client | Authorised release-early | 403 no approval, 409 exists, 422 deadline |
 | GET `/api/deals/:id` | Participant | Deal, timeline, evidence (no XDR) | 403 |
 | POST `/api/operator/review/:id` | Operator | Record review outcome with justification | 403 |
-| POST `/api/orgs/:id/budget-plans` etc. | Owner/approver | Plan, approve, pay | 409, 422 |
+| POST `/api/orgs/:id/budget-plans` | Owner | Record plan version (hash, ledger block, approver snapshot) | 422 mismatch with deployment, bps ≠ 10,000 |
+| POST `/api/orgs/:id/budget-plans/:planId/approve` / `reject` | Designated approver | Plan-hash-bound decision | 409 stale, 403 |
+| POST `/api/orgs/:id/budget-plans/:planId/pay/prepare` / `submit` / `check` | Authorised signer | Prepare, persist, submit and check the Split payment (REQ-ESC-01 mechanics) | 403 not fully approved, 403 wallet mismatch, 409 open attempt |
+| GET `/api/orgs/:id/budget-plans/:planId` | Org member | Plan, approvals, four-state dashboard, per-envelope verification (no XDR) | 403 |
+| POST `/api/orgs/:id/documents` (multipart) | Org member | Record and hash an SME document | 413, 415 |
+| POST `/api/orgs/:id/verify-file` (multipart) | Org member | Compare a file with a recorded document or plan version (tamper check) | 413, 403 |
 | GET `/r/:slug` | Public | Published receipt fields | 404 |
 
 ---
@@ -895,19 +1024,19 @@ Shared rules for every screen:
 
 | Screen | Purpose | Primary actor / action | Visible information | Restrictions | States | Reuse |
 |---|---|---|---|---|---|---|
-| Sign-in / Wallet binding | Account + wallet proof | Any user; sign challenge | Bound address, network | Signed in | loading, not installed, wrong network, signature rejected, bound | `login/page.tsx`, `Input`, `Button` |
-| Wallet | Balances and history | Bound user | Spendable XLM, held-in-escrow per deal, cumulative verified payouts (separate), history with Stellar hashes | Own data only | loading, unavailable, empty history, pending items, verified | `Card`, `Table`, `Badge` |
-| New deal | Create terms | Client | Template, parties, amount (XLM entered as decimal and converted to stroops via bigint), deadline (read-only from the deployment), terms hash after save | Client with bound wallet | validation errors, no matching deployment, saved | `Input`, `Modal` |
-| Deal detail | Single source of truth | Participants | Timeline, terms hash, deposit hash, held state, deliverable versions, approval, release/refund evidence, nonresponse warning | Participants, operator | each F.1 state with plain-language text; uncertain shows "Do not pay again" | `AuditTimeline`, `Badge` |
-| Fund escrow (modal) | Consent and sign | Client | TESTNET, amount, asset, seller and buyer recipients, fee, expiry countdown | Bound wallet = buyer | preparing, awaiting signature, wallet changed, expired, submitted, pending, confirmed, failed | starter `starter-app.tsx` pattern |
-| Deliver | Upload file | Seller | Size/type limits, resulting hash | Seller | uploading, too large, wrong type, recorded | `UploadForm` |
-| Review & approve | Version-bound approval | Client | Deliverable vN hash, download (signed URL), verify-file tool, approve or reject | Client | stale version, approved, rejected | `ApprovalCard` |
-| Verify file | Byte comparison | Participant | Selected version, result text per REQ-DLV-02 | Participants | match, no match, too large | `/verify`, `VerificationResult` |
-| Budget plan (SHOULD) | Plan, approvals, distribution | Owner, approvers | Envelopes with bps and addresses, PHP planning figures labelled separately, approval progress "2 of 3", four-state dashboard | Org members | Planned, Approved, Payment pending, Distribution verified, mismatch | `BudgetChart`, `BudgetTable`, `ApprovalStatus` |
-| Online-selling (SHOULD) | Mock courier + escrow | Buyer, seller | Order hash, **MOCK** courier status | Participants | as deal + mock states | Deal detail |
-| Operator console | Registry and reviews | Operator | Deployments, reservations, review queue (no XDR shown) | Operator only | — | `Table` |
-| Public receipt (STRETCH) | Shareable proof | Anyone | Allow-listed fields only | Public | not found, withdrawn | `Card` |
-| Landing (STRETCH) | Rebrand | Visitors | SME positioning; government as future direction only | Public | — | `(public)/page.tsx` |
+| Sign-in / Wallet binding (MVP) | Account + wallet proof | Any user; sign challenge | Bound address, network | Signed in | loading, not installed, wrong network, signature rejected, bound | `login/page.tsx`, `Input`, `Button` |
+| Wallet (MVP) | Balances and history | Bound user | Spendable XLM, payment status per plan, held-in-escrow per deal (when protected payments exist), cumulative verified payouts (separate), history with Stellar hashes | Own data only | loading, unavailable, empty history, pending items, verified | `Card`, `Table`, `Badge` |
+| Budget plan (MVP) | Plan, approvals, signing, distribution | Owner, approvers, signer | Envelopes with bps and addresses, PHP planning figures labelled separately, approval progress "2 of 3", Freighter signing step, four-state dashboard with per-envelope payout hashes | Org members | Planned, Approved, Pending, Verified distribution, mismatch | `BudgetChart`, `BudgetTable`, `ApprovalStatus` |
+| Documents and Verify file (MVP) | Record SME documents; byte comparison (tamper check) | Org members | Document kind, SHA-256, selected record, result text per REQ-DLV-02 | Org members | match, no match, too large | `UploadForm`, `/verify`, `VerificationResult` |
+| Operator console (MVP) | Registry and reviews | Operator | Deployments, reservations, review queue (no XDR shown) | Operator only | — | `Table` |
+| New deal (SHOULD) | Create terms for a protected payment | Payer | Template, parties, amount (XLM entered as decimal and converted to stroops via bigint), deadline (read-only from the deployment), terms hash after save | Payer with bound wallet | validation errors, no matching deployment, saved | `Input`, `Modal` |
+| Deal detail (SHOULD) | Single source of truth | Participants | Timeline, terms hash, deposit hash, held state, deliverable versions, approval, release/refund evidence, nonresponse warning | Participants, operator | each F.1 state with plain-language text; uncertain shows "Do not pay again" | `AuditTimeline`, `Badge` |
+| Fund protected payment (modal, SHOULD) | Consent and sign | Payer | TESTNET, amount, asset, payee and payer recipients, fee, expiry countdown | Bound wallet = payer | preparing, awaiting signature, wallet changed, expired, submitted, pending, confirmed, failed | starter `starter-app.tsx` pattern |
+| Deliver (SHOULD) | Upload file | Payee | Size/type limits, resulting hash | Payee | uploading, too large, wrong type, recorded | `UploadForm` |
+| Review & approve (SHOULD) | Version-bound approval | Payer | Deliverable vN hash, download (signed URL), verify-file tool, approve or reject | Payer | stale version, approved, rejected | `ApprovalCard` |
+| Public receipt (SHOULD) | Shareable proof with transaction hashes | Anyone | Allow-listed fields only | Public | not found, withdrawn | `Card` |
+| Landing (SHOULD) | SME-focused copy | Visitors | SME positioning; government as future direction only | Public | — | `(public)/page.tsx` |
+| Online-selling (STRETCH) | Mock courier + protected payment | Customer, SME | Order hash, **MOCK** courier status | Participants | as deal + mock states | Deal detail |
 
 ---
 
@@ -919,7 +1048,7 @@ Shared rules for every screen:
    - Never return or log the token. A build-time bundle check (starter `scripts/check-browser-bundle.mjs` pattern) confirms no token-shaped string reaches the client.
 2. **Wallet-only signing.** CYFER never receives secret keys or seed phrases. The server never signs user transactions.
 3. **Authenticated ownership checks.** Every route checks session, participant or role, wallet binding and deal state server-side. The client-side admin guard (`src/app/(admin)/admin/layout.tsx:12-18`) is a convenience, not a control.
-4. **Release authority.** The release route is the most privileged operation. It requires a valid version-bound approval, a lock, a single attempt and an audit entry. The deployer wallet and any token holder can still release, so the token is held by one named owner (Q-01), rotated after the event, and its exposure is treated as an incident.
+4. **Budget-payment gate and release authority.** The Split payment's prepare route is the MVP gate: it refuses unless the plan is `approved` for its current hash and the caller's session wallet is the authorised signer, and it never calls Paiflow otherwise. The release route (protected payments, SHOULD) is the most privileged operation. It requires a valid version-bound approval, a lock, a single attempt and an audit entry. The deployer wallet and any token holder can still release, so the token is held by one named owner (Q-01), rotated after the event, and its exposure is treated as an incident.
 5. **Replay, duplicate and rate limits.**
    - Single-use challenge nonces.
    - Unique constraints for attempts, releases and approvals.
@@ -927,7 +1056,7 @@ Shared rules for every screen:
    - Per-user and global rate limits for prepare, submit, check, release, upload and verify.
    - Body-size limits enforced while streaming (starter `lib/http.ts` pattern).
    - Note: in-memory limits are per-process.
-6. **Private deliverables.**
+6. **Private documents and deliverables** (SME documents, plan attachments and deliverables).
    - Private bucket, server-generated keys, signed URLs ≤ 5 min.
    - Type allowlist; size ≤ 10 MB (proposed).
    - Content served with `Content-Disposition: attachment`.
@@ -936,14 +1065,14 @@ Shared rules for every screen:
    - New tables are scoped by participant or org membership.
    - The inherited policies that allow any authenticated user to write `budget_data` (`supabase/policies/001_rls_policies.sql:123-125`) or read all users and approvals (`:18-20`, `:81-83`) are **gaps** and must not cover SME data.
 8. **Public data.**
-   - Receipts may show: deal title (opt-in), template, terms hash, deliverable hash, deadline, deposit / release / refund Stellar hashes, verification states, timestamps.
+   - Receipts may show: deal or plan title (opt-in), template, terms hash or plan hash, envelope labels and shares, deliverable hash, deadline, deposit / payout / release / refund Stellar hashes, verification states, timestamps.
    - Receipts never show: emails, credentials, signed or prepared XDR, private files, internal user IDs, request IDs.
 9. **Honest integrity claims.**
    - The CYFER ledger is an application hash chain in a database the team controls; operators with database access could rewrite it.
    - Do not call it "immutable" or "anchored on Stellar".
    - Existing audit hashes cannot be recomputed, because the `Date.now()` input is not stored (`src/lib/audit.ts:34`); fix per §I.10.
 10. **Safe diagnostic logging.** Log codes, request IDs, deal IDs and hashes only. Never log tokens, signed envelopes, recovery records, file contents or full addresses with emails.
-11. **Recovery-record access.** Prepared and signed XDR are readable only by server routes acting for the deal's client or an operator, and are never sent back to the browser after signing.
+11. **Recovery-record access.** Prepared and signed XDR are readable only by server routes acting for the deal's payer, the plan's authorised signer or an operator, and are never sent back to the browser after signing.
 12. **Observed inherited gaps, recorded as requirements (not fixed in this task):**
     - GET budget treats any `Authorization` header as admin (`src/app/api/budget/route.ts:22-33`).
     - Unpublished documents are readable by ID (`src/app/api/documents/[id]/route.ts:15-28`).
@@ -962,57 +1091,60 @@ Shared rules for every screen:
 
 | Capability | MVP | SHOULD | STRETCH | FUTURE |
 |---|---|---|---|---|
-| Commission escrow, XLM, one deployment | ✔ | | | |
-| Wallet binding, wallet page | ✔ | | | |
-| Hashed terms, deliverable, approval, release, refund tracking, payout verification, recovery | ✔ | | | |
-| File verification against deliverable | ✔ | | | |
-| Budget envelopes (Split 50/30/20) + UCP | | ✔ | | |
-| Online-selling template, mocked courier | | ✔ | | |
-| USDC via separate deployments and trustlines | | | ✔ | |
-| Public receipt page | | | ✔ | |
-| Landing-page rebrand | | | ✔ | |
+| Server-only Paiflow module, Freighter signing, own Split deployment (three envelopes, XLM) | ✔ | | | |
+| Wallet binding, wallet page (XLM balance, payment status) | ✔ | | | |
+| Budget plan recorded, hashed and added to the CYFER chain | ✔ | | | |
+| Unanimous approval by every designated approver before the payment can be signed | ✔ | | | |
+| Verification of the original transaction, then each envelope payout, with Planned / Approved / Pending / Verified distribution | ✔ | | | |
+| Payment recovery from server-side evidence | ✔ | | | |
+| SME document record and tamper check (file against recorded hash) | ✔ | | | |
+| Protected payment (commission example): `time_before`, Pay payee / Pay payer, hashed terms and deliverable, version-bound approval, release route that checks approval, refund tracking | | ✔ | | |
+| Public receipt page with transaction hashes | | ✔ | | |
+| SME-focused landing page copy | | ✔ | | |
+| USDC deployment with trustlines and a currency picker | | | ✔ | |
+| More protected-payment examples (supplier deposit, contractor milestone, online order with mocked courier) | | | ✔ | |
+| Moving funds with Pay (fixed payee, return unused funds) | | | ✔ | |
 | Government adaptation | | | | ✔ |
-| Automated per-deal deployment provisioning | | | | ✔ |
+| Automated per-deal or per-payment deployment provisioning | | | | ✔ |
 | Arbitration / multisig | | | | ✔ |
-| Swaps, broader integrations | | | | ✔ |
+| Swap (XLM/USDC through Soroswap), broader integrations | | | | ✔ |
 
-**MVP acceptance boundary:** the MVP is complete when every check marked MVP in §M has passed, plus one manual testnet rehearsal (T-01 to T-07) with recorded hashes. SHOULD and STRETCH items never block MVP acceptance.
+**MVP acceptance boundary:** the MVP is complete when every check on an MVP-tier requirement in §M has passed, plus one manual testnet rehearsal (T-01 to T-07) with recorded hashes. SHOULD and STRETCH items never block MVP acceptance. Never promote an optional item into the MVP.
 
 ### L.2 Implementation slices (in dependency order)
 
 | Slice | Content | Depends on |
 |---|---|---|
 | S0 | Spikes Q-06, Q-07, Q-08, Q-11 against the SDK/API README; record findings in this PRD | — |
-| S1 | Read-only live schema inventory; new migration for profiles, wallets, deployments, deals, terms, attempts, deliverables, approvals, releases, verifications, cursors; RLS | Q-10 |
-| S2 | Manual escrow deployment (§L.3); operator registry route; capability check | Q-01, Q-02, Q-09 |
+| S1 | Read-only live schema inventory; new migration for organisations, profiles, wallets, deployments, budget plans and envelopes, plan approvals, SME documents, attempts, verifications, cursors (MVP); deals, terms, deliverables, approvals, releases, receipts (add when S9–S11 start); RLS | Q-10 |
+| S2 | Manual Split deployment (§L.3 step 2); operator registry route; capability check | Q-01, Q-02, Q-09 |
 | S3 | Server-only Paiflow module (port the starter `lib/paiflow.ts`); env validation; bundle check | S2 |
-| S4 | Wallet challenge/bind; wallet page (balance read) | S1 |
-| S5 | Deal + terms + acceptance | S1, S2 |
-| S6 | Fund: prepare, sign, persist, submit, check, recover | S3, S4, S5 |
-| S7 | Deliverable upload (private) + verify-file | S5 |
-| S8 | Version-bound approval + release route + release recovery | S6, S7 |
-| S9 | Payout verifier + event cursor polling + refund tracking | S6, S8 |
-| S10 | Deal detail timeline + wallet history | S9 |
-| S11 (SHOULD) | Split deployment, budget plan, UCP rewrite, distribution verification | S3, S9 |
-| S12 (SHOULD) | Online-selling template + labelled mock | S8 |
-| S13 (STRETCH) | USDC deployment; receipts; landing | S9 |
+| S4 | Wallet challenge/bind; wallet page (balance read, payment status) | S1 |
+| S5 | Budget plan: canonical JSON, hash, ledger block, audit, envelope-to-deployment match; SME document record + verify-file (tamper check) | S1, S2 |
+| S6 | UCP rewrite: approver snapshot, plan-hash-bound approvals, conditional transitions | S5 |
+| S7 | Split payment: prepare (approval gate), sign, persist, submit, check, recover | S3, S4, S6 |
+| S8 | Payout verifier (§H.5) + event cursor polling + four-state dashboard + wallet history | S7 |
+| S9 (SHOULD) | Protected-payment deployment (§L.3 step 3); deal, terms, acceptance; fund | S3, S4, S8 |
+| S10 (SHOULD) | Deliverable upload (private) + version-bound approval + release route + release recovery + refund tracking | S9 |
+| S11 (SHOULD) | Public receipt page; SME landing copy | S8 |
+| S12 (STRETCH) | USDC deployment and currency picker; supplier-deposit, contractor-milestone and online-selling templates with labelled mock | S10 |
 
 ### L.3 Manual deployment prerequisites
 
 1. The deployer signs in to Paiflow (event access code is held by the team, never in the app).
-2. Build **On Receive (native XLM) → Condition `time_before` at {deadline, with timezone}**:
-   - True → **Pay**, `fullAmount: true`, recipient = seller G-address.
-   - False → **Pay**, `fullAmount: true`, recipient = buyer G-address.
+2. **MVP:** build **On Receive (native XLM) → Split** with three percentage recipients in the same mode and no duplicate addresses: Operations 5000 bps, Payroll 3000 bps, Supplies 2000 bps, total exactly 10,000, to three distinct funded addresses. Dev mode off.
+3. **SHOULD:** build a separate **On Receive (native XLM) → Condition `time_before` at {deadline, with timezone}**:
+   - True → **Pay**, `fullAmount: true`, recipient = payee (seller) G-address.
+   - False → **Pay**, `fullAmount: true`, recipient = payer (buyer) G-address, using an explicit Pay so the refund goes to the payer and not the deploying wallet.
    - Both handles connected. No Hold. No Return to owner. Dev mode off.
-3. Review the English preview; deploy from the funded deployer wallet; wait for `CONFIRMED`.
-4. Record the deployment UUID and the condition node ID.
-5. Create a **Read and operate** developer token (`pfd_`) explicitly selecting this deployment, or a `pfk_` token. Store it only in the server `.env.local`.
-6. For SHOULD: a separate **On Receive (XLM) → Split** deployment with 5000/3000/2000 bps to three distinct funded addresses.
+4. Review the English preview of each flow; deploy from the funded deployer wallet; wait for `CONFIRMED`.
+5. Record each deployment UUID (and the condition node ID for the protected payment).
+6. Create a **Read and operate** developer token (`pfd_`) explicitly selecting these deployments, or a `pfk_` token. Store it only in the server `.env.local`.
 7. For STRETCH USDC: a separate deployment per asset; every payer and recipient adds the exact trustline (code `USDC`, issuer `GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5`) and obtains a balance.
 
 ### L.4 Wallet and recipient prerequisites
 
-- Client, freelancer and deployer are distinct Freighter testnet accounts, Friendbot-funded. The client keeps XLM for the deposit plus fees and reserves.
+- Owner/signer, the three envelope recipients and the deployer are distinct Freighter testnet accounts, Friendbot-funded. The signer keeps XLM for the payment plus fees and reserves. For the protected payment, payer, payee and deployer are likewise distinct.
 - Recipients must already exist as funded accounts; otherwise the payment reverts (`AccountMissingError`).
 - Never put secret keys in the app, the repository, prompts or slides.
 
@@ -1058,39 +1190,47 @@ Current commands in this repo (`package.json:5-10`): `npm run build`, `npm run l
 
 ### M.2 Traceability
 
-| Req | Acceptance checks | Level | Evidence required |
-|---|---|---|---|
-| REQ-ACC-01 | 401 without session; 403 non-participant | Mocked | Test output |
-| REQ-ACC-02 | Replay rejected; wrong signer rejected; unique address | Mocked + manual | Test output; binding row |
-| REQ-DEP-01 | Concurrent reservation → one wins; mismatch refused; past deadline refused | Mocked | Test output |
-| REQ-DEAL-01/02 | Deterministic hash; acceptance gating; edit after funding 409 | Mocked | Test output |
-| REQ-ESC-01 | Prep persisted before sign; envelope persisted before submit; altered body rejected; duplicate click returns same attempt; token absent from bundle | Mocked + bundle check | Test output; bundle scan |
-| REQ-ESC-02 | PENDING/UNKNOWN/502 never "held" | Mocked | Test output |
-| REQ-DLV-01 | Private fetch denied; versioning | Mocked + manual | Test output |
-| REQ-DLV-02 | 1-byte change → no match; no "tampered" verdict | Mocked + human copy review | Test output; screenshot |
-| REQ-APR-01 | Stale version 409; seller cannot approve; concurrent decisions → one | Mocked | Test output |
-| REQ-REL-01 | No approval → 403 and SDK not called; concurrent → one call; uncertain → no re-call | Mocked | Test output with SDK call count |
-| REQ-REF-01 | No release-early at/after deadline; "Refunded" only after verification | Mocked + manual (T-08) | Test output; refund hash |
-| REQ-PAY-01 | Each §H check passes and fails with fixtures | Mocked | Test output |
-| REQ-REC-01 | Reload preserves attempt; resubmit identical bytes; NOT_FOUND blocks new prepare | Mocked + manual | Test output |
-| REQ-WAL-01 | Separate panels; audit hash ≠ Stellar hash label; unavailable ≠ 0 | Mocked + human | Screenshot |
-| REQ-BUD-01..03 | bps=10000; mismatch refused; concurrent last approval publishes once; partial distribution wording | Mocked + manual | Test output; hashes |
-| REQ-RCPT-01 | Allow-listed fields only | Mocked | Schema test |
-| REQ-SELL-01 | Mock label everywhere; mock cannot release | Mocked + human | Screenshot |
+The Tier column decides what gates the MVP (§L.1): only MVP rows must pass for acceptance.
+
+| Req | Tier | Acceptance checks | Level | Evidence required |
+|---|---|---|---|---|
+| REQ-ACC-01 | MVP | 401 without session; 403 non-member / non-participant | Mocked | Test output |
+| REQ-ACC-02 | MVP | Replay rejected; wrong signer rejected; unique address | Mocked + manual | Test output; binding row |
+| REQ-DEP-01 | MVP | Concurrent reservation → one wins; envelopes ≠ registered recipients refused; past deadline refused (protected payment) | Mocked | Test output |
+| REQ-ESC-01 | MVP (mechanics) | Prep persisted before sign; envelope persisted before submit; altered body rejected; duplicate click returns same attempt; token absent from bundle | Mocked + bundle check | Test output; bundle scan |
+| REQ-ESC-02 | MVP (mechanics) | PENDING/UNKNOWN/502 never "confirmed" or "held" | Mocked | Test output |
+| REQ-DOC-01 | MVP | Private fetch denied; same bytes → same hash; ledger failure leaves no row | Mocked + manual | Test output |
+| REQ-DLV-02 | MVP | 1-byte change → no match; no "tampered" verdict | Mocked + human copy review | Test output; screenshot |
+| REQ-PAY-01 | MVP | Each §H check (including H.5) passes and fails with fixtures | Mocked | Test output |
+| REQ-REC-01 | MVP | Reload preserves attempt; resubmit identical bytes; NOT_FOUND blocks new prepare | Mocked + manual | Test output |
+| REQ-WAL-01 | MVP | Separate panels; audit hash ≠ Stellar hash label; unavailable ≠ 0 | Mocked + human | Screenshot |
+| REQ-BUD-01..03 | MVP | bps=10000; mismatch refused; concurrent last approval publishes once; payment 403 before full approval and SDK not called; partial distribution wording ("2 of 3") | Mocked + manual | Test output; hashes |
+| REQ-DEAL-01/02 | SHOULD | Deterministic hash; acceptance gating; edit after funding 409 | Mocked | Test output |
+| REQ-DLV-01 | SHOULD | Private fetch denied; versioning | Mocked + manual | Test output |
+| REQ-APR-01 | SHOULD | Stale version 409; payee cannot approve; concurrent decisions → one | Mocked | Test output |
+| REQ-REL-01 | SHOULD | No approval → 403 and SDK not called; concurrent → one call; uncertain → no re-call | Mocked | Test output with SDK call count |
+| REQ-REF-01 | SHOULD | No release-early at/after deadline; "Refunded" only after verification | Mocked + manual (T-10) | Test output; refund hash |
+| REQ-RCPT-01 | SHOULD | Allow-listed fields only | Mocked | Schema test |
+| REQ-TPL-01, REQ-SELL-01 | STRETCH | Own deployment per template; mock label everywhere; mock cannot release | Mocked + human | Screenshot |
+| REQ-MOV-01 | STRETCH | Non-registered recipient refused before prepare | Mocked | Test output |
 
 ### M.3 Manual testnet rehearsal (authorised, small amounts, own deployment)
 
+T-01 to T-07 are the MVP rehearsal. T-08 to T-11 cover the SHOULD-tier protected payment.
+
 | ID | Scenario | Expected | Record |
 |---|---|---|---|
-| T-01 | Bind client and seller wallets | Bindings verified | Addresses (public) |
-| T-02 | Create deal; seller accepts | Terms hash recorded | Terms hash |
-| T-03 | Fund 1 XLM | SUCCESS; RECEIVE matched; "Held" | Deposit hash |
-| T-04 | Seller uploads file | Hash recorded | SHA-256 |
-| T-05 | Verify same / altered file | Match / no match (no "tampered") | Screenshots |
-| T-06 | Client approves v1; release | Release hash; PAYOUT to seller verified | Release hash, explorer link |
-| T-07 | Reload mid-funding (separate deal / deployment) | Same attempt shown; no new prepare | Attempt ID |
-| T-08 | Refund path on a **separate** short-deadline deployment, no approval | Refund verified some minutes after deadline | Refund hash |
-| T-09 | Unauthorised release attempt (seller session) | 403; no Paiflow call | Log |
+| T-01 | Bind owner/signer and approver wallets | Bindings verified | Addresses (public) |
+| T-02 | Record a budget plan (50/30/20) | Plan hash and ledger block recorded; envelopes match the deployment | Plan hash |
+| T-03 | Attempt payment before full approval, then approve with every approver | First attempt 403 with no Paiflow call; plan `approved` only after the last approval | Approval rows; log |
+| T-04 | Sign the Split payment of 1 XLM in Freighter | SUCCESS for the original hash; RECEIVE matched; "Pending" until payouts verified | Deposit hash |
+| T-05 | Verify each envelope payout | Three PAYOUT events at the expected shares; "Distribution verified" | Payout hashes, explorer links |
+| T-06 | Verify same / altered document | Match / no match (no "tampered") | Screenshots |
+| T-07 | Reload mid-funding (separate plan / deployment) | Same attempt shown; no new prepare | Attempt ID |
+| T-08 | Create protected-payment deal; payee accepts; payer funds 1 XLM | SUCCESS; RECEIVE matched; "Held" | Deposit hash |
+| T-09 | Payee uploads file; payer approves v1; release | Release hash; PAYOUT to payee verified | Release hash, explorer link |
+| T-10 | Refund path on a **separate** short-deadline deployment, no approval | Refund verified some minutes after deadline | Refund hash |
+| T-11 | Unauthorised release attempt (payee session) | 403; no Paiflow call | Log |
 
 No live financial test runs without the team's explicit authorisation. Use no load testing or API spam.
 
@@ -1104,34 +1244,91 @@ Three minutes for pitch and demo, then two minutes of Q&A. Order per the primer:
 
 | Segment | ≈ Time | Content |
 |---|---|---|
-| Problem | 0:20 | Freelancer delivers and is not paid; buyer pays and receives nothing. No statistics unless sourced. |
-| Solution | 0:25 | "Paiflow holds and routes the money. CYFER proves why it moved." Hashed terms → held deposit → hashed delivery → version-bound approval → verified payout. |
-| Stellar impact | 0:20 | **Demonstrated:** testnet deposits, on-chain holding, verified payouts with hashes. **Potential (not demonstrated):** SME adoption, stable-asset invoicing. |
-| Paiflow integration | 0:25 | Show the graph: On Receive → time_before → Pay seller / Pay buyer. Explain release-early vs automatic refund; one deployment = one relationship. |
-| Demo | 1:30 | See N.2 |
+| Problem | 0:20 | SME budgets and payments run on chat and spreadsheets, with no proof of who approved or what was paid. No statistics unless sourced. |
+| Solution | 0:25 | "Paiflow moves the money. CYFER proves what was approved and what was paid." Hashed plan → every approver approves → Freighter-signed payment → Paiflow splits it → verified envelope payouts. |
+| Stellar impact | 0:20 | **Demonstrated:** testnet payments, on-chain splitting and holding, verified payouts with hashes. **Potential (not demonstrated):** real SME adoption, stable-asset invoicing. |
+| Paiflow integration | 0:25 | Show the Split graph (three envelopes) and the protected-payment graph (On Receive → time_before → Pay payee / Pay payer). Explain that recipients are fixed per deployment and one deployment is one relationship. |
+| Demo | 1:30 | Brief §9's seven steps, shown in the order of N.2 |
+
+Demo script (budget flow first, protected payment as the add-on):
+
+1. Problem: budgets and payments run on chat and spreadsheets.
+2. The owner records a budget plan; CYFER hashes it and adds it to the chain.
+3. Every approver approves; show that payment cannot proceed before then.
+4. The authorised signer connects the wallet and signs the payment in Freighter; Paiflow splits it.
+5. CYFER verifies the transaction and each envelope payout, with transaction hashes.
+6. Protected payment (SHOULD): fund a held payment, then show the release and the refund rule.
+7. Tamper check: alter a document and show the mismatch.
 
 ### N.2 Demo honesty labels
 
 | Step | Label |
 |---|---|
-| Connect wallet, create deal, fund in Freighter, show held | **Live** only if T-01 to T-03 passed today; otherwise **Recorded** and said so |
-| Upload deliverable, hash recorded | **Live** (application) |
-| Approve → release → seller payout with hash | **Live** if T-06 passed; otherwise **Recorded** |
-| Refund path | **Explained** with the graph, or **Recorded** from T-08. Never promised to complete during the 3-minute pitch. |
+| Record budget plan, hash and chain block | **Live** (application) |
+| Approvals, with payment refused before full approval | **Live** (application) |
+| Connect wallet, sign the Split payment in Freighter, verify envelope payouts | **Live** only if T-01 to T-05 passed today; otherwise **Recorded** and said so |
+| Protected payment: fund and show held | **Live** only if T-08 passed; otherwise **Recorded** |
+| Approve → release → payee payout with hash | **Live** if T-09 passed; otherwise **Recorded** |
+| Refund path | **Explained** with the graph, or **Recorded** from T-10. Never promised to complete during the 3-minute pitch. |
 | Tamper check | **Live** (application): "no match", not "fraud proven" |
-| Budget split, online selling | **Live** only if SHOULD slices passed; courier is always **Mocked** |
+| Online selling, supplier deposit, contractor milestone | **Live** only if STRETCH slices passed; courier is always **Mocked** (a stub, said so on stage) |
+| USDC | Not shown unless a USDC deployment passed with every trustline and balance checked; otherwise "future" |
 | Government use | **Future direction**, not demonstrated adoption |
 
 ### N.3 Required statements
 
-- "If the client never approves, the deadline refunds the client even if the freelancer delivered. CYFER's evidence helps a dispute but cannot move money. Arbitration is future work." (Q-04)
-- "Our server can release early only to the fixed seller, and only after the client's recorded approval. Whoever holds the deployment token or the deploying wallet is trusted; we log every release."
+- "If the payer never approves, the deadline refunds the payer even if the payee delivered. CYFER's evidence helps a dispute but cannot move money. Arbitration is future work." (Q-04)
+- "Our server can release early only to the fixed payee, and only after the payer's recorded approval. Whoever holds the deployment token or the deploying wallet is trusted; we log every release."
+- "Recipients and shares are fixed when a flow is deployed. A new payee or a changed envelope means a new flow and a fresh approval."
 - "Testnet only: this is a simulation with no real money."
-- "The hash proves the file is byte-identical, not that the work is good."
+- "The hash proves the file is byte-identical, not that the work is good, and a verified payout proves distribution, not that the money was well spent."
+- "Interoperability here means Stellar assets and Stellar wallets. We do not bridge to other blockchains."
+- If an online-order example is shown: "The courier status is a stub."
 
 ### N.4 Open decisions
 
-See §A.8 (Q-01 to Q-11). Q-01, Q-02 and Q-09 block the live demo; Q-06, Q-08, Q-10 and Q-11 block implementation of their slices.
+See §A.8 (Q-01 to Q-12). Q-01, Q-02 and Q-09 block the live demo; Q-06, Q-08, Q-10 and Q-11 block implementation of their slices. Q-12 (budget flow as the live demo) is resolved in D-01.
+
+---
+
+## O. Interoperability: XLM, USDC and beyond
+
+Each Paiflow flow is deployed for **one input asset**. Supporting both XLM and USDC means two deployments behind one CYFER interface, not one flow that accepts either.
+
+| | XLM (native) | USDC |
+|---|---|---|
+| Trustline needed | No | Yes, on every recipient and payer wallet, for the exact issuer |
+| Extra setup | Fund with Friendbot | Add trustline, then fund from Circle's testnet faucet |
+| Starter support | Yes (fixed 1 XLM example) | Needs our own integration |
+| Best for | Demo reliability | SME pricing stability (a stable unit for invoices) |
+
+How it is presented: the user picks a currency when creating a plan or payment, and CYFER routes it to the matching deployment and shows amounts in that asset. All amounts are integer stroop strings handled with `bigint`, never floats (1 token = 10,000,000 stroops).
+
+Plan for today: build XLM end to end first. Add USDC as a second deployment only if time allows, and check every wallet's trustline and balance before demoing, because a missing trustline reverts the whole payment. A Swap block (Soroswap) is Future work: it adds slippage, and a failed swap reverts the payment.
+
+| What is interoperable | Status |
+|---|---|
+| Assets: XLM and USDC; other Stellar assets can be set by code and issuer in a flow | XLM demo, USDC if time allows, others future |
+| Wallets: any Stellar wallet that signs with the network passphrase CYFER returns; Freighter is the tested one | Freighter live (once S4 and S7 pass) |
+| Payment entry points: CYFER's checkout, plus Paiflow's hosted payment page and QR, so a payer needs no CYFER account | Hosted page available (Paiflow-provided) |
+| Verification: any transaction hash can be checked on a Stellar explorer; CYFER's verify page checks hashes | Planned (REQ-PAY-01, REQ-DLV-02) |
+| Integrations: Paiflow SDK and HTTP API let other systems create payments and read events | Via SDK |
+
+"Live" and "available" in this table are intended demo states. Nothing is live until §M evidence exists (C-04). Interoperability does not mean bridging to other blockchains, and the PRD never claims it.
+
+## P. Scale-up to government (future direction)
+
+CYFER for SMEs is the original CYFER without the government audience. Because the engine is general, returning to public use is mostly configuration plus legal requirements.
+
+| In the SME version | In a government version |
+|---|---|
+| Hashed contracts, invoices and budget plans | Hashed ordinances, contracts and certificates |
+| Designated approvers (owners, finance) | Every official must approve (Unanimous Consensus Protocol) |
+| Budget envelopes through Split | Sector allocations (Health, Education, Infrastructure) |
+| Protected payment | Milestone payments to contractors, held until inspection is approved |
+| Receipt page and audit trail | Citizen-facing transparency dashboard and audit trail |
+
+Real government use would need lawful appropriations, certifications, procurement rules and supporting documents beyond this app. This is presented as a direction, not a claim, and is not demonstrated adoption.
 
 ---
 

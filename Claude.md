@@ -3,16 +3,20 @@
 ## Current direction (read first)
 
 - **Source of truth:** [`docs/PRD.MD`](docs/PRD.MD), "CYFER for SMEs — Escrow, Budget Tracking and Verified Payouts". It supersedes every government-first instruction below.
-- **Audience:** SMEs, freelancers and their customers. Government use is a future direction only.
-- **MVP:** one live commission escrow on Stellar Testnet (XLM) through Paiflow. See PRD §L.1 for the MVP / should / stretch / future scope tiers, and never promote optional features into the MVP.
+- **Pitch:** Paiflow moves the money. CYFER proves what was approved and what was paid. CYFER never holds funds or keys.
+- **Audience:** SME owners, finance staff, partners, suppliers and customers. Government use is a future direction only.
+- **MVP:** one budget plan on Stellar Testnet (XLM) through Paiflow: hashed plan, approval by every designated approver, one Freighter-signed `On Receive → Split` (Operations 50% / Payroll 30% / Supplies 20%), per-envelope payout verification (Planned / Approved / Pending / Verified distribution), wallet page, document tamper check. The protected payment (`time_before`, escrow), receipt page and SME landing copy are Should; USDC and more escrow examples are Nice. See PRD §L.1 for the MVP / should / stretch / future scope tiers, and never promote optional features into the MVP.
+- **Money tools:** Split (budget envelopes, MVP), Pay (fixed payee, stretch), Protected payment (should). Recipients and shares are fixed per deployment, so a new payee or envelope change means a new flow and a fresh approval.
 - **Paiflow rules** (PRD §A.2, §G, §K). Follow the reference starter's `llms.md` and `AGENTS.md` in `../paiflow-hackathon-starter`:
   - Keep the Paiflow token server-only, never in a `NEXT_PUBLIC_` variable.
   - Users sign in their wallet (Freighter); the app never holds keys.
   - Persist the preparation before signing and the signed envelope before submitting.
   - Never create a replacement payment because an outcome is uncertain.
   - Money is integer stroop strings handled with `bigint`.
-  - Never show "paid" or "refunded" before the payout is verified.
-- **Honesty rules:** the Supabase `blockchain` table is an application hash chain, not Stellar, and not public anchoring. Audit `tx_hash` values are not Stellar transaction hashes. A file-hash mismatch does not prove tampering.
+  - Never show "paid", "distributed" or "refunded" before the payout is verified. A confirmed transaction and a verified payout are separate checks.
+  - If a payment times out, check the original transaction hash. Never send another payment.
+  - Check the approver gate on the server before preparing a payment or calling release-early (holding the token authorises the release).
+- **Honesty rules:** the Supabase `blockchain` table is an application hash chain, not Stellar, and not public anchoring. Audit `tx_hash` values are not Stellar transaction hashes. A file-hash mismatch does not prove tampering. A payout proves distribution, not good spending. Testnet is a simulation. Courier tracking is mocked. Interoperability means Stellar assets and wallets only.
 - **Do not** run seeds, migrations or `test-supabase.ts` (it writes data and may call the AI API) against a shared database, and do not send testnet transactions, without explicit team approval.
 - **Commands** that exist today: `npm run dev`, `npm run build`, `npm run lint`. There is no `npm test`.
 

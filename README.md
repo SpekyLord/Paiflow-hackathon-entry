@@ -1,10 +1,12 @@
 # CYFER for SMEs — Escrow, Budget Tracking and Verified Payouts
 
-> **Paiflow holds and routes the money. CYFER proves why it moved.**
+> **Paiflow moves the money. CYFER proves what was approved and what was paid.**
 
-**Current product direction:** CYFER is being rebuilt for SMEs, freelancers and their customers for the Paiflow × Web3 Iloilo hackathon (25 October 2026, Stellar Testnet). The source of truth is the PRD at [`docs/PRD.MD`](docs/PRD.MD).
+**Current product direction:** CYFER for SMEs is the original CYFER (tamper-proof records, unanimous multi-approval, audit trail, budget transparency) rebuilt for SME owners, finance staff, partners, suppliers and customers, with a non-custodial Stellar wallet and Paiflow-powered payments, for the Paiflow × Web3 Iloilo hackathon (25 October 2026, Stellar Testnet). Protected payments (escrow) are one tool inside the platform, built to prevent scams, not the whole product. The source of truth is the PRD at [`docs/PRD.MD`](docs/PRD.MD).
 
-**Status:** None of the SME escrow, wallet or budget features are implemented yet. The code in this repository is the inherited government-edition application described below, so read the PRD's current-state assessment (§C) before reusing it.
+**MVP:** one budget plan, hashed and approved by every designated approver, paid as one Freighter-signed Split across three envelopes (Operations 50%, Payroll 30%, Supplies 20%), with each envelope payout verified, a wallet page and a document tamper check. The protected payment, receipt page and SME landing copy are Should-have; USDC and more escrow examples are Nice-to-have (PRD §L.1).
+
+**Status:** None of the SME budget, wallet or protected-payment features are implemented yet. The code in this repository is the inherited government-edition application described below, so read the PRD's current-state assessment (§C) before reusing it.
 
 ---
 

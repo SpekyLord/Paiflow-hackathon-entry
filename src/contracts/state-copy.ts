@@ -38,8 +38,8 @@ export const NONRESPONSE_REFUND =
 
 export const HASH_LABELS = {
   stellarTxHash: 'Stellar transaction hash',
-  auditHash: 'CYFER audit hash',
-  ledgerBlockHash: 'CYFER ledger hash',
+  auditHash: 'CYFAI audit hash',
+  ledgerBlockHash: 'CYFAI ledger hash',
   sha256: 'SHA-256',
 } as const;
 

@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     const session = await loadSession(data.user.id);
     if (!session) {
       await supabase.auth.signOut();
-      throw new HttpError('FORBIDDEN', 'This account is not set up for CYFER.');
+      throw new HttpError('FORBIDDEN', 'This account is not set up for CYFAI.');
     }
     return session;
   });

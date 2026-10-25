@@ -49,7 +49,7 @@ export async function connect(): Promise<string> {
   if (result.error || !result.address)
     throw new FreighterError(
       "FREIGHTER_DENIED",
-      "Allow CYFER to connect in Freighter, then try again.",
+      "Allow CYFAI to connect in Freighter, then try again.",
     );
   return result.address;
 }

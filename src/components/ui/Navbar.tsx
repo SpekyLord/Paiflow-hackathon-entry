@@ -66,10 +66,10 @@ export function Navbar() {
         <div className="topbar-row">
           <Link href="/" className="brand" onClick={closeMenu}>
             <span className="brand-mark">
-              <Image src="/Cyfer Logo.png" alt="CYFER" width={80} height={80} priority />
+              <Image src="/Cyfer Logo.png" alt="CYFAI" width={80} height={80} priority />
             </span>
             <span>
-              <span className="brand-name">CYFER</span>
+              <span className="brand-name">CYFAI</span>
               <span className="brand-sub" style={{ whiteSpace: 'nowrap' }}>
                 Verified Records
               </span>

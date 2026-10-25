@@ -102,7 +102,7 @@ export const BUDGET_CATEGORIES = [
 export const CURRENT_FISCAL_YEAR = new Date().getFullYear();
 
 // Application metadata
-export const APP_NAME = 'CYFER';
+export const APP_NAME = 'CYFAI';
 export const APP_FULL_NAME = 'Secure Document Access Blockchain Network';
 export const APP_VERSION = '1.0.0';
 export const APP_DESCRIPTION = 'Tamper-proof document records, unanimous approvals and verified payouts for organisations';

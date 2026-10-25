@@ -92,7 +92,7 @@ describe('wallet binding routes', () => {
     expect(response.status).toBe(200);
     expect(body.data).toMatchObject({ challengeId: state.challenge?.challengeId, expiresAt: state.challenge?.expiresAt });
     expect(body.data).toHaveProperty('message', [
-      'CYFER wallet binding challenge',
+      'CYFAI wallet binding challenge',
       `Origin: ${ORIGIN}`,
       `User: ${state.userId}`,
       `Address: ${KEY.publicKey()}`,

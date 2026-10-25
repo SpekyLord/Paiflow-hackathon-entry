@@ -1,4 +1,4 @@
-import "server-only";
+﻿import "server-only";
 import type { ErrorCode } from "@/contracts/errors";
 import { stellarExpertTxUrl } from "@/lib/explorer";
 import {
@@ -110,7 +110,7 @@ export async function moneyMovementsResponse(
   return new Response(movementsToCsv(outcome.page.rows), {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": 'attachment; filename="cyfer-money-movements.csv"',
+      "Content-Disposition": 'attachment; filename="cyfai-money-movements.csv"',
       "Cache-Control": "private, no-store",
     },
   });

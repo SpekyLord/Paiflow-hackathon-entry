@@ -44,7 +44,7 @@ export default function SignInPage() {
       <FixtureBanner />
       <main id="main" className="mx-auto flex min-h-[80vh] max-w-[420px] flex-col justify-center px-5 py-12">
         <div className="mb-6 flex items-center justify-between">
-          <span className="text-[17px] font-semibold tracking-[-0.04em]">CYFER <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#5f7167]">for SMEs</span></span>
+          <span className="text-[17px] font-semibold tracking-[-0.04em]">CYFAI <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#5f7167]">for SMEs</span></span>
           <TestnetChip />
         </div>
         <h1 className="font-serif text-[34px] font-semibold tracking-[-0.04em] text-[#173b30]">Sign in</h1>

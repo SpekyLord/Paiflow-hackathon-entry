@@ -7,8 +7,8 @@ export function Footer() {
       <div className="container-page">
         <div className="md:hidden">
           <div className="row" style={{ gap: 10 }}>
-            <Image src="/Cyfer Logo.png" alt="CYFER" width={24} height={24} />
-            <strong style={{ color: 'var(--ink-900)' }}>CYFER</strong>
+            <Image src="/Cyfer Logo.png" alt="CYFAI" width={24} height={24} />
+            <strong style={{ color: 'var(--ink-900)' }}>CYFAI</strong>
           </div>
 
           <p className="mt-3 max-w-[34ch] text-sm leading-6">
@@ -40,8 +40,8 @@ export function Footer() {
           <div className="grid gap-[var(--s-6)] md:grid-cols-[1.25fr_0.9fr_0.9fr]">
             <div>
               <div className="row" style={{ gap: 10 }}>
-                <Image src="/Cyfer Logo.png" alt="CYFER" width={26} height={26} />
-                <strong style={{ color: 'var(--ink-900)' }}>CYFER</strong>
+                <Image src="/Cyfer Logo.png" alt="CYFAI" width={26} height={26} />
+                <strong style={{ color: 'var(--ink-900)' }}>CYFAI</strong>
                 <span className="muted">Demo SME - Fiscal Year 2026</span>
               </div>
               <p className="mt-3 max-w-[44ch] text-sm leading-6">
@@ -51,7 +51,7 @@ export function Footer() {
             </div>
 
             <div>
-              <div className="eyebrow">Use CYFER</div>
+              <div className="eyebrow">Use CYFAI</div>
               <div className="stack-2 mt-3">
                 <Link href="/verify">Verify a Document</Link>
                 <Link href="/documents">Official Records</Link>

@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
         fileHash,
         document,
         block,
-        message: 'Document verified successfully. This file matches a record on the CYFER blockchain.',
+        message: 'Document verified successfully. This file matches a record on the CYFAI blockchain.',
       };
     } else {
       result = {

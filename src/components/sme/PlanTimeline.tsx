@@ -14,7 +14,7 @@ export function PlanTimeline({ entries }: { entries: TimelineEntryDTO[] }) {
             {e.stellarTxHash && <div><HashChip value={e.stellarTxHash} kind="stellarTxHash" explorer /></div>}
             {e.sha256 && <div><HashChip value={e.sha256} kind="sha256" /></div>}
             {e.auditHash && <div><HashChip value={e.auditHash} kind="auditHash" /></div>}
-            {e.ledgerBlockId != null && <div className="text-[11px] text-[#6d7f75]">CYFER ledger block #{e.ledgerBlockId} (application record, not a Stellar transaction)</div>}
+            {e.ledgerBlockId != null && <div className="text-[11px] text-[#6d7f75]">CYFAI ledger block #{e.ledgerBlockId} (application record, not a Stellar transaction)</div>}
           </div>
         </li>
       ))}

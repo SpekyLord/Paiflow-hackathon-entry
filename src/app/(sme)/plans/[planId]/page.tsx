@@ -187,7 +187,7 @@ export default function PlanDetailPage() {
                 <h2 id="facts-heading" className="text-sm font-semibold text-[#214638]">Plan facts</h2>
                 <dl className="mt-3 space-y-2.5 text-sm">
                   <div><dt className="text-[11px] font-semibold uppercase tracking-wide text-[#6d7f75]">Plan hash</dt><dd className="mt-0.5"><HashChip value={plan.planSha256} kind="sha256" /></dd></div>
-                  {plan.ledgerBlockId != null && <div><dt className="text-[11px] font-semibold uppercase tracking-wide text-[#6d7f75]">CYFER ledger block</dt><dd className="mt-0.5 text-xs">#{plan.ledgerBlockId} (application record, not a Stellar transaction)</dd></div>}
+                  {plan.ledgerBlockId != null && <div><dt className="text-[11px] font-semibold uppercase tracking-wide text-[#6d7f75]">CYFAI ledger block</dt><dd className="mt-0.5 text-xs">#{plan.ledgerBlockId} (application record, not a Stellar transaction)</dd></div>}
                   <div><dt className="text-[11px] font-semibold uppercase tracking-wide text-[#6d7f75]">Authorised signer</dt><dd className="mt-0.5">{plan.signer.displayName} <span className="break-all font-mono text-xs text-[#52625a]">{plan.signer.address}</span></dd></div>
                   <div><dt className="text-[11px] font-semibold uppercase tracking-wide text-[#6d7f75]">Split deployment</dt><dd className="mt-0.5 break-all font-mono text-xs">{plan.deployment.id}</dd></div>
                 </dl>

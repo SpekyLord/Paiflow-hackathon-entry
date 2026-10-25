@@ -126,7 +126,7 @@ export async function preparePaymentHandler(deps: PaymentDeps, request: Request,
     fee = feeStroops(p.xdr);
   } catch {
     await abort("UNUSABLE_ENVELOPE");
-    return fail("VALIDATION", "Paiflow returned an envelope CYFER cannot accept.");
+    return fail("VALIDATION", "Paiflow returned an envelope CYFAI cannot accept.");
   }
 
   // Persist the preparation before the XDR leaves the server.

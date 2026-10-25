@@ -11,7 +11,7 @@ export interface WalletChallengeMessageInput {
 /** Stable, human-readable message for SEP-53. Every value is server-bound to the stored challenge. */
 export function buildWalletChallengeMessage(input: WalletChallengeMessageInput): string {
   return [
-    'CYFER wallet binding challenge',
+    'CYFAI wallet binding challenge',
     `Origin: ${input.origin}`,
     `User: ${input.userId}`,
     `Address: ${input.address}`,

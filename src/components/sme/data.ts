@@ -37,7 +37,7 @@ export async function listPlans(orgId: string): Promise<BudgetPlanSummaryDTO[]> 
   return business.listPlans(orgId);
 }
 export async function getPlan(orgId: string, planId: string): Promise<BudgetPlanDetailDTO> {
-  if (FIXTURE) return (await import('./data-fixture')).plan();
+  if (FIXTURE) return (await import('./data-fixture')).planById(planId);
   return business.getPlan(orgId, planId);
 }
 export async function createPlan(orgId: string, input: CreatePlanInput): Promise<BudgetPlanDetailDTO> {

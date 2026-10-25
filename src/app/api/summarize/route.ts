@@ -240,7 +240,7 @@ function getDemoSummary(document: any): DocumentSummary {
       ],
       affectedParties: 'Staff, customers and suppliers covered by the policy',
       budgetImplications: 'Implementation costs come from the existing operations budget. No additional spending required.',
-      tldr: `A new policy approved by all approvers and verified on the CYFER ledger.`,
+      tldr: `A new policy approved by all approvers and verified on the CYFAI ledger.`,
     },
     budget: {
       summary: `The Annual Budget for FY 2026 allocates a total of PHP 60,000,000 across eight areas. Operations receives the largest share at 25%, followed by Payroll at 20% and Supplies at 14.17%. The budget keeps essential operations funded while staying within approved limits.`,
@@ -260,7 +260,7 @@ function getDemoSummary(document: any): DocumentSummary {
         'Authorises a specific project or policy change',
         'Funding source identified and checked by the finance lead',
         'Timeline and responsible teams specified',
-        'Full approval chain recorded on the CYFER ledger',
+        'Full approval chain recorded on the CYFAI ledger',
       ],
       affectedParties: 'The teams carrying out the project, and any contracted service providers',
       budgetImplications: 'Project costs come from the approved budget. The finance lead confirmed funds are available.',

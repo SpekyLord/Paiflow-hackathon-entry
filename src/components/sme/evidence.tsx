@@ -103,7 +103,7 @@ export function abbreviate(value: string, head = 8, tail = 6) {
 
 export function HashChip({ value, kind, explorer = false }: { value: string; kind: HashKind; explorer?: boolean }) {
   const [copied, setCopied] = useState(false);
-  const label = kind === 'auditHash' ? 'CYFER audit hash (not a Stellar transaction)' : HASH_LABELS[kind];
+  const label = kind === 'auditHash' ? 'CYFAI audit hash (not a Stellar transaction)' : HASH_LABELS[kind];
   let href: string | null = null;
   if (explorer && kind === 'stellarTxHash') {
     try { href = stellarExpertTxUrl(value); } catch { href = null; }

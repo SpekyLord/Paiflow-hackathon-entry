@@ -17,7 +17,7 @@ interface OrgDocumentRow {
   created_at: string;
 }
 
-export interface PlanVersionRecord { id: string; version: number; purpose: string; plan_sha256: string }
+export interface PlanVersionRecord { id: string; version: number; purpose: string; plan_sha256: string; created_at: string }
 
 function requireDbResult<T>(data: T | null, error: unknown): T {
   if (error || data === null) throw new HttpError('INTERNAL');
@@ -74,7 +74,7 @@ export async function getOrgDocumentDto(orgId: string, documentId: string): Prom
 export async function getPlanVersionInOrg(orgId: string, versionId: string): Promise<PlanVersionRecord> {
   const db = getServiceClient();
   const { data: version, error: versionError } = await db.from('budget_plan_versions')
-    .select('id,version,purpose,plan_sha256,plan_id').eq('id', versionId).maybeSingle();
+    .select('id,version,purpose,plan_sha256,plan_id,created_at').eq('id', versionId).maybeSingle();
   if (versionError) throw new HttpError('INTERNAL');
   if (!version) throw new HttpError('NOT_FOUND');
   const { data: plan, error: planError } = await db.from('budget_plans').select('id,org_id')
@@ -82,5 +82,5 @@ export async function getPlanVersionInOrg(orgId: string, versionId: string): Pro
   if (planError) throw new HttpError('INTERNAL');
   if (!plan) throw new HttpError('NOT_FOUND');
   if (plan.org_id !== orgId) throw new HttpError('FORBIDDEN');
-  return { id: version.id as string, version: version.version as number, purpose: version.purpose as string, plan_sha256: version.plan_sha256 as string };
+  return { id: version.id as string, version: version.version as number, purpose: version.purpose as string, plan_sha256: version.plan_sha256 as string, created_at: version.created_at as string };
 }

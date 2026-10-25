@@ -2,7 +2,6 @@ import { createHash } from 'node:crypto';
 import { MAX_UPLOAD_BYTES } from '@/contracts/limits';
 import { parseUuid, requireOrgMember } from '@/server/auth/guards';
 import { getOrgDocument, getPlanVersionInOrg } from '@/server/files/repository';
-import { validateUpload } from '@/server/files/validation';
 import { readMultipart } from '@/server/http/multipart';
 import { sameOrigin } from '@/server/http/origin';
 import { handle, HttpError } from '@/server/http/respond';
@@ -34,24 +33,29 @@ export async function POST(request: Request, context: { params: Promise<{ orgId:
     const { fields, file } = await readMultipart(request, MAX_UPLOAD_BYTES);
     if (!file || Object.keys(fields).length !== 1) throw new HttpError('VALIDATION_SHAPE', 'Choose one file and one saved record.');
     const target = parseTarget(fields.target);
-    const candidate = validateUpload(file);
+    // The candidate is deliberately NOT type-checked: a file that was altered after recording (corrupted header,
+    // truncated, wrong type) is exactly what this tool must report as "does not match", not refuse with a 415.
+    // Size is already capped by readMultipart. Only the bytes are hashed.
     let recordedSha256: string;
+    let recordedAt: string;
     let label: string;
 
     if (target.kind === 'org_document') {
       const record = await getOrgDocument(orgId, target.id);
       recordedSha256 = record.sha256;
+      recordedAt = record.created_at;
       label = record.original_filename;
     } else {
       const version = await getPlanVersionInOrg(orgId, target.id);
       recordedSha256 = version.plan_sha256;
+      recordedAt = version.created_at;
       label = `${version.purpose} · version ${version.version}`;
     }
 
-    const candidateSha256 = createHash('sha256').update(candidate.bytes).digest('hex');
+    const candidateSha256 = createHash('sha256').update(file.bytes).digest('hex');
     return {
       target: { kind: target.kind, id: target.id, label },
-      recordedAt: new Date().toISOString(),
+      recordedAt, // when the record was saved, never the time of this check
       candidateSha256,
       recordedSha256,
       match: candidateSha256 === recordedSha256,

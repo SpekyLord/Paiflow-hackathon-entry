@@ -857,7 +857,7 @@ The phases below are listed in order:
   - **Verification:** saved query text plus a result summary (no personal data).
   - **Blocking question:** which project is "shared"? (B-02)
 
-- [ ] **F-03 Decide and specify session handling (B-11)**
+- [x] **F-03 Decide and specify session handling (B-11)** — approved by Francis in chat (see §11)
   - **Requirements:** REQ-ACC-01.
   - **Purpose and deliverable:** a decision note on how sessions work. The preferred option is HTTP-only cookie sessions via `@supabase/ssr` (request it per §1.3). The alternative is a bearer token held only in memory. Never `localStorage`.
   - **Depends on:** C-01 for the package. Check the Supabase docs for `@supabase/ssr` with Next.js 16 route handlers.
@@ -1188,4 +1188,9 @@ The phases below are listed in order:
 
 | Time (PHT) | Task/Gate | Evidence (no secrets) | Level (Mocked / DB / Testnet / Human) |
 |---|---|---|---|
-| — | — | — | — |
+| ~12:45 | F-01 (not yet ticked) | `src/contracts/{states,errors,limits,split,canonical,dto,api,controllers,state-copy}.ts`, `src/contracts/fixtures/index.ts`, `src/client/http.ts` written. Isolated `tsc --noEmit` (strict, ES2017) over those files: 0 errors. Scratch `tsx` script: `splitShares("10000000", 50/30/20)` = 5000000/3000000/2000000; odd total `10000001` puts the remainder on the last envelope; `canonicalJson` identical for permuted keys; fixtures cover all 10 `PlanState`s, "2 of 3" partial verification, 3 wallet kinds, all carry `[FIXTURE]`. **Not run:** `npm run lint` / `npm run build` (no `node_modules`; needs `npm ci`), so G1 criterion 4 is still open. No commit made (not a git repo here). | Mocked |
+| ~12:50 | F-02 (not ticked) | Repo-side inventory plus read-only SQL to run: [FRANCIS-NOTES-F02-F04.md](FRANCIS-NOTES-F02-F04.md). Live schema **unread**: Supabase MCP failed to connect and no service-role key was used. `approvals.budget_id`, `budget_data.status` and `documents` bucket publicity are still **unknown**. No write executed. | Human |
+| ~12:50 | F-03, F-04 (not ticked) | Proposed decisions in the same notes file: cookie sessions via `@supabase/ssr` 0.12.5 (checked against its docs through Context7), and a dedicated new Supabase project for test and demo. **Needs team approval in chat; nothing authorised or applied.** | Human |
+| (time to confirm) | F-03 ticked | Francis approved cookie sessions via `@supabase/ssr` in chat. Decision note: [FRANCIS-NOTES-F02-F04.md](FRANCIS-NOTES-F02-F04.md) (sign-in, sign-out, `getUser()` reads, 401 on expiry, §3.5 unchanged). `DEP: @supabase/ssr@0.12.5` request to Carlos still to send. | Human |
+| (time to confirm) | F-04 (not ticked yet) | Francis authorised **a new dedicated Supabase project** for testing and demo (⚠ AUTH: decision only; nothing applied; the old shared project is not to be touched). Still open: who creates the project, and Carlos and Shanti confirming at CP-1. Tick F-04 after that. | Human |
+| ~13:10 | F-05…F-10 (not ticked) | Drafts, **not applied and not executed**: `supabase/migrations/002`…`008` (identity/wallets, deployments, plans, evidence tables, documents + private bucket, ledger/`append_evidence`, business RPCs). Syntax unchecked: no local Postgres, and Docker is not running. F-07 columns are provisional until HO-04. F-11 (financial RPCs) not started. | Mocked |

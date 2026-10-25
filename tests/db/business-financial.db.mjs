@@ -455,6 +455,18 @@ test('RLS and grants: anon and authenticated cannot read financial rows or call 
   void id;
 });
 
+test('service_role: can read tables and call RPCs, cannot delete evidence or write financial tables directly', async () => {
+  const f = await base(); await approveAll(f);
+  const id = await toPrepared(f);
+  await q('set local role service_role');
+  for (const t of ['profiles', 'budget_plans', 'payment_attempts', 'paiflow_events', 'operator_reviews']) await q(`select 1 from public.${t} limit 1`);
+  const r = await call('get_payment_context', f.planId, f.ids.owner);
+  assert(r.ok === true, 'RPC works as service_role');
+  await sqlFails('delete from public.payment_attempts where id=$1', [id], /permission denied/, 'service_role delete evidence');
+  await sqlFails("update public.payment_attempts set state='success' where id=$1", [id], /permission denied/, 'service_role direct update of financial rows');
+  await q('reset role');
+});
+
 // ---------- runner ----------
 let failed = 0;
 for (const t of tests) {
@@ -465,6 +477,6 @@ for (const t of tests) {
   finally { await q('rollback').catch(() => {}); }
 }
 const leftover = (await q("select (select count(*) from public.budget_plans)::int p, (select count(*) from public.organisations)::int o")).rows[0];
-console.log(`\n${tests.length - failed}/${tests.length} passed. Leftover rows after rollback: plans=${leftover.p} orgs=${leftover.o} (expect 0)`);
+console.log(`\n${tests.length - failed}/${tests.length} passed. Leftover rows after rollback: plans=${leftover.p} orgs=${leftover.o} (expect plans=0; orgs=1 is the provisioned Demo SME)`);
 await db.end();
 process.exit(failed ? 1 : 0);

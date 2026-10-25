@@ -1,6 +1,7 @@
 // One-off runner for the DEDICATED project only. Reads SUPABASE_DB_URL from .env.local (never printed).
 // Each file runs in its own transaction; stops at the first error. Refuses to run unless the public schema is empty.
-// Usage: node supabase/apply/run-migrations.mjs <path-to-node_modules-containing-pg>
+// Usage: node supabase/apply/run-migrations.mjs <dir-containing-pg> [--only migrations/0NN_x.sql ...]
+// With --only, runs just those files (for later migrations) and skips the empty-schema check.
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
@@ -15,10 +16,13 @@ const ref = (env.NEXT_PUBLIC_SUPABASE_URL.match(/https:\/\/([a-z0-9]+)\./) || []
 if (!url || url.includes('PASTE_PASSWORD_HERE')) { console.error('SUPABASE_DB_URL is missing or still has the placeholder.'); process.exit(1); }
 if (!url.includes(`postgres.${ref}`)) { console.error('SUPABASE_DB_URL does not belong to the project in NEXT_PUBLIC_SUPABASE_URL. Refusing.'); process.exit(1); }
 
-const ORDER = ['migrations/001_initial_schema.sql', 'apply/00_lockdown_inherited_tables.sql',
+const onlyAt = process.argv.indexOf('--only');
+const ONLY = onlyAt > 0 ? process.argv.slice(onlyAt + 1) : null;
+const ALL = ['migrations/001_initial_schema.sql', 'apply/00_lockdown_inherited_tables.sql',
   'migrations/002_sme_identity_orgs_wallets.sql', 'migrations/003_sme_deployments.sql', 'migrations/004_sme_budget_plans.sql',
   'migrations/005_sme_financial_evidence.sql', 'migrations/006_sme_documents.sql', 'migrations/007_sme_ledger_audit.sql',
   'migrations/008_sme_business_functions.sql', 'migrations/009_sme_financial_functions.sql'];
+const ORDER = ONLY ?? ALL;
 
 const client = new Client({ connectionString: url, ssl: { rejectUnauthorized: false } });
 try { await client.connect(); } catch (e) { console.error('Connection failed:', e.code || e.message); process.exit(1); }
@@ -26,7 +30,7 @@ try {
   const who = (await client.query('select current_database() db, current_user usr')).rows[0];
   console.log(`Connected: db=${who.db} user=${who.usr}`);
   const n = (await client.query("select count(*)::int c from pg_tables where schemaname='public'")).rows[0].c;
-  if (n > 0) { console.error(`public schema already has ${n} table(s); refusing to run on a non-empty project.`); process.exit(2); }
+  if (!ONLY && n > 0) { console.error(`public schema already has ${n} table(s); refusing to run on a non-empty project.`); process.exit(2); }
   for (const f of ORDER) {
     const sql = readFileSync(join(root, f), 'utf8');
     process.stdout.write(`Applying ${f} ... `);

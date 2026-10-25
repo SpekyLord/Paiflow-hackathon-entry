@@ -19,7 +19,10 @@ export async function createAuthClient(): Promise<SupabaseClient> {
       getAll: () => store.getAll(),
       setAll: (toSet) => {
         try {
-          for (const { name, value, options } of toSet) store.set(name, value, options);
+          // No browser Supabase client exists in CYFER, so the session cookie is never read by JavaScript: force HttpOnly.
+          for (const { name, value, options } of toSet) {
+            store.set(name, value, { ...options, httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production' });
+          }
         } catch {
           // Called where cookies are read-only (not a route handler). Refreshed cookies are written by the next mutation.
         }

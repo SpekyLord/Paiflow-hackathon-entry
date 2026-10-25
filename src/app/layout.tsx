@@ -25,7 +25,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "CYFER - Verified Civic Records",
   description:
-    "Blockchain-powered government document transparency platform for tamper-proof document management and citizen verification.",
+    "Tamper-proof document records, unanimous approvals and verified payouts for organisations, starting with SMEs.",
 };
 
 export default function RootLayout({

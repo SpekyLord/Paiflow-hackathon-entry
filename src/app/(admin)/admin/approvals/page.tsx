@@ -226,7 +226,7 @@ export default function ApprovalsPage() {
               <CheckSquare size={18} className="mt-0.5 text-[var(--warn)]" />
               <p className="m-0 text-sm leading-6 text-[var(--text-soft)]">
                 Documents and budget entries stay in the workflow until the required
-                officials approve them. A single rejection interrupts publication and
+                approvers approve them. A single rejection interrupts publication and
                 preserves the audit trail.
               </p>
             </div>

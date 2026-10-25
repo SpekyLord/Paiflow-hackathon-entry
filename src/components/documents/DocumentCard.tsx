@@ -16,10 +16,10 @@ interface DocumentCardProps {
 }
 
 const categoryLabels: Record<string, string> = {
-  ordinance: 'New city rule',
+  ordinance: 'Policy',
   budget: 'Money and spending',
-  resolution: 'Official decision',
-  contract: 'City agreement',
+  resolution: 'Formal decision',
+  contract: 'Agreement',
   permit: 'Permit or license',
   other: 'Official record',
 };

@@ -220,7 +220,7 @@
 .verdict-bad .verdict-display { color: var(--bad); }
 .verdict-sub { color: var(--text-soft); margin-top: 4px; font-size: var(--t-lead); }
 
-/* FAQ (citizen-friendly expandable) */
+/* FAQ (reader-friendly expandable) */
 .faq { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-3); overflow: hidden; }
 .faq[open] { box-shadow: var(--shadow-1); }
 .faq summary { list-style: none; cursor: pointer; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-weight: 500; font-size: 15.5px; color: var(--ink-900); }
@@ -230,7 +230,7 @@
 .faq summary svg { transition: transform .2s; color: var(--text-mute); }
 .faq p { margin: 0; padding: 0 18px 16px; color: var(--text-soft); font-size: 14.5px; line-height: 1.6; }
 
-/* Citizen-friendly category chips */
+/* Reader-friendly category chips */
 .chip { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--text-soft); font-size: 13.5px; font-weight: 500; cursor: pointer; transition: all .15s; }
 .chip:hover { border-color: var(--ink-300); color: var(--ink-900); }
 .chip-on { background: var(--ink-900); border-color: var(--ink-900); color: #fff; }

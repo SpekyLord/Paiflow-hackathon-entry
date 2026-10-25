@@ -57,9 +57,9 @@ export default function BudgetPage() {
           <span className="eyebrow-dot" />
           Approved public data
         </div>
-        <h1>Where your taxes went this year</h1>
+        <h1>Where the budget went this year</h1>
         <p className="lead">
-          The approved city budget — by total, share, and category.
+          The approved budget — by total, share, and category.
         </p>
       </div>
 

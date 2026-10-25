@@ -32,7 +32,7 @@ const primaryActions = [
   {
     href: '/budget',
     title: 'Check the budget',
-    description: 'See approved city spending by category.',
+    description: 'See approved spending by category.',
     button: 'Open Budget',
     icon: Wallet,
     accent: 'var(--info-soft)',
@@ -67,7 +67,7 @@ export default function LandingPage() {
             </span>
             <h1>Public records, made checkable.</h1>
             <p className="lede mx-auto text-center" style={{ marginInline: 'auto' }}>
-              Verify a document, browse official records, or see how the city spends its budget.
+              Verify a document, browse official records, or see how the organisation spends its budget.
             </p>
             <div className="hero-cta justify-center">
               <Link href="/verify">

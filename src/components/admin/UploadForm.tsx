@@ -68,7 +68,7 @@ export function UploadForm() {
           <CheckCircle size={32} className="text-success" />
         </div>
         <h2 className="text-xl font-bold mb-2">Document Uploaded Successfully</h2>
-        <p className="text-muted">The document has been sent for approval by all officials.</p>
+        <p className="text-muted">The document has been sent for approval by all approvers.</p>
       </div>
     );
   }
@@ -78,7 +78,7 @@ export function UploadForm() {
       <form onSubmit={handleSubmit} className="space-y-5">
         <Input
           label="Document Title *"
-          placeholder="e.g. Municipal Budget Ordinance 2026"
+          placeholder="e.g. Annual Budget Policy 2026"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required

@@ -2,16 +2,16 @@
 
 function HomePage({ nav }) {
   return React.createElement('main', { id: 'main' },
-    // Hero — citizen-first
+    // Hero — public-first
     React.createElement('section', { className: 'hero' },
       React.createElement('div', { className: 'container-page hero-inner' },
         React.createElement('div', null,
           React.createElement('span', { className: 'hero-badge' },
             React.createElement(Icon, { name: 'shield', size: 13 }),
-            'Your city · Open records for everyone'),
-          React.createElement('h1', null, "Is this document from the city hall real?"),
+            'Your organisation · Open records for everyone'),
+          React.createElement('h1', null, "Is this document really from the organisation?"),
           React.createElement('p', { className: 'lede' },
-            "Someone hands you an ordinance. A neighbor forwards you a receipt. You get a permit in the mail. Before you rely on it — check it here in 5 seconds. It's free, you don't need to sign up, and your file stays on your own device."),
+            "A supplier sends you an invoice. A colleague forwards you a receipt. You get a contract by email. Before you rely on it — check it here in 5 seconds. It's free, you don't need to sign up, and your file stays on your own device."),
           React.createElement('div', { className: 'hero-cta' },
             React.createElement('button', {
               className: 'btn btn-primary btn-lg',
@@ -20,27 +20,27 @@ function HomePage({ nav }) {
             React.createElement('button', {
               className: 'btn btn-outline btn-lg',
               onClick: () => nav('documents')
-            }, React.createElement(Icon, { name: 'file', size: 16 }), 'Browse city records')
+            }, React.createElement(Icon, { name: 'file', size: 16 }), 'Browse records')
           ),
           React.createElement('div', { className: 'trust-band' },
             [
               { icon: 'lock', t: 'Free, no sign-up' },
               { icon: 'shield', t: 'Your file stays private' },
-              { icon: 'check', t: 'Approved by all officials' },
+              { icon: 'check', t: 'Approved by all approvers' },
               { icon: 'clock', t: 'Takes 5 seconds' },
             ].map(t => React.createElement('span', { key: t.t, className: 'trust-item' },
               React.createElement(Icon, { name: t.icon, size: 13 }), t.t))
           )
         ),
-        // Big citizen-friendly hero card
+        // Big reader-friendly hero card
         React.createElement('div', null,
           React.createElement('div', { className: 'hero-card' },
             React.createElement('div', { className: 'eyebrow', style: { color: '#cfe0e8', marginBottom: 12 } }, 'Three things you can do here'),
             React.createElement('div', { className: 'stack-3' },
               [
-                { icon: 'shield', t: 'Check a document', d: 'Make sure a file you received is the real, unchanged city copy.', go: 'verify' },
-                { icon: 'file',   t: 'Read city records', d: "See every ordinance, permit and contract your city published.", go: 'documents' },
-                { icon: 'pie',    t: 'See where taxes went', d: 'A plain-English breakdown of this year\u2019s city budget.', go: 'budget' },
+                { icon: 'shield', t: 'Check a document', d: 'Make sure a file you received is the real, unchanged copy.', go: 'verify' },
+                { icon: 'file',   t: 'Read records', d: "See every policy, permit and contract the organisation published.", go: 'documents' },
+                { icon: 'pie',    t: 'See where the budget went', d: 'A plain-English breakdown of this year\u2019s budget.', go: 'budget' },
               ].map((a) =>
                 React.createElement('button', {
                   key: a.t,
@@ -73,9 +73,9 @@ function HomePage({ nav }) {
             React.createElement('h2', { style: { font: '600 var(--t-h2)/1.15 var(--font-serif)', letterSpacing: '-.02em', margin: '10px 0 16px', color: 'var(--ink-900)' } },
               "A PDF on your phone isn't proof of anything — until you can check it."),
             React.createElement('p', { className: 'soft', style: { fontSize: 17, lineHeight: 1.6, marginTop: 0 } },
-              "Every week, someone in your city pays a fine from a fake notice, or follows a forwarded ordinance that was quietly edited, or gets turned away with a permit that looks real but isn't. Most people have no way to tell the difference."),
+              "Every week, someone pays a fake invoice, follows a forwarded policy that was quietly edited, or relies on a contract that looks real but isn't. Most people have no way to tell the difference."),
             React.createElement('p', { className: 'soft', style: { fontSize: 17, lineHeight: 1.6, marginTop: 14 } },
-              "CYFER fixes that. Your city officials record every official document in a public, tamper-proof system. You can instantly check any copy you have against it — here, for free, without signing up."),
+              "CYFER fixes that. Approvers record every official document in a tamper-proof system. You can instantly check any copy you have against it — here, for free, without signing up."),
             React.createElement('div', { className: 'row', style: { marginTop: 20 } },
               React.createElement('button', { className: 'btn btn-accent', onClick: () => nav('verify') },
                 React.createElement(Icon, { name: 'shield', size: 16 }), 'Check a document'),
@@ -88,7 +88,7 @@ function HomePage({ nav }) {
             React.createElement('div', { className: 'stack-3', style: { marginTop: 14 } },
               React.createElement('div', { className: 'row', style: { alignItems: 'flex-start', gap: 12 } },
                 React.createElement('span', { style: { width: 32, height: 32, borderRadius: '50%', background: 'var(--ink-100)', color: 'var(--ink-900)', display: 'grid', placeItems: 'center', fontFamily: 'var(--font-serif)', fontWeight: 600, flex: '0 0 32px' } }, '1'),
-                React.createElement('p', { style: { margin: 0, fontSize: 15 } }, React.createElement('strong', null, 'You receive a PDF'), ' — a friend forwards you the new tricycle fare ordinance on Messenger.')),
+                React.createElement('p', { style: { margin: 0, fontSize: 15 } }, React.createElement('strong', null, 'You receive a PDF'), ' — a colleague forwards you the new delivery fee policy on Messenger.')),
               React.createElement('div', { className: 'row', style: { alignItems: 'flex-start', gap: 12 } },
                 React.createElement('span', { style: { width: 32, height: 32, borderRadius: '50%', background: 'var(--ink-100)', color: 'var(--ink-900)', display: 'grid', placeItems: 'center', fontFamily: 'var(--font-serif)', fontWeight: 600, flex: '0 0 32px' } }, '2'),
                 React.createElement('p', { style: { margin: 0, fontSize: 15 } }, React.createElement('strong', null, 'You drop it in here'), ' — one click, the file never leaves your phone.')),
@@ -102,7 +102,7 @@ function HomePage({ nav }) {
       )
     ),
 
-    // Three promises to citizens
+    // Three promises to readers
     React.createElement('section', { className: 'section', style: { background: 'var(--ink-025)', borderTop: '1px solid var(--line)', borderBottom: '1px solid var(--line)' } },
       React.createElement('div', { className: 'container-page' },
         React.createElement('div', { className: 'section-head', style: { textAlign: 'center', maxWidth: 620, margin: '0 auto var(--s-7)' } },
@@ -113,11 +113,11 @@ function HomePage({ nav }) {
         React.createElement('div', { className: 'grid grid-3' },
           [
             { icon: 'users', t: 'No single person decides',
-              d: "Every city document requires sign-off from all key officials — the Mayor, the Treasurer and the Secretary. If even one refuses, it doesn't get published. No one can sneak anything through." },
+              d: "Every document requires sign-off from all key approvers — the Owner, the Finance Lead and the Operations Lead. If even one refuses, it doesn't get published. No one can sneak anything through." },
             { icon: 'shield', t: "Records can't be edited after the fact",
               d: "Once a document is published, it's locked into a public record that copies itself across three separate computers. Changing it anywhere would break every copy — and everyone would see." },
             { icon: 'eye', t: "You don't need our permission to check",
-              d: "No account, no email, no tracking. You can check any document right now, anonymously. Your city is paying for this so you can trust what you get." },
+              d: "No account, no email, no tracking. You can check any document right now, anonymously. The organisation pays for this so you can trust what you get." },
           ].map((p, i) =>
             React.createElement('div', { key: i, className: 'card card-body' },
               React.createElement('span', {
@@ -152,10 +152,10 @@ function DocumentsPage({ nav, docs }) {
   const { useState, useMemo } = React;
   const [q, setQ] = useState(''); const [cat, setCat] = useState('');
   const catMeta = [
-    { k: 'ordinance',  l: 'New city rules',        icon: 'scroll' },
+    { k: 'ordinance',  l: 'Policies',        icon: 'scroll' },
     { k: 'budget',     l: 'Money & spending',      icon: 'pie' },
     { k: 'resolution', l: 'Official decisions',    icon: 'check' },
-    { k: 'contract',   l: 'City agreements',       icon: 'file' },
+    { k: 'contract',   l: 'Agreements',       icon: 'file' },
     { k: 'permit',     l: 'Permits & licenses',    icon: 'shield' },
   ];
   const filtered = useMemo(() => docs.filter(d =>
@@ -166,16 +166,16 @@ function DocumentsPage({ nav, docs }) {
   return React.createElement('main', { id: 'main', className: 'container-page', style: { paddingBottom: 'var(--s-11)' } },
     React.createElement('div', { className: 'page-head' },
       React.createElement('div', { className: 'eyebrow' },
-        React.createElement('span', { className: 'eyebrow-dot' }), 'City records · free to read'),
-      React.createElement('h1', null, 'What your city has decided'),
-      React.createElement('p', { className: 'lead' }, "Every document here was formally approved by all your city officials together. Tap any one to read it — we\u2019ll also give you a plain-English summary if the legal language gets too thick.")
+        React.createElement('span', { className: 'eyebrow-dot' }), 'Records · free to read'),
+      React.createElement('h1', null, 'What the organisation has decided'),
+      React.createElement('p', { className: 'lead' }, "Every document here was formally approved by all approvers together. Tap any one to read it — we\u2019ll also give you a plain-English summary if the legal language gets too thick.")
     ),
     React.createElement('section', { className: 'section-tight' },
       React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, marginBottom: 18, alignItems: 'center' } },
         React.createElement('div', { style: { position: 'relative' } },
           React.createElement('span', { style: { position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-mute)' } },
             React.createElement(Icon, { name: 'search', size: 18 })),
-          React.createElement('input', { className: 'input', style: { paddingLeft: 42, fontSize: 15, height: 48 }, placeholder: 'What are you looking for? (e.g. tricycle fare, plastic ban)', value: q, onChange: e => setQ(e.target.value) })
+          React.createElement('input', { className: 'input', style: { paddingLeft: 42, fontSize: 15, height: 48 }, placeholder: 'What are you looking for? (e.g. delivery fee, packaging)', value: q, onChange: e => setQ(e.target.value) })
         ),
         React.createElement('span', { className: 'muted', style: { fontSize: 13 } }, 'Showing ' + filtered.length + ' of ' + docs.length)
       ),
@@ -204,7 +204,7 @@ function DocumentsPage({ nav, docs }) {
 }
 
 function DocumentCard({ doc, onOpen }) {
-  const prettyCat = { ordinance: 'New city rule', budget: 'Money & spending', resolution: 'Official decision', contract: 'City agreement', permit: 'Permit' }[doc.category] || doc.category;
+  const prettyCat = { ordinance: 'Policy', budget: 'Money & spending', resolution: 'Formal decision', contract: 'Agreement', permit: 'Permit' }[doc.category] || doc.category;
   return React.createElement('article', { className: 'card card-hover', style: { display: 'flex', flexDirection: 'column', cursor: 'pointer' }, onClick: onOpen, role: 'button', tabIndex: 0, onKeyDown: (e) => { if (e.key === 'Enter') onOpen(); } },
     React.createElement('div', { className: 'card-body', style: { flex: 1, display: 'flex', flexDirection: 'column', gap: 10 } },
       React.createElement('div', { className: 'row' },
@@ -229,21 +229,21 @@ function DocumentDetailPage({ nav, doc }) {
   useEffect(() => {
     const t = setTimeout(() => {
       setSummary({
-        tldr: "The city is raising the minimum tricycle fare from \u20b112 to \u20b115 starting May 1, 2026. Senior citizens, students and PWDs still get their 20% discount.",
+        tldr: "The minimum delivery fee goes from \u20b112 to \u20b115 starting May 1, 2026. Loyalty customers still get their 20% discount.",
         points: [
-          'The smallest fare you can be charged goes from ₱12 to ₱15.',
-          'Seniors, students and PWDs still pay 20% less, like before.',
-          'Every tricycle has to show the new fare chart inside, where you can see it.',
-          "Drivers who don\u2019t follow the rules pay \u20b1500 to \u20b12,000 and can be suspended.",
+          'The smallest delivery fee goes from ₱12 to ₱15.',
+          'Loyalty customers still pay 20% less, like before.',
+          'Every branch has to show the new fee chart where customers can see it.',
+          "Branches that charge the old fee must refund the difference.",
         ],
-        parties: 'Affects: tricycle drivers and their associations, everyday commuters, the city transport office.',
-        budget: "The city isn\u2019t spending any extra money on this \u2014 enforcement uses the transport office\u2019s regular budget."
+        parties: 'Affects: delivery riders, customers and the operations team.',
+        budget: "No extra spending \u2014 the operations team handles the change within its regular budget."
       });
       setLoadingSum(false);
     }, 400);
     return () => clearTimeout(t);
   }, [doc.id]);
-  const prettyCat = { ordinance: 'New city rule', budget: 'Money & spending', resolution: 'Official decision', contract: 'City agreement', permit: 'Permit' }[doc.category] || doc.category;
+  const prettyCat = { ordinance: 'Policy', budget: 'Money & spending', resolution: 'Formal decision', contract: 'Agreement', permit: 'Permit' }[doc.category] || doc.category;
 
   return React.createElement('main', { id: 'main', className: 'container-page', style: { paddingBottom: 'var(--s-11)' } },
     React.createElement('div', { className: 'page-head' },
@@ -251,7 +251,7 @@ function DocumentDetailPage({ nav, doc }) {
         React.createElement(Icon, { name: 'arrowLeft', size: 14 }), 'Back to all records'),
       React.createElement('div', { className: 'row', style: { marginBottom: 6 } },
         React.createElement('span', { className: 'tag' }, prettyCat),
-        React.createElement('span', { className: 'tag tag-ok' }, React.createElement(Icon, { name: 'check', size: 12 }), "Officially approved by all 3 officials")),
+        React.createElement('span', { className: 'tag tag-ok' }, React.createElement(Icon, { name: 'check', size: 12 }), "Officially approved by all 3 approvers")),
       React.createElement('h1', null, doc.title),
       React.createElement('p', { className: 'lead' }, doc.description)
     ),
@@ -273,7 +273,7 @@ function DocumentDetailPage({ nav, doc }) {
                   React.createElement('div', { className: 'eyebrow' }, 'Who this affects'),
                   React.createElement('p', { className: 'soft', style: { fontSize: 14, margin: '6px 0 0' } }, summary.parties)),
                 React.createElement('div', { className: 'card card-flat', style: { padding: 12 } },
-                  React.createElement('div', { className: 'eyebrow' }, "What it costs the city"),
+                  React.createElement('div', { className: 'eyebrow' }, "What it costs"),
                   React.createElement('p', { className: 'soft', style: { fontSize: 14, margin: '6px 0 0' } }, summary.budget))),
               React.createElement('p', { className: 'soft', style: { fontSize: 12, margin: 0, paddingTop: 8, borderTop: '1px dashed var(--line)' } }, "This is an AI-generated summary. For the full legal wording, read the original document below.")
             )
@@ -299,20 +299,20 @@ function DocumentDetailPage({ nav, doc }) {
             React.createElement('span', { style: { width: 40, height: 40, borderRadius: 10, background: 'var(--ok-soft)', color: 'var(--ok)', display: 'grid', placeItems: 'center', flex: '0 0 40px' } },
               React.createElement(Icon, { name: 'shield', size: 20 })),
             React.createElement('div', null,
-              React.createElement('div', { className: 'strong', style: { fontSize: 16, color: 'var(--ok)' } }, "This is a real city record"),
+              React.createElement('div', { className: 'strong', style: { fontSize: 16, color: 'var(--ok)' } }, "This is a real record"),
               React.createElement('div', { className: 'soft', style: { fontSize: 13, marginTop: 2 } }, "Safe to rely on."))),
-          React.createElement('p', { className: 'soft', style: { fontSize: 14, margin: '8px 0 0' } }, "All three city officials signed off on this document, and it has not been changed since it was published."),
+          React.createElement('p', { className: 'soft', style: { fontSize: 14, margin: '8px 0 0' } }, "All three approvers signed off on this document, and it has not been changed since it was published."),
           React.createElement('button', { className: 'btn btn-outline btn-sm', style: { marginTop: 12, width: '100%' }, onClick: () => nav('verify') },
             React.createElement(Icon, { name: 'upload', size: 13 }), 'Check a copy I have')
         ),
         React.createElement('div', { className: 'card card-body' },
           React.createElement('div', { className: 'eyebrow' }, 'Who approved this'),
-          React.createElement('p', { className: 'soft', style: { fontSize: 13, margin: '6px 0 14px' } }, "All three officials had to say yes. Here\u2019s when each of them did."),
+          React.createElement('p', { className: 'soft', style: { fontSize: 13, margin: '6px 0 14px' } }, "All three approvers had to say yes. Here\u2019s when each of them did."),
           React.createElement('div', { className: 'chain' },
             [
-              { name: 'Maria Santos', role: 'Mayor', when: 'Apr 12, 10:42 AM' },
-              { name: 'Jose Dela Cruz', role: 'City Treasurer', when: 'Apr 12, 2:05 PM' },
-              { name: 'Ana Ramos', role: 'City Secretary', when: 'Apr 13, 9:18 AM' },
+              { name: 'Maria Santos', role: 'Owner', when: 'Apr 12, 10:42 AM' },
+              { name: 'Jose Dela Cruz', role: 'Finance Lead', when: 'Apr 12, 2:05 PM' },
+              { name: 'Ana Ramos', role: 'Operations Lead', when: 'Apr 13, 9:18 AM' },
             ].map(a => React.createElement('div', { className: 'chain-node', 'data-kind': 'ok', key: a.name },
               React.createElement('div', { className: 'row', style: { gap: 8 } },
                 React.createElement('span', { style: { width: 26, height: 26, borderRadius: '50%', background: 'var(--ok-soft)', color: 'var(--ok)', display: 'grid', placeItems: 'center', flex: '0 0 26px' } },
@@ -360,9 +360,9 @@ function BudgetPage({ nav }) {
   return React.createElement('main', { id: 'main', className: 'container-page', style: { paddingBottom: 'var(--s-11)' } },
     React.createElement('div', { className: 'page-head' },
       React.createElement('div', { className: 'eyebrow' },
-        React.createElement('span', { className: 'eyebrow-dot' }), 'This year · Your city'),
-      React.createElement('h1', null, 'Where your taxes went this year'),
-      React.createElement('p', { className: 'lead' }, "Here\u2019s a plain breakdown of how your city is spending the money it collected. Every number here was approved by all three city officials together — nobody moved money alone.")
+        React.createElement('span', { className: 'eyebrow-dot' }), 'This year · Your organisation'),
+      React.createElement('h1', null, 'Where the budget went this year'),
+      React.createElement('p', { className: 'lead' }, "Here\u2019s a plain breakdown of how the organisation is spending its money. Every number here was approved by all three approvers together — nobody moved money alone.")
     ),
     React.createElement('section', { className: 'section-tight' },
       React.createElement('div', { className: 'grid grid-4', style: { marginBottom: 'var(--s-6)' } },
@@ -414,11 +414,11 @@ function BudgetPage({ nav }) {
 function BlockchainPage({ nav }) {
   const { useState } = React;
   const blocks = [
-    { id: 1417, kind: 'Document published', title: 'Ordinance 2026-014 — Tricycle fare', when: 'Apr 13 · 09:19', hash: '2a9f8c…c1830b', prev: '8b12ee…a4d701', icon: 'send', tag: 'ok' },
-    { id: 1416, kind: 'Official approval', title: 'Ana Ramos (City Secretary)', when: 'Apr 13 · 09:18', hash: '8b12ee…a4d701', prev: '7c301b…91ff22', icon: 'check', tag: 'info' },
-    { id: 1415, kind: 'Official approval', title: 'Jose Dela Cruz (Treasurer)', when: 'Apr 12 · 14:05', hash: '7c301b…91ff22', prev: '6a88b1…10be4c', icon: 'check', tag: 'info' },
-    { id: 1414, kind: 'Official approval', title: 'Maria Santos (Mayor)', when: 'Apr 12 · 10:42', hash: '6a88b1…10be4c', prev: '1d44f0…90aa15', icon: 'check', tag: 'info' },
-    { id: 1413, kind: 'Document uploaded', title: 'Ordinance 2026-014 — Tricycle fare', when: 'Apr 12 · 10:31', hash: '1d44f0…90aa15', prev: '0fa2bb…aa9922', icon: 'upload', tag: 'warn' },
+    { id: 1417, kind: 'Document published', title: 'Policy 2026-014 — Delivery fee', when: 'Apr 13 · 09:19', hash: '2a9f8c…c1830b', prev: '8b12ee…a4d701', icon: 'send', tag: 'ok' },
+    { id: 1416, kind: 'Official approval', title: 'Ana Ramos (Operations Lead)', when: 'Apr 13 · 09:18', hash: '8b12ee…a4d701', prev: '7c301b…91ff22', icon: 'check', tag: 'info' },
+    { id: 1415, kind: 'Official approval', title: 'Jose Dela Cruz (Finance Lead)', when: 'Apr 12 · 14:05', hash: '7c301b…91ff22', prev: '6a88b1…10be4c', icon: 'check', tag: 'info' },
+    { id: 1414, kind: 'Official approval', title: 'Maria Santos (Owner)', when: 'Apr 12 · 10:42', hash: '6a88b1…10be4c', prev: '1d44f0…90aa15', icon: 'check', tag: 'info' },
+    { id: 1413, kind: 'Document uploaded', title: 'Policy 2026-014 — Delivery fee', when: 'Apr 12 · 10:31', hash: '1d44f0…90aa15', prev: '0fa2bb…aa9922', icon: 'upload', tag: 'warn' },
     { id: 0,    kind: 'Genesis block', title: 'CYFER ledger initialized',        when: 'Jan 01 · 00:00', hash: '00000…000000', prev: '—',              icon: 'shield', tag: 'ink' },
   ];
   const [open, setOpen] = useState(1417);
@@ -432,7 +432,7 @@ function BlockchainPage({ nav }) {
     React.createElement('div', { className: 'page-head' },
       React.createElement('div', { className: 'eyebrow' },
         React.createElement('span', { className: 'eyebrow-dot' }), 'How we keep records honest'),
-      React.createElement('h1', null, "Why no one can quietly change a city record"),
+      React.createElement('h1', null, "Why no one can quietly change a record"),
       React.createElement('p', { className: 'lead' }, "Every time an official signs off or publishes a document, it\u2019s saved in three separate places at once \u2014 on three different computers that all have to agree. If anyone tries to change a record later, the other two notice right away, and the change fails. This is what people mean when they say \u201cblockchain.\u201d")
     ),
 
@@ -519,19 +519,19 @@ function BlockchainPage({ nav }) {
 // ---- Audit trail ------------------------------------------------------------
 function AuditPage({ nav }) {
   const entries = [
-    { t: 'Apr 13 · 09:19', a: 'publish',  desc: 'Ordinance 2026-014 published after unanimous approval.', by: 'system', hash: '2a9f8c…c183' },
-    { t: 'Apr 13 · 09:18', a: 'approve',  desc: 'Ana Ramos (City Secretary) approved Ordinance 2026-014.', by: 'ana.ramos', hash: '8b12ee…a4d7' },
-    { t: 'Apr 12 · 14:05', a: 'approve',  desc: 'Jose Dela Cruz (Treasurer) approved Ordinance 2026-014.', by: 'jose.dc', hash: '7c301b…91ff' },
-    { t: 'Apr 12 · 11:02', a: 'verify',   desc: 'Citizen verified Ordinance 2026-012 — match confirmed.', by: 'public', hash: '4fc0a1…bb29' },
-    { t: 'Apr 12 · 10:42', a: 'approve',  desc: 'Maria Santos (Mayor) approved Ordinance 2026-014.', by: 'maria.s', hash: '6a88b1…10be' },
-    { t: 'Apr 12 · 10:31', a: 'upload',   desc: 'Document uploaded: Ordinance 2026-014.', by: 'maria.s', hash: '1d44f0…90aa' },
-    { t: 'Apr 11 · 16:20', a: 'reject',   desc: 'Draft Resolution R-2026-008 rejected by Treasurer — budget source unclear.', by: 'jose.dc', hash: '9cb72e…4412' },
+    { t: 'Apr 13 · 09:19', a: 'publish',  desc: 'Policy 2026-014 published after unanimous approval.', by: 'system', hash: '2a9f8c…c183' },
+    { t: 'Apr 13 · 09:18', a: 'approve',  desc: 'Ana Ramos (Operations Lead) approved Policy 2026-014.', by: 'ana.ramos', hash: '8b12ee…a4d7' },
+    { t: 'Apr 12 · 14:05', a: 'approve',  desc: 'Jose Dela Cruz (Finance Lead) approved Policy 2026-014.', by: 'jose.dc', hash: '7c301b…91ff' },
+    { t: 'Apr 12 · 11:02', a: 'verify',   desc: 'Someone verified Policy 2026-012 — match confirmed.', by: 'public', hash: '4fc0a1…bb29' },
+    { t: 'Apr 12 · 10:42', a: 'approve',  desc: 'Maria Santos (Owner) approved Policy 2026-014.', by: 'maria.s', hash: '6a88b1…10be' },
+    { t: 'Apr 12 · 10:31', a: 'upload',   desc: 'Document uploaded: Policy 2026-014.', by: 'maria.s', hash: '1d44f0…90aa' },
+    { t: 'Apr 11 · 16:20', a: 'reject',   desc: 'Draft Resolution R-2026-008 rejected by the Finance Lead — budget source unclear.', by: 'jose.dc', hash: '9cb72e…4412' },
   ];
   const tagOf = (a) => a === 'publish' ? 'tag-ok' : a === 'reject' ? 'tag-bad' : a === 'upload' ? 'tag-warn' : a === 'verify' ? 'tag' : 'tag-info';
   return React.createElement('main', { id: 'main', className: 'container-page', style: { paddingBottom: 'var(--s-11)' } },
     React.createElement('div', { className: 'page-head' },
       React.createElement('div', { className: 'eyebrow' }, React.createElement('span', { className: 'eyebrow-dot' }), 'Activity log'),
-      React.createElement('h1', null, 'Everything that happens in city hall, in the open'),
+      React.createElement('h1', null, 'Everything that happens to your records, in the open'),
       React.createElement('p', { className: 'lead' }, "Every approval, publication and rejection is logged here the moment it happens. You can scroll through and see who did what, and when.")),
     React.createElement('section', { className: 'section-tight' },
       React.createElement('div', { className: 'card' },
@@ -584,7 +584,7 @@ function AdminPage({ nav }) {
     React.createElement('main', { id: 'main', className: 'admin-main' },
       React.createElement('div', { className: 'row-between', style: { marginBottom: 24 } },
         React.createElement('div', null,
-          React.createElement('div', { className: 'eyebrow' }, 'Welcome back, Mayor Santos'),
+          React.createElement('div', { className: 'eyebrow' }, 'Welcome back, Maria'),
           React.createElement('h1', { style: { margin: '6px 0 0', fontFamily: 'var(--font-serif)', fontSize: 32, color: 'var(--ink-900)' } }, 'Dashboard')),
         React.createElement('div', { className: 'row' },
           React.createElement('button', { className: 'btn btn-outline', onClick: () => nav('home') }, React.createElement(Icon, { name: 'arrowLeft', size: 14 }), 'Exit workspace'),
@@ -610,8 +610,8 @@ function AdminPage({ nav }) {
               React.createElement('p', { className: 'soft', style: { margin: '2px 0 0', fontSize: 13 } }, 'Your approval is the final signature on these.')),
             React.createElement('span', { className: 'tag tag-warn' }, '4 pending')),
           [
-            ['Ordinance 2026-015 — Market Code revisions', 'Uploaded by Treasurer · 2h ago', 2],
-            ['Budget entry — Flood control (Q2 release)',  'Uploaded by Treasurer · 4h ago', 1],
+            ['Policy 2026-015 — Supplier Code revisions', 'Uploaded by Finance Lead · 2h ago', 2],
+            ['Budget entry — Storage upgrade (Q2 release)',  'Uploaded by Finance Lead · 4h ago', 1],
             ['Contract — Streetlight maintenance',         'Uploaded by Secretary · 1d ago', 2],
             ['Resolution R-2026-010 — Scholarship fund',   'Uploaded by Secretary · 2d ago', 1],
           ].map(([t, m, n], i) => React.createElement('div', { key: i, className: 'row-between', style: { padding: 16, borderBottom: i===3 ? 'none' : '1px solid var(--line)' } },
@@ -626,10 +626,10 @@ function AdminPage({ nav }) {
           React.createElement('div', { className: 'eyebrow' }, 'Recent activity'),
           React.createElement('div', { className: 'stack-3', style: { marginTop: 12 } },
             [
-              ['publish', 'Ordinance 2026-014 published.', '9:19'],
+              ['publish', 'Policy 2026-014 published.', '9:19'],
               ['approve', 'Ana Ramos approved 2026-014.', '9:18'],
-              ['verify',  'Citizen verified 2026-012.', 'yesterday'],
-              ['reject',  'Treasurer rejected R-2026-008.', 'yesterday'],
+              ['verify',  'Someone verified 2026-012.', 'yesterday'],
+              ['reject',  'Finance Lead rejected R-2026-008.', 'yesterday'],
             ].map(([a,d,w], i) => React.createElement('div', { key: i, className: 'row-between', style: { padding: '10px 0', borderBottom: i===3 ? 'none' : '1px dashed var(--line)' } },
               React.createElement('div', { className: 'row', style: { gap: 10 } },
                 React.createElement('span', { className: 'tag ' + (a==='publish'?'tag-ok':a==='reject'?'tag-bad':a==='verify'?'tag':'tag-info') }, a),

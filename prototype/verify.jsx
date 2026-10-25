@@ -1,4 +1,4 @@
-/* CYFER — Check page (citizen-friendly).
+/* CYFER — Check page (reader-friendly).
    Real SHA-256 via Web Crypto. Keyboard accessible. Live-region announce.
    Copy is deliberately jargon-light: "check", "real", "matches", no "hash" above the fold. */
 
@@ -30,7 +30,7 @@ function VerifyPage({ nav, demoHashes }) {
       ? { verified: true, hash, doc: match }
       : { verified: false, hash, reason: isTamperedName
           ? "This file doesn't match the official copy."
-          : "We couldn't find this file in the city's official records." };
+          : "We couldn't find this file in the official records." };
     setTimeout(() => {
       setResult(payload);
       setStatus('done');
@@ -53,9 +53,9 @@ function VerifyPage({ nav, demoHashes }) {
 
   const demoDemo = async (kind) => {
     const content = kind === 'ok'
-      ? 'Ordinance 2026-014 — Regulating Tricycle Fare Adjustments\nSection 1...'
-      : 'Ordinance 2026-014 — Regulating Tricycle Fare Adjustments\nSection 1... [altered clause]';
-    const name = kind === 'ok' ? 'Ordinance-2026-014.pdf' : 'Ordinance-2026-014.tampered.pdf';
+      ? 'Policy 2026-014 — Delivery Fee Adjustments\nSection 1...'
+      : 'Policy 2026-014 — Delivery Fee Adjustments\nSection 1... [altered clause]';
+    const name = kind === 'ok' ? 'Policy-2026-014.pdf' : 'Policy-2026-014.tampered.pdf';
     const f = new File([content], name, { type: 'application/pdf' });
     handleFile(f);
   };
@@ -66,7 +66,7 @@ function VerifyPage({ nav, demoHashes }) {
         React.createElement('span', { className: 'eyebrow-dot' }), 'Free · No sign-up · Takes 5 seconds'),
       React.createElement('h1', null, 'Is this document real?'),
       React.createElement('p', { className: 'lead' },
-        "Someone sent you an ordinance, a receipt, a permit — and you're not sure if it's the real one. Drop the file below and we'll tell you, in plain words, whether your city government actually approved it.")
+        "Someone sent you an invoice, a receipt, a contract — and you're not sure if it's the real one. Drop the file below and we'll tell you, in plain words, whether the organisation actually approved it.")
     ),
 
     React.createElement('section', { className: 'section', 'aria-labelledby': 'drop-label' },
@@ -108,13 +108,13 @@ function VerifyPage({ nav, demoHashes }) {
         style: { marginTop: 16, display: 'flex', alignItems: 'center', gap: 10, color: 'var(--text-soft)', fontSize: 14 }
       },
         React.createElement('span', { className: 'pulse-soft' }, '●'),
-        "Checking against city records…"
+        "Checking against the records…"
       ),
 
       status === 'idle' && !file && React.createElement('div', { className: 'row', style: { marginTop: 14, fontSize: 13, flexWrap: 'wrap' } },
         React.createElement('span', { className: 'muted' }, "Don't have a file to check? Try these:"),
         React.createElement('button', { className: 'btn btn-outline btn-sm', onClick: () => demoDemo('ok') },
-          React.createElement(Icon, { name: 'check', size: 14 }), 'A real city document'),
+          React.createElement(Icon, { name: 'check', size: 14 }), 'A real document'),
         React.createElement('button', { className: 'btn btn-outline btn-sm', onClick: () => demoDemo('bad') },
           React.createElement(Icon, { name: 'alert', size: 14 }), 'A fake / edited one')
       )
@@ -136,8 +136,8 @@ function VerifyPage({ nav, demoHashes }) {
             result.verified ? "It's real." : "Something's off."),
           React.createElement('p', { className: 'verdict-sub' },
             result.verified
-              ? "Good news — this is the same document your city officially approved, with nothing changed. You can trust it."
-              : result.reason + " Don't rely on it as official — get a fresh copy from your city hall or the Official records page here.")
+              ? "Good news — this is the same document the organisation officially approved, with nothing changed. You can trust it."
+              : result.reason + " Don't rely on it as official — get a fresh copy from the issuer or the Official records page here.")
         )
       ),
       React.createElement('div', { className: 'verdict-body' },
@@ -151,7 +151,7 @@ function VerifyPage({ nav, demoHashes }) {
               React.createElement('span', { className: 'tag' }, result.doc.category)),
             React.createElement('div', { className: 'row-between' },
               React.createElement('span', { className: 'soft' }, 'Who approved it'),
-              React.createElement('span', null, 'All ' + result.doc.approvers + ' city officials signed off')),
+              React.createElement('span', null, 'All ' + result.doc.approvers + ' approvers signed off')),
             React.createElement('div', { className: 'row-between' },
               React.createElement('span', { className: 'soft' }, 'Date published'),
               React.createElement('span', null, result.doc.published))
@@ -165,7 +165,7 @@ function VerifyPage({ nav, demoHashes }) {
               React.createElement('ul', { style: { margin: '8px 0 0 18px', padding: 0, color: 'var(--text-soft)', fontSize: 14, lineHeight: 1.55 } },
                 React.createElement('li', null, "Someone may have edited the file after it was published."),
                 React.createElement('li', null, "It might never have been an official document at all."),
-                React.createElement('li', null, "It may be from a different city, not yours."),
+                React.createElement('li', null, "It may be from a different organisation."),
                 React.createElement('li', null, "It could be an older version that's been replaced.")
               ),
               React.createElement('p', { style: { margin: '12px 0 0', color: 'var(--text-soft)', fontSize: 14 } },
@@ -193,7 +193,7 @@ function VerifyPage({ nav, demoHashes }) {
               React.createElement('span', { className: 'soft', style: { display: 'block', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.12em', marginBottom: 4 } }, 'Your file'),
               result.hash),
             result.verified && result.doc && React.createElement('div', { className: 'hash-block' },
-              React.createElement('span', { className: 'soft', style: { display: 'block', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.12em', marginBottom: 4 } }, 'Official city record'),
+              React.createElement('span', { className: 'soft', style: { display: 'block', fontSize: 11, textTransform: 'uppercase', letterSpacing: '.12em', marginBottom: 4 } }, 'Official record'),
               result.doc.hash)
           )
         ),
@@ -218,7 +218,7 @@ function VerifyPage({ nav, demoHashes }) {
           { n: '01', t: 'Your file stays on your phone or computer',
             d: "We never upload it. We just calculate a tiny digital signature from it, right there on your device." },
           { n: '02', t: 'We compare it to the official list',
-            d: "Every document your city officials formally approved has its signature saved on a public, tamper-proof record. We check yours against that list." },
+            d: "Every document the approvers formally approved has its signature saved on a public, tamper-proof record. We check yours against that list." },
           { n: '03', t: 'You get a simple yes or no',
             d: "If it matches, it's real. If it doesn't, something's wrong with the copy you have — and we'll help you find the real one." },
         ].map(s =>
@@ -238,13 +238,13 @@ function VerifyPage({ nav, demoHashes }) {
       React.createElement('div', { className: 'stack-3' },
         [
           { q: "Is this really free?",
-            a: "Yes. Completely. No account, no email, no tracking. Your city pays for this so you can trust what you receive." },
+            a: "Yes. Completely. No account, no email, no tracking. The organisation pays for this so you can trust what you receive." },
           { q: "What if I check a document and it says it's not real?",
-            a: "Don't use it for anything official. Come to the Official records page to find the real version, or visit your city hall to confirm." },
+            a: "Don't use it for anything official. Come to the Official records page to find the real version, or ask the issuer to confirm." },
           { q: "What kinds of files can I check?",
             a: "Any kind — PDFs, scanned photos, Word documents, spreadsheets. As long as it's the exact file you received (not a re-saved or edited copy), we can check it." },
           { q: "Why can't I just trust the file I got on Messenger?",
-            a: "Because anyone can edit a PDF in 30 seconds and forward it. Checking here is the only way to be sure the copy you have matches what your city actually published." },
+            a: "Because anyone can edit a PDF in 30 seconds and forward it. Checking here is the only way to be sure the copy you have matches what the organisation actually published." },
         ].map((f, i) =>
           React.createElement('details', { key: i, className: 'faq' },
             React.createElement('summary', null,

@@ -78,7 +78,7 @@ export function AdminSidebar() {
         <Image src="/Cyfer Logo.png" alt="CYFER" width={28} height={28} />
         <div>
           <div className="brand-name text-[26px]">CYFER</div>
-          <div className="brand-sub">Official workspace</div>
+          <div className="brand-sub">Admin workspace</div>
         </div>
       </div>
 

@@ -52,10 +52,10 @@ interface Summary {
 }
 
 const categoryLabels: Record<string, string> = {
-  ordinance: 'New city rule',
+  ordinance: 'Policy',
   budget: 'Money and spending',
-  resolution: 'Official decision',
-  contract: 'City agreement',
+  resolution: 'Formal decision',
+  contract: 'Agreement',
   permit: 'Permit or license',
   other: 'Official record',
 };
@@ -364,7 +364,7 @@ export default function DocumentDetailPage({
               On this page
             </h2>
             <p className="mt-3 text-sm leading-6 text-[var(--text-soft)]">
-              The full record for one city document.
+              The full record for one document.
             </p>
 
             <div className="stack-3 mt-5">
@@ -451,7 +451,7 @@ export default function DocumentDetailPage({
                           </span>
                           <div>
                             <div className="strong text-sm">
-                              {approval.users?.name ?? 'Unknown official'}
+                              {approval.users?.name ?? 'Unknown approver'}
                             </div>
                             <div className="soft text-xs">
                               {approval.users?.department ?? 'Department unavailable'}

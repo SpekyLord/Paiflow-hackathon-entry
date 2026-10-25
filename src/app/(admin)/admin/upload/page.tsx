@@ -116,7 +116,7 @@ export default function UploadPage() {
           <form onSubmit={handleSubmit} className="stack-3">
             <Input
               label="Document title"
-              placeholder="e.g. Municipal Budget Ordinance 2026"
+              placeholder="e.g. Annual Budget Policy 2026"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               required
@@ -226,7 +226,7 @@ export default function UploadPage() {
               1. CYFER stores the file and computes its SHA-256 fingerprint.
             </p>
             <p className="m-0">
-              2. The record moves into the consensus queue for the assigned officials.
+              2. The record moves into the consensus queue for the assigned approvers.
             </p>
             <p className="m-0">
               3. Once approved, the document becomes available in the public portal and verification flow.

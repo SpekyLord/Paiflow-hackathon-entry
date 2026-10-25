@@ -314,7 +314,7 @@ export default function VerifyPage() {
                       <ul className="mt-2 space-y-2 pl-5 text-sm leading-6 text-[var(--text-soft)]">
                         <li>The file may have been edited after it was published.</li>
                         <li>It may be an unofficial or outdated copy.</li>
-                        <li>It could belong to a different office or city.</li>
+                        <li>It could belong to a different team or organisation.</li>
                       </ul>
                       <p className="mt-3 text-sm text-[var(--text-soft)]">
                         Open the official record before you rely on the document.

@@ -11,7 +11,7 @@ const TRUST_ITEMS = [
   'Unanimous consensus approvals',
   'Blockchain-backed publication',
   'SHA-256 tamper detection',
-  'Public citizen verification',
+  'Public document verification',
 ];
 
 export default function LoginPage() {
@@ -90,7 +90,7 @@ export default function LoginPage() {
         <div className="relative z-10 py-12 lg:py-0">
           <div className="hero-badge mb-6 w-fit">
             <Shield size={13} />
-            Official CYFER workspace
+            CYFER admin workspace
           </div>
 
           <h1 className="font-serif text-[clamp(32px,4.5vw,52px)] font-semibold leading-[1.06] tracking-[-0.03em] text-white">
@@ -118,7 +118,7 @@ export default function LoginPage() {
 
         {/* Bottom label */}
         <p className="relative text-xs text-white/30">
-          CYFER · Powered by blockchain · SDG 16
+          CYFER · Powered by blockchain
         </p>
       </div>
 
@@ -140,7 +140,7 @@ export default function LoginPage() {
                 Welcome back
               </h2>
               <p className="mt-2 text-sm text-[var(--text-soft)]">
-                Use your authorized LGU account to access the CYFER admin workspace.
+                Use your authorized organisation account to access the CYFER admin workspace.
               </p>
             </div>
 
@@ -148,7 +148,7 @@ export default function LoginPage() {
               <Input
                 label="Email"
                 type="email"
-                placeholder="admin@lgu.gov.ph"
+                placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -200,7 +200,7 @@ export default function LoginPage() {
             </form>
 
             <p className="mt-6 text-center text-xs text-[var(--text-mute)]">
-              For authorized city officials only.
+              For authorized approvers and administrators only.
             </p>
           </div>
         </div>

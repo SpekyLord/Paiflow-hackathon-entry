@@ -18,10 +18,10 @@ interface DocumentData {
 
 const categoryFilters = [
   { value: '', label: 'All records' },
-  { value: 'ordinance', label: 'New city rules' },
+  { value: 'ordinance', label: 'Policies' },
   { value: 'budget', label: 'Budgets' },
-  { value: 'resolution', label: 'Official decisions' },
-  { value: 'contract', label: 'City agreements' },
+  { value: 'resolution', label: 'Formal decisions' },
+  { value: 'contract', label: 'Agreements' },
   { value: 'permit', label: 'Permits' },
 ];
 
@@ -81,7 +81,7 @@ export default function DocumentsPage() {
         </div>
         <h1>Official Records</h1>
         <p className="lead">
-          The city&apos;s published documents — searchable and free.
+          The organisation&apos;s published documents — searchable and free.
         </p>
       </div>
 
@@ -89,7 +89,7 @@ export default function DocumentsPage() {
         <PublicSOP
           compact
           title="Finding a document"
-          purpose="Find and download the city's published version."
+          purpose="Find and download the published version."
           steps={[
             {
               title: 'Search or filter',

@@ -1,5 +1,7 @@
 # CYFER Demo Preparation Checklist
 
+> **Historical — superseded (2026-10-25).** This document belongs to the inherited government-first CYFER project. The current product is "CYFER for SMEs — Escrow, Budget Tracking and Verified Payouts"; see [the active PRD](PRD.MD).
+
 ## Pre-Recording Setup
 
 ### Environment

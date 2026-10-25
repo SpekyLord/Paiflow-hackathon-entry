@@ -1,4 +1,18 @@
-# CYFER — Secure Document Access Blockchain Network
+# CYFER for SMEs — Escrow, Budget Tracking and Verified Payouts
+
+> **Paiflow holds and routes the money. CYFER proves why it moved.**
+
+**Current product direction:** CYFER is being rebuilt for SMEs, freelancers and their customers for the Paiflow × Web3 Iloilo hackathon (25 October 2026, Stellar Testnet). The source of truth is the PRD at [`docs/PRD.MD`](docs/PRD.MD).
+
+**Status:** None of the SME escrow, wallet or budget features are implemented yet. The code in this repository is the inherited government-edition application described below, so read the PRD's current-state assessment (§C) before reusing it.
+
+---
+
+## Historical: inherited Governance Edition (superseded)
+
+> Everything below describes the earlier government-first project built for the InterCICSkwela hackathon (March 2026). It is kept for reference only: it is **not** the current audience, scope, roles, judging criteria or deadline. Its claims ("tamper-proof", "3 independent nodes", completed features, passing tests) were not re-verified for the SME product.
+
+# CYFER — Secure Document Access Blockchain Network (historical)
 
 > **Tamper-proof government document management for transparent, accountable governance**
 
@@ -265,6 +279,8 @@ In compliance with InterCICSkwela Hackathon rules, we disclose all AI tools used
 |------|---------|---------|
 | **Anthropic Claude API** (`claude-sonnet-4-20250514`) | AI Document Summarizer | Server-side API call in `/api/summarize` — generates structured plain-language summaries of government documents for citizens |
 | **Claude Code** (Anthropic) | AI-assisted development | Used as a development tool for code generation, debugging, and implementation guidance during the building of the web application |
+
+For the SME direction (October 2026), Claude Code was also used to draft the replacement PRD (`docs/PRD.MD`) from the team brief and Paiflow documentation. The team reviews it before any implementation.
 
 Claude Code was used as a development assistant throughout the project. The blockchain architecture, SHA-256 hashing strategy, Unanimous Consensus Protocol, multi-node decentralization design, and hash-linked audit trail were conceptualized and designed by the team — Claude Code assisted in translating those designs into working code.
 

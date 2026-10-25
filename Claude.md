@@ -1,6 +1,26 @@
-# CLAUDE.md — CYFER: Governance Edition
+# CLAUDE.md — CYFER for SMEs
 
-## Project Overview
+## Current direction (read first)
+
+- **Source of truth:** [`docs/PRD.MD`](docs/PRD.MD), "CYFER for SMEs — Escrow, Budget Tracking and Verified Payouts". It supersedes every government-first instruction below.
+- **Audience:** SMEs, freelancers and their customers. Government use is a future direction only.
+- **MVP:** one live commission escrow on Stellar Testnet (XLM) through Paiflow. See PRD §L.1 for the MVP / should / stretch / future scope tiers, and never promote optional features into the MVP.
+- **Paiflow rules** (PRD §A.2, §G, §K). Follow the reference starter's `llms.md` and `AGENTS.md` in `../paiflow-hackathon-starter`:
+  - Keep the Paiflow token server-only, never in a `NEXT_PUBLIC_` variable.
+  - Users sign in their wallet (Freighter); the app never holds keys.
+  - Persist the preparation before signing and the signed envelope before submitting.
+  - Never create a replacement payment because an outcome is uncertain.
+  - Money is integer stroop strings handled with `bigint`.
+  - Never show "paid" or "refunded" before the payout is verified.
+- **Honesty rules:** the Supabase `blockchain` table is an application hash chain, not Stellar, and not public anchoring. Audit `tx_hash` values are not Stellar transaction hashes. A file-hash mismatch does not prove tampering.
+- **Do not** run seeds, migrations or `test-supabase.ts` (it writes data and may call the AI API) against a shared database, and do not send testnet transactions, without explicit team approval.
+- **Commands** that exist today: `npm run dev`, `npm run build`, `npm run lint`. There is no `npm test`.
+
+Everything below this line is **historical** guidance for the inherited government edition. Keep its coding conventions where the PRD does not override them. Its audience, roles, deadline, demo flow and feature priorities are obsolete.
+
+---
+
+## Historical: Governance Edition Project Overview
 
 CYFER  is a blockchain-powered government document transparency platform for the InterCICSkwela Hackathon (Challenge #3: Transparency, Accountability, and Good Governance). It enables local government units (LGUs) to publish tamper-proof documents and allows citizens to publicly verify their integrity.
 
@@ -115,7 +135,7 @@ Six tables in Supabase:
 5. `transactions` — Audit trail of every platform action
 6. `budget_data` — Municipal budget entries by category and fiscal year
 
-See the PRD (CYFER-PRD.md) for full schema details.
+Historical schema notes. The proposed SME schema is in `docs/PRD.MD` §I.
 
 ## Key API Endpoints
 

@@ -1,5 +1,7 @@
 # Supabase Setup Guide for CYFER
 
+> **Historical — superseded (2026-10-25).** This document belongs to the inherited government-first CYFER project. The current product is "CYFER for SMEs — Escrow, Budget Tracking and Verified Payouts"; see [the active PRD](PRD.MD).
+
 > ✅ **Status: COMPLETE (March 17, 2026)** — Supabase project is live and all tests passing.
 
 This guide will walk you through setting up Supabase for the CYFER project.

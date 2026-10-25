@@ -1,5 +1,7 @@
 # CYFER HCI Final Update Plan
 
+> **Historical — superseded (2026-10-25).** This document belongs to the inherited government-first CYFER project. The current product is "CYFER for SMEs — Escrow, Budget Tracking and Verified Payouts"; see [the active PRD](docs/PRD.MD).
+
 This file documents the best direction for turning CYFER into a high-scoring **Human-Computer Interaction final project**.
 
 The goal is **not** to make the system larger.

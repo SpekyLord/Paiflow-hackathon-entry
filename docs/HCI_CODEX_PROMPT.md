@@ -1,5 +1,7 @@
 # Codex Prompt — HCI Final UI Overhaul for CYFER
 
+> **Historical — superseded (2026-10-25).** This document belongs to the inherited government-first CYFER project. The current product is "CYFER for SMEs — Escrow, Budget Tracking and Verified Payouts"; see [the active PRD](PRD.MD).
+
 You are working inside the `SpekyLord/Cyfer` repository.
 
 Your task is to refactor and elevate the **entire UI/UX** of CYFER so it feels like a polished, presentation-ready **Human-Computer Interaction final project**, not just a hackathon prototype.

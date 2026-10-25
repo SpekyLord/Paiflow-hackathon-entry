@@ -1,5 +1,7 @@
 # Testing & Verification Guide - Phase 0
 
+> **Historical — superseded (2026-10-25).** This document belongs to the inherited government-first CYFER project. The current product is "CYFER for SMEs — Escrow, Budget Tracking and Verified Payouts"; see [the active PRD](docs/PRD.MD). Its "PASSED" results were not re-run. `test-supabase.ts` writes a ledger block and may call the Anthropic API, so do not run it without approval. SME verification is defined in PRD §M.
+
 This guide explains how to test and verify everything we built in Phase 0.
 
 ## 🟢 Tests You Can Run RIGHT NOW (No Supabase Required)

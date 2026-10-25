@@ -144,6 +144,8 @@ export const AUDIT_ACTION_TYPES = [
   'doc_record',
   'pay_prepare',
   'pay_submit',
+  'pay_confirmed',
+  'pay_failed',
   'envelope_payout_verified',
   'operator_review',
   // SHOULD

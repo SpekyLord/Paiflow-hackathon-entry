@@ -36,7 +36,7 @@ end $$;
 
 alter table public.transactions add constraint transactions_action_type_check check (action_type in (
   'upload','approve','reject','publish','verify','access',
-  'plan_create','plan_approve','plan_reject','doc_record','pay_prepare','pay_submit',
+  'plan_create','plan_approve','plan_reject','doc_record','pay_prepare','pay_submit','pay_confirmed','pay_failed',
   'envelope_payout_verified','operator_review',
   'deal_create','terms_accept','fund_prepare','fund_submit','deliver','release_request','release_result',
   'payout_verified','refund_verified'));

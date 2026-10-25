@@ -3,6 +3,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { PaiflowApiError } from "@paiflow/sdk";
 
 vi.mock("server-only", () => ({}));
+// The status route reads Francis's session; signed in here so its body is scanned too.
+vi.mock("@/server/auth/session", () => ({
+  getAuthUserId: async () => "00000000-0000-4000-8000-000000000010",
+  loadSession: async () => null,
+  createAuthClient: async () => ({}),
+}));
 
 import type { PaymentDeps } from "@/server/paiflow/deps";
 import { respond } from "@/server/paiflow/route-kit";

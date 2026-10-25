@@ -23,9 +23,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CYFER for SMEs",
+  title: "CYFER - Verified Records",
   description:
-    "Budget plans, approvals, verified payouts and document checks for SMEs on Stellar Testnet.",
+    "Tamper-proof document records, unanimous approvals and verified payouts for organisations, starting with SMEs.",
 };
 
 export default function RootLayout({

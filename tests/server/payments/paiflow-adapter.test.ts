@@ -7,6 +7,12 @@ import {
 } from "@paiflow/sdk";
 
 vi.mock("server-only", () => ({}));
+const auth = vi.hoisted(() => ({ userId: "00000000-0000-4000-8000-000000000010" as string | null }));
+vi.mock("@/server/auth/session", () => ({
+  getAuthUserId: async () => auth.userId,
+  loadSession: async () => null,
+  createAuthClient: async () => ({}),
+}));
 const mocks = vi.hoisted(() => ({ constructor: vi.fn(), deployment: vi.fn() }));
 vi.mock("@paiflow/sdk", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@paiflow/sdk")>();
@@ -223,6 +229,14 @@ describe("GET /api/integration/status", () => {
     });
     expect(body).not.toContain(token);
     expect(body).not.toContain("paiflow.xyz");
+  });
+
+  it("answers 401 without a session (contract §3.5: signed-in users)", async () => {
+    auth.userId = null;
+    const res = await integrationStatus();
+    expect(res.status).toBe(401);
+    expect((await res.json()).error.code).toBe("UNAUTHENTICATED");
+    auth.userId = "00000000-0000-4000-8000-000000000010";
   });
 
   it("reports unconfigured", async () => {

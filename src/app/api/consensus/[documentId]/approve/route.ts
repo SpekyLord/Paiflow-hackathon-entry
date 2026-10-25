@@ -167,7 +167,7 @@ export async function POST(
           documentPublished: allApproved,
           message: allApproved
             ? 'Document approved and published (unanimous consensus reached)'
-            : 'Document approved. Waiting for other officials.',
+            : 'Document approved. Waiting for other approvers.',
         },
       } as ApiResponse);
     }
@@ -263,7 +263,7 @@ export async function POST(
         budgetPublished: allApproved,
         message: allApproved
           ? 'Budget entry approved and published (unanimous consensus reached)'
-          : 'Budget entry approved. Waiting for other officials.',
+          : 'Budget entry approved. Waiting for other approvers.',
       },
     } as ApiResponse);
   } catch (error) {

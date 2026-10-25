@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CYFER — Verified Civic Records</title>
+<title>CYFER — Verified Records</title>
 <link rel="icon" href="cyfer_logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,8 +30,8 @@
 const DEMO_DOCS = [
   {
     id: 'ord-2026-014',
-    title: 'Ordinance 2026-014 — Tricycle Fare Adjustment',
-    description: 'Raises minimum tricycle fare citywide from ₱12 to ₱15, effective May 2026, while preserving student/senior discounts.',
+    title: 'Policy 2026-014 — Delivery Fee Adjustment',
+    description: 'Raises the minimum delivery fee from ₱12 to ₱15, effective May 2026, while keeping loyalty discounts.',
     category: 'ordinance',
     published: 'Apr 13, 2026',
     approvers: 3,
@@ -42,7 +42,7 @@ const DEMO_DOCS = [
   {
     id: 'bud-2026-q1',
     title: 'FY 2026 Q1 Budget Disbursements',
-    description: 'Quarterly disbursement report covering infrastructure, education, and social services. Includes line-item breakdown.',
+    description: 'Quarterly disbursement report covering operations, payroll and supplies. Includes line-item breakdown.',
     category: 'budget',
     published: 'Apr 05, 2026',
     approvers: 3, block: 1402,
@@ -50,8 +50,8 @@ const DEMO_DOCS = [
   },
   {
     id: 'res-2026-009',
-    title: 'Resolution R-2026-009 — Flood Control Task Force',
-    description: 'Establishes an inter-department task force to review flood-prone barangays ahead of the rainy season.',
+    title: 'Resolution R-2026-009 — Storage Safety Review',
+    description: 'Sets up a cross-team review of flood-prone storage sites ahead of the rainy season.',
     category: 'resolution',
     published: 'Mar 28, 2026',
     approvers: 3, block: 1388,
@@ -59,8 +59,8 @@ const DEMO_DOCS = [
   },
   {
     id: 'con-2026-003',
-    title: 'Contract 2026-003 — Streetlight Maintenance',
-    description: 'Three-year service agreement for LED streetlight maintenance across 14 barangays. Competitively bid.',
+    title: 'Contract 2026-003 — Equipment Maintenance',
+    description: 'Three-year service agreement for equipment maintenance across 14 branch locations. Competitively bid.',
     category: 'contract',
     published: 'Mar 18, 2026',
     approvers: 3, block: 1360,
@@ -68,8 +68,8 @@ const DEMO_DOCS = [
   },
   {
     id: 'per-2026-014',
-    title: 'Permit Batch 2026-014 — Sidewalk Vending',
-    description: 'Approved list of sidewalk vending permits for Q2 2026, with location maps and operating hours.',
+    title: 'Permit Batch 2026-014 — Market Stall Permits',
+    description: 'Approved market stall permits for Q2 2026, with locations and operating hours.',
     category: 'permit',
     published: 'Mar 12, 2026',
     approvers: 3, block: 1321,
@@ -77,8 +77,8 @@ const DEMO_DOCS = [
   },
   {
     id: 'ord-2026-012',
-    title: 'Ordinance 2026-012 — Plastic Bag Reduction',
-    description: 'Bans single-use plastic bags in all public markets, phases in paper and reusable alternatives over six months.',
+    title: 'Policy 2026-012 — Packaging Reduction',
+    description: 'Phases out single-use plastic packaging in all branches, moving to paper and reusable options over six months.',
     category: 'ordinance',
     published: 'Feb 26, 2026',
     approvers: 3, block: 1244,
@@ -88,7 +88,7 @@ const DEMO_DOCS = [
 
 /* Hash the "authentic" demo file so the Verify page can match it for real. */
 async function computeDemoHash() {
-  const content = 'Ordinance 2026-014 — Regulating Tricycle Fare Adjustments\nSection 1...';
+  const content = 'Policy 2026-014 — Delivery Fee Adjustments\nSection 1...';
   const buf = new TextEncoder().encode(content);
   const h = await crypto.subtle.digest('SHA-256', buf);
   return Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join('');

@@ -7,7 +7,7 @@ function Topbar({ route, nav }) {
     { id: 'home', label: 'Home', icon: 'home' },
     { id: 'verify', label: 'Check a document', icon: 'shield' },
     { id: 'documents', label: 'Official records', icon: 'file' },
-    { id: 'budget', label: 'Where taxes went', icon: 'pie' },
+    { id: 'budget', label: 'Where the budget went', icon: 'pie' },
     { id: 'blockchain', label: 'How it works', icon: 'info' },
   ];
   const isActive = (id) => route === id || (id === 'documents' && route === 'document');
@@ -23,7 +23,7 @@ function Topbar({ route, nav }) {
         ),
         React.createElement('span', null,
           React.createElement('div', { className: 'brand-name' }, 'CYFER'),
-          React.createElement('div', { className: 'brand-sub' }, 'Verified Civic Records')
+          React.createElement('div', { className: 'brand-sub' }, 'Verified Records')
         )
       ),
       React.createElement('nav', { className: 'nav-primary', 'aria-label': 'Primary' },
@@ -56,14 +56,14 @@ function Footer() {
         React.createElement('div', { className: 'row', style: { gap: 10 } },
           React.createElement('img', { src: 'cyfer_logo.png', alt: '', width: 26, height: 26 }),
           React.createElement('strong', { style: { color: 'var(--ink-900)' } }, 'CYFER'),
-          React.createElement('span', { className: 'muted' }, '· Sample City LGU · Fiscal Year 2026')
+          React.createElement('span', { className: 'muted' }, '· Demo SME · Fiscal Year 2026')
         ),
-        React.createElement('div', { style: { marginTop: 6, fontSize: 13 } }, 'A public trust platform aligned with SDG 16 — Peace, Justice & Strong Institutions.')
+        React.createElement('div', { style: { marginTop: 6, fontSize: 13 } }, 'Verifiable records and payouts for organisations of any size.')
       ),
       React.createElement('div', { className: 'row', style: { gap: 18, fontSize: 13 } },
         React.createElement('a', { href: '#' }, 'About'),
         React.createElement('a', { href: '#' }, 'Data policy'),
-        React.createElement('a', { href: '#' }, 'Contact LGU'),
+        React.createElement('a', { href: '#' }, 'Contact us'),
         React.createElement('a', { href: '#' }, 'Source code')
       )
     )

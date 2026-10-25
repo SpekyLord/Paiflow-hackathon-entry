@@ -4,7 +4,7 @@ import { DocumentCategory, DocumentStatus, UserRole, ActionType, ApprovalStatus 
 
 // Document categories
 export const DOCUMENT_CATEGORIES = [
-  { value: DocumentCategory.ORDINANCE, label: 'Ordinance' },
+  { value: DocumentCategory.ORDINANCE, label: 'Policy' },
   { value: DocumentCategory.BUDGET, label: 'Budget' },
   { value: DocumentCategory.RESOLUTION, label: 'Resolution' },
   { value: DocumentCategory.CONTRACT, label: 'Contract' },
@@ -105,12 +105,7 @@ export const CURRENT_FISCAL_YEAR = new Date().getFullYear();
 export const APP_NAME = 'CYFER';
 export const APP_FULL_NAME = 'Secure Document Access Blockchain Network';
 export const APP_VERSION = '1.0.0';
-export const APP_DESCRIPTION = 'Tamper-proof government document management for transparent, accountable governance';
-
-// SDG Information
-export const SDG_NUMBER = 16;
-export const SDG_NAME = 'Peace, Justice and Strong Institutions';
-export const SDG_DESCRIPTION = 'Promote peaceful and inclusive societies for sustainable development, provide access to justice for all and build effective, accountable and inclusive institutions at all levels';
+export const APP_DESCRIPTION = 'Tamper-proof document records, unanimous approvals and verified payouts for organisations';
 
 // Contact/Team info (for footer)
 export const TEAM_NAME = 'RPG Team';
@@ -120,8 +115,5 @@ export const TEAM_MEMBERS = [
   // Add other team members
 ] as const;
 
-// Hackathon info
-export const HACKATHON_NAME = 'InterCICSkwela Hackathon';
-export const HACKATHON_CHALLENGE = 'Challenge #3: Transparency, Accountability, and Good Governance';
 export const DEADLINE = '2026-03-22';
 

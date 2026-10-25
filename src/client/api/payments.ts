@@ -3,6 +3,7 @@
 // retries a payment POST, because a lost response means "unknown".
 import { apiRequest } from "@/client/http";
 import type { ApiRoutes, PayResubmitRequest, ResolveReviewRequest } from "@/contracts/api";
+import type { MoneyMovementsPage } from "@/lib/money-movements";
 
 type Res<K extends keyof ApiRoutes> = ApiRoutes[K]["res"];
 
@@ -73,6 +74,18 @@ export function resolveOperatorReview(reviewId: string, input: ResolveReviewRequ
     { method: "POST", body: input },
   );
 }
+
+// ERP-LOG-1: read-only expense log, newest first, paged by `before`.
+export function listMoneyMovements(orgId: string, opts: { before?: string | null; limit?: number } = {}) {
+  const query = new URLSearchParams();
+  if (opts.limit) query.set("limit", String(opts.limit));
+  if (opts.before) query.set("before", opts.before);
+  const qs = query.toString() ? `?${query}` : "";
+  return apiRequest<MoneyMovementsPage>(`/api/orgs/${encodeURIComponent(orgId)}/money-movements${qs}`);
+}
+
+export const moneyMovementsCsvPath = (orgId: string) =>
+  `/api/orgs/${encodeURIComponent(orgId)}/money-movements?format=csv`;
 
 export function getIntegrationStatus() {
   return apiRequest<Res<"GET /api/integration/status">>("/api/integration/status");

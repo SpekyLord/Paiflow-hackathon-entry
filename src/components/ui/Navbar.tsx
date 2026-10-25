@@ -71,7 +71,7 @@ export function Navbar() {
             <span>
               <span className="brand-name">CYFER</span>
               <span className="brand-sub" style={{ whiteSpace: 'nowrap' }}>
-                Verified Civic Records
+                Verified Records
               </span>
             </span>
           </Link>
@@ -99,7 +99,7 @@ export function Navbar() {
               <Link href="/login">
                 <Button variant="outline" size="sm">
                   <Shield size={14} />
-                  Official sign-in
+                  Staff sign-in
                 </Button>
               </Link>
             </span>
@@ -174,14 +174,14 @@ export function Navbar() {
             </nav>
 
             <div className="mt-4 rounded-[var(--r-lg)] border border-[var(--line)] bg-[var(--ink-025)] p-4">
-              <div className="eyebrow">Officials</div>
+              <div className="eyebrow">Staff</div>
               <p className="mt-2 text-sm leading-6 text-[var(--text-soft)]">
-                Sign in only if you are an authorized city official using the admin workspace.
+                Sign in only if you are an authorized approver or administrator using the admin workspace.
               </p>
               <Link href="/login" onClick={closeMenu} className="mt-3 inline-flex w-full">
                 <Button variant="secondary" size="sm" className="w-full">
                   <Shield size={14} />
-                  Official sign-in
+                  Staff sign-in
                 </Button>
               </Link>
             </div>

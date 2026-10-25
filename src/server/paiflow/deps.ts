@@ -3,7 +3,7 @@ import type { FinancialDb } from "@/server/db/financial-core";
 import type { PaiflowDeployment } from "@paiflow/sdk";
 import { paiflowDeployment } from "@/server/paiflow/client";
 import { toSafePaiflowError } from "@/server/paiflow/errors";
-import { createRateLimiter, fail } from "@/server/paiflow/route-kit";
+import { fail } from "@/server/paiflow/route-kit";
 
 // Everything a payment route touches outside itself, so tests can pass fakes
 // and count Paiflow calls.
@@ -26,12 +26,6 @@ export interface PaymentDeps {
 }
 
 export type RateBucket = "prepare" | "submit" | "check";
-// Process-local, which is enough for the single demo server.
-const LIMITERS: Record<RateBucket, (key: string) => void> = {
-  prepare: createRateLimiter(10, 60_000),
-  submit: createRateLimiter(10, 60_000),
-  check: createRateLimiter(20, 60_000),
-};
 
 export async function requireSession(deps: PaymentDeps, request: Request): Promise<RouteSession> {
   const session = await deps.session(request);
@@ -48,21 +42,25 @@ export async function callPaiflow<T>(run: () => Promise<T>): Promise<T> {
   }
 }
 
-// Session reading belongs to Francis's F-12 (src/server/auth). Until it lands,
-// live routes see no session and answer 401 UNAUTHENTICATED, so nothing can
-// reach Paiflow without an authenticated, server-checked user.
-async function noSessionYet(): Promise<RouteSession | null> {
-  return null;
+// Francis's F-12 cookie session: getUser() verifies it with the auth server,
+// and roles come from server tables only. No profile means no session.
+async function readSession(): Promise<RouteSession | null> {
+  const { getAuthUserId, loadSession } = await import("@/server/auth/session");
+  const userId = await getAuthUserId();
+  if (!userId) return null;
+  const session = await loadSession(userId);
+  return session ? { userId, isOperator: session.isOperator } : null;
 }
 
 export async function liveDeps(): Promise<PaymentDeps> {
-  const db = await import("@/server/db/financial");
+  const [db, { limit }] = await Promise.all([import("@/server/db/financial"), import("@/server/http/rate-limit")]);
   return {
     db,
     paiflow: paiflowDeployment,
-    session: noSessionYet,
+    session: readSession,
     now: Date.now,
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-    rateLimit: (bucket, key) => LIMITERS[bucket](key),
+    // Shared per-process buckets (global + per user) from Francis's F-12.
+    rateLimit: (bucket, key) => limit(bucket, key),
   };
 }

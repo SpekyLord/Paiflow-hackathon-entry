@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { createRateLimiter, readJson, requireSameOrigin, respond, RouteError } from "@/server/paiflow/route-kit";
+import { readJson, requireSameOrigin, respond, RouteError } from "@/server/paiflow/route-kit";
 import { toSafePaiflowError } from "@/server/paiflow/errors";
 import { PaiflowApiError } from "@paiflow/sdk";
 
@@ -68,15 +68,19 @@ describe("respond", () => {
   });
 });
 
-describe("createRateLimiter", () => {
-  it("allows the limit per window, then 429 with Retry-After", () => {
-    let t = 0;
-    const limit = createRateLimiter(2, 60_000, () => t);
-    limit("u");
-    limit("u");
-    expect(() => limit("u")).toThrow(expect.objectContaining({ code: "RATE_LIMITED", retryAfterSeconds: 60 }));
-    limit("other");
-    t = 60_000;
-    expect(() => limit("u")).not.toThrow();
+describe("respond with Francis's HttpError", () => {
+  it("renders guard and rate-limit errors with Retry-After and no-store", async () => {
+    const { HttpError } = await import("@/server/http/respond");
+    const res = await respond(async () => {
+      throw new HttpError("RATE_LIMITED", undefined, { retryAfterSeconds: 12 });
+    });
+    expect(res.status).toBe(429);
+    expect(res.headers.get("Retry-After")).toBe("12");
+    expect(res.headers.get("Cache-Control")).toBe("private, no-store");
+    const denied = await respond(async () => {
+      throw new HttpError("OPERATOR_REQUIRED");
+    });
+    expect(denied.status).toBe(403);
+    expect((await denied.json()).error.code).toBe("OPERATOR_REQUIRED");
   });
 });

@@ -2,9 +2,11 @@ import "server-only";
 import { DEFAULT_ERROR_MESSAGE, ERROR_HTTP_STATUS, type ErrorCode } from "@/contracts/errors";
 import { MAX_JSON_BODY_BYTES } from "@/contracts/limits";
 import { SafePaiflowError, logPaiflowError } from "@/server/paiflow/errors";
+import { HttpError } from "@/server/http/respond";
 
-// Request plumbing for Carlos's payment routes. It follows the shared error
-// envelope (Francis §3.1, §3.3). Swap for src/server/http once F-12 lands.
+// Request plumbing for Carlos's payment routes, following the shared error
+// envelope (Francis §3.1, §3.3). It also renders Francis's HttpError, which
+// his auth guards and rate limiter throw.
 
 export class RouteError extends Error {
   constructor(
@@ -23,9 +25,10 @@ export const fail = (code: ErrorCode, message?: string): never => {
 
 export async function respond(action: () => Promise<unknown>): Promise<Response> {
   try {
-    return Response.json({ data: await action() });
+    return Response.json({ data: await action() }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     if (error instanceof RouteError) return errorResponse(error.code, error.message, error.retryAfterSeconds);
+    if (error instanceof HttpError) return errorResponse(error.code, error.message, error.opts.retryAfterSeconds ?? null);
     if (error instanceof SafePaiflowError) {
       logPaiflowError("route", error);
       return errorResponse(error.code, error.message, error.retryAfterSeconds);
@@ -36,13 +39,9 @@ export async function respond(action: () => Promise<unknown>): Promise<Response>
 }
 
 function errorResponse(code: ErrorCode, message = DEFAULT_ERROR_MESSAGE[code], retryAfter: number | null = null) {
-  return Response.json(
-    { error: { code, message } },
-    {
-      status: ERROR_HTTP_STATUS[code],
-      headers: retryAfter !== null ? { "Retry-After": String(retryAfter) } : undefined,
-    },
-  );
+  const headers: Record<string, string> = { "Cache-Control": "private, no-store" };
+  if (retryAfter !== null) headers["Retry-After"] = String(retryAfter);
+  return Response.json({ error: { code, message } }, { status: ERROR_HTTP_STATUS[code], headers });
 }
 
 // Every mutation needs a same-origin Origin header and a JSON body.
@@ -92,20 +91,4 @@ export const TX_HASH = /^[a-f0-9]{64}$/;
 export function requireUuid(value: unknown, field: string): string {
   if (typeof value !== "string" || !UUID.test(value)) fail("VALIDATION_SHAPE", `Invalid ${field}.`);
   return value as string;
-}
-
-// Process-local fixed-window limiter, enough for the single demo server.
-export function createRateLimiter(limit: number, windowMs: number, now: () => number = Date.now) {
-  const hits = new Map<string, { start: number; count: number }>();
-  return (key: string) => {
-    const t = now();
-    const entry = hits.get(key);
-    if (!entry || t - entry.start >= windowMs) {
-      hits.set(key, { start: t, count: 1 });
-      return;
-    }
-    entry.count += 1;
-    if (entry.count > limit)
-      throw new RouteError("RATE_LIMITED", undefined, Math.ceil((entry.start + windowMs - t) / 1000));
-  };
 }

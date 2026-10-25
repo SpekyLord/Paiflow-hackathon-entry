@@ -1008,8 +1008,10 @@ The phases below are listed in order:
     - A signature over a different message is rejected.
     - An address already bound → 409.
     - Unbind while the address is a plan's signer → 409.
-  - **Verification:** unit tests with keypairs generated in-test (never committed secrets), then a manual Testnet Freighter binding (T-01).
+  - **Verification so far:** `tests/server/wallet-binding.test.ts` uses generated in-test keypairs and covers the server challenge/signature flow and route refusals. `npm test` (328 tests), `npm run typecheck`, and `npm run build` pass. `npm run lint` passes with six existing warnings in prototype/test-supabase files.
   - **Evidence:** test output; binding row ID and public address.
+  - **Implementation status:** server message/signature helpers, RPC wrappers, and all three routes are implemented. Mocked route tests cover challenge contents, verified binding, replay refusal, a different address's signature, changed message, duplicate address (409), locked unbind (409), authentication, and same-origin checks.
+  - **Still required:** HO-03/C-02(a) real Freighter signature confirmation and manual Testnet T-01, including the binding row ID and public address. F-13 remains unchecked until that integration evidence exists.
 
 - [x] **F-14 Organisation and budget-plan routes (HO-11)** — evidence in §11; plan detail (F-17) is built but not yet ticked
   - **Requirements:** REQ-BUD-01, REQ-BUD-02, REQ-DEP-01 AC4.

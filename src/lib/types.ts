@@ -8,7 +8,7 @@ export enum UserRole {
 }
 
 export enum DocumentCategory {
-  ORDINANCE = 'ordinance',
+  ORDINANCE = 'ordinance', // shown as "Policy"; the stored value is kept for existing data
   BUDGET = 'budget',
   RESOLUTION = 'resolution',
   CONTRACT = 'contract',

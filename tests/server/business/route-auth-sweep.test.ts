@@ -22,7 +22,7 @@ const PUBLIC_BY_DESIGN = ['auth/sign-in', 'auth/sign-out'];
 const MUST_BE_401 = [/^orgs(\/|$)/, /^operator\//, /^wallet\//, /^auth\/me$/, /^integration\/status$/, /^deals(\/|$)/, /^receipts(\/|$)/];
 
 // KNOWN GAPS, listed so they stay visible. Remove an entry when its route is fixed or deleted.
-//  - the inherited government-edition routes are still reachable until F-20 (PRD §K.12); Shanti's HO-12 comes first.
+//  - the inherited earlier-edition routes are still reachable until F-20 (PRD §K.12); Shanti's HO-12 comes first.
 const KNOWN_GAPS = [
   'audit', 'auth', 'auth/login', 'auth/logout', 'blockchain', 'blockchain/nodes', 'blockchain/validate',
   'budget', 'consensus', 'consensus/[documentId]/approve', 'consensus/[documentId]/reject',

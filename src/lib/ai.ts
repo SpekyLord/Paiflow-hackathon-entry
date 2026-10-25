@@ -19,7 +19,7 @@ function getAnthropicClient() {
 }
 
 /**
- * Summarize a government document using Claude AI
+ * Summarize an organisation's document using Claude AI
  * @param documentText - Full text content of the document
  * @returns Structured summary with key points, affected parties, budget implications, and TLDR
  */
@@ -30,16 +30,16 @@ export async function summarizeDocument(documentText: string): Promise<DocumentS
     const response = await client.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1024,
-      system: 'You are a government document analyst. Your job is to summarize complex government documents (ordinances, budgets, resolutions, contracts, permits) in plain language that non-technical citizens can easily understand. Be concise, accurate, and focus on what matters to the public.',
+      system: 'You are a document analyst for organisations such as small businesses. Your job is to summarize complex documents (policies, budgets, resolutions, contracts, permits) in plain language that non-technical readers can easily understand. Be concise, accurate, and focus on what matters to the people affected.',
       messages: [
         {
           role: 'user',
-          content: `Please summarize the following government document. Provide your response in this exact JSON format:
+          content: `Please summarize the following document. Provide your response in this exact JSON format:
 
 {
   "summary": "2-3 sentence plain-language summary of the document",
   "keyPoints": ["bullet point 1", "bullet point 2", "bullet point 3"],
-  "affectedParties": "Who this affects (citizens, businesses, specific groups, etc.)",
+  "affectedParties": "Who this affects (staff, customers, suppliers, the public, etc.)",
   "budgetImplications": "Financial impact or budget allocations (if any), otherwise 'None'",
   "tldr": "One sentence TLDR"
 }

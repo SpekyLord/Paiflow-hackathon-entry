@@ -2,7 +2,7 @@
 
 ## Current direction (read first)
 
-- **Source of truth:** [`docs/PRD.MD`](docs/PRD.MD), "CYFER for SMEs — Escrow, Budget Tracking and Verified Payouts". It supersedes every government-first instruction below.
+- **Source of truth:** [`docs/PRD.MD`](docs/PRD.MD), "CYFER for SMEs — Escrow, Budget Tracking and Verified Payouts". It supersedes every instruction from the earlier edition below.
 - **Pitch:** Paiflow moves the money. CYFER proves what was approved and what was paid. CYFER never holds funds or keys.
 - **Audience:** SME owners, finance staff, partners, suppliers and customers. Government use is a future direction only.
 - **MVP:** one budget plan on Stellar Testnet (XLM) through Paiflow: hashed plan, approval by every designated approver, one Freighter-signed `On Receive → Split` (Operations 50% / Payroll 30% / Supplies 20%), per-envelope payout verification (Planned / Approved / Pending / Verified distribution), wallet page, document tamper check. The protected payment (`time_before`, escrow), receipt page and SME landing copy are Should; USDC and more escrow examples are Nice. See PRD §L.1 for the MVP / should / stretch / future scope tiers, and never promote optional features into the MVP.
@@ -20,17 +20,13 @@
 - **Do not** run seeds, migrations or `test-supabase.ts` (it writes data and may call the AI API) against a shared database, and do not send testnet transactions, without explicit team approval.
 - **Commands** that exist today: `npm run dev`, `npm run build`, `npm run lint`. There is no `npm test`.
 
-Everything below this line is **historical** guidance for the inherited government edition. Keep its coding conventions where the PRD does not override them. Its audience, roles, deadline, demo flow and feature priorities are obsolete.
+Everything below this line is **historical** guidance for the inherited earlier edition. Keep its coding conventions where the PRD does not override them. Its audience, roles, deadline, demo flow and feature priorities are obsolete.
 
 ---
 
-## Historical: Governance Edition Project Overview
+## Historical: Earlier Edition Project Overview
 
-CYFER  is a blockchain-powered government document transparency platform for the InterCICSkwela Hackathon (Challenge #3: Transparency, Accountability, and Good Governance). It enables local government units (LGUs) to publish tamper-proof documents and allows citizens to publicly verify their integrity.
-
-**SDG Alignment:** SDG 16 — Peace, Justice and Strong Institutions
-**Target:** City/Municipal level government in the Philippines
-**Deadline:** Video demo submission by March 22, 2026
+The earlier edition of CYFER was a document transparency app: an organisation publishes tamper-proof documents after unanimous approval, and anyone can verify a copy against the recorded hash. Its audience, deadline and demo flow are obsolete.
 
 ## Tech Stack
 
@@ -137,7 +133,7 @@ Six tables in Supabase:
 3. `blockchain` — Ordered blocks forming the chain
 4. `approvals` — Per-document approval records from each admin
 5. `transactions` — Audit trail of every platform action
-6. `budget_data` — Municipal budget entries by category and fiscal year
+6. `budget_data` — Budget entries by category and fiscal year (inherited)
 
 Historical schema notes. The proposed SME schema is in `docs/PRD.MD` §I.
 
@@ -206,12 +202,12 @@ Historical schema notes. The proposed SME schema is in `docs/PRD.MD` §I.
 ## Design Guidelines
 
 ### Color Palette
-- **Primary:** Deep navy/dark blue (#1a2332 or similar) — conveys trust, government, authority
+- **Primary:** Deep navy/dark blue (#1a2332 or similar) — conveys trust and authority
 - **Secondary:** White/light gray backgrounds for clean readability
 - **Verified/Success:** Green (#22c55e)
 - **Tampered/Error:** Red (#ef4444)
 - **Warning/Pending:** Amber/Yellow (#f59e0b)
-- **Accent:** Gold (#d4a843) — government/official feel
+- **Accent:** Gold (#d4a843) — an official, trustworthy feel
 - **Info/Neutral:** Blue (#3b82f6)
 
 ### Typography
@@ -235,7 +231,6 @@ Historical schema notes. The proposed SME schema is in `docs/PRD.MD` §I.
 - This is a hackathon project with a 6-day timeline — prioritize working features over perfect code
 - The prototype needs to look good on video — visual polish matters
 - If a feature is taking too long, move on and come back to it
-- The demo flow for the video is: Problem → Solution → Public Portal → Document Upload → UCP Approval → AI Summarizer → Citizen Verification → Tamper Detection → Audit Trail → Budget Dashboard → SDG/Tech Stack → Closing
 - Feature priority if running out of time:
   1. MUST: Document upload + hashing + verification + tamper detection
   2. MUST: UCP approval workflow

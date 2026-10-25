@@ -5,13 +5,14 @@
 | Field | Value |
 |---|---|
 | Owner | Shanti |
-| Source of truth | [docs/PRD.MD](PRD.MD) v2.0.0 (§J screens, §L.3 manual deployment, §N demo) |
+| Source of truth | [docs/PRD.MD](PRD.MD) **v2.1.0** (§J screens, §L.3 manual deployment, §N demo) |
+| Tiers | **MVP:** the budget Split flows and the budget-plan, wallet, documents/tamper-check and operator screens. **SHOULD:** the protected-payment (escrow) flows and screens, public receipt, SME landing copy. **STRETCH:** templates, online selling (mocked courier), USDC. |
 | Status | Planning only. Every task starts unchecked. |
 
 **Quick links:**
 
-- The data you render: [DTOs](FRANCIS-PHASETASK.md#contract-dtos) · [Allowed actions and state wording](FRANCIS-PHASETASK.md#contract-states) · [Error codes](FRANCIS-PHASETASK.md#contract-errors)
-- The hooks you use: [Controller interface](FRANCIS-PHASETASK.md#contract-controllers) · [Hook usage snippets](CARLOS-PHASETASK.md#4-integration-examples-for-shanti-filled-in-by-c-05--c-16)
+- The data you render: [DTOs](FRANCIS-PHASETASK.md#contract-dtos) · [States, dashboard mapping, allowed actions and wording](FRANCIS-PHASETASK.md#contract-states) · [Error codes](FRANCIS-PHASETASK.md#contract-errors)
+- The hooks you use: [Controller interface](FRANCIS-PHASETASK.md#contract-controllers) · [Hook usage snippets](CARLOS-PHASETASK.md#4-integration-examples-for-shanti-filled-in-by-c-05--c-15)
 - Fixtures: [Fixtures and mocks](FRANCIS-PHASETASK.md#contract-fixtures)
 - Rules and schedule: [Ownership](FRANCIS-PHASETASK.md#2-ownership-matrix-canonical) · [Time-box](FRANCIS-PHASETASK.md#02-recommended-time-box-for-today-pht-25-oct-2026)
 
@@ -31,10 +32,11 @@
 - Freighter calls
 - Wallet-signing logic
 - Payment or recovery state machines
+- Split-share arithmetic (use `expectedShareStroops` from the DTO)
 - API routes
 - Migrations
 
-Use `deal.allowedActions` to decide which buttons appear. Do not re-derive rules from `deal.state`.
+Use `allowedActions` and `dashboardState` from the DTOs to decide what appears. Do not re-derive rules from raw states.
 
 **Never on screen or in screenshots:**
 
@@ -48,92 +50,80 @@ Use `deal.allowedActions` to decide which buttons appear. Do not re-derive rules
 
 ### 2.1 Concepts to understand before clicking anything
 
-- **Three different identifiers.** The **deployment UUID** (e.g. `xxxxxxxx-xxxx-4xxx-…`) is what the app and API use. It is **not** the flow ID and **not** the Stellar contract address that starts with `C` (Paiflow Guide p4, llms.md §3).
-- **One deployment = one escrow relationship.** The client, seller, deadline and asset are fixed when you deploy, and all deposits share one held balance (llms.md Condition, PRD §B.7.1). That is why each rehearsal gets **its own** deployment.
-- **Never reuse the live demo escrow** for tests, other deals or hosted-page experiments.
-  - A hosted-page payment is a real deposit into that relationship. It changes the held balance and can be released or refunded with the demo's money.
-  - Use dedicated rehearsal deployments.
-- **A payment must invoke the flow.** Sending XLM from a wallet straight to an address or contract is **not** a deposit, and the flow will not run (llms.md On Receive). Deposits go through CYFER's Fund button (`execute`) or, only where this runbook allows, the hosted trigger page.
-- **The refund is polled, not instant.**
-  - At or after the deadline, Paiflow's automation releases to the False (refund) side.
-  - Payments land "one to two minutes after they are due", and events can lag more (llms.md §6).
-  - Never promise an exact-second refund.
-- **The release-early window is strictly before the deadline.** At or after the deadline, Paiflow refuses early release (422), and CYFER stops offering it 2 minutes before.
+- **Three different identifiers.** The **deployment UUID** is what the app and API use. It is **not** the flow ID and **not** the Stellar contract address that starts with `C` (Paiflow Guide p4, llms.md §3).
+- **Recipients and shares are fixed at deploy time** (Dev mode is off for the event). A new payee, a changed envelope or a changed percentage means a **new deployment** and a **fresh plan approval** in CYFER (D-12).
+- **One deployment = one relationship in CYFER.** Each budget plan reserves its own Split deployment (REQ-DEP-01), so rehearsals use **separate** deployments from the live demo.
+- **Never reuse the live demo deployment** for tests or hosted-page experiments.
+  - A hosted-page payment into a Split really pays the three envelope wallets.
+  - It would also mix rehearsal payouts into the live evidence.
+- **A payment must invoke the flow.** Sending XLM straight to an address or contract is **not** a deposit, and the flow will not run (llms.md On Receive). Payments go through CYFER's Sign payment button (`execute`).
+- **Events lag.** The live feed and indexed payouts can lag by a minute or more. Never pay again because a payout has not appeared yet (llms.md §6, D-13).
+- **SHOULD (protected payment) only:**
+  - The refund at the deadline is polled, not instant.
+  - Release-early works strictly before the deadline.
+  - A protected-payment deployment shares one balance and one deadline.
 
-### 2.2 Deployment plan and deadlines (agree with Carlos in S-01; B-09)
+### 2.2 MVP deployment plan: three Split deployments
 
-All times are PHT (UTC+08:00) on 25 Oct 2026. Write them down as ISO with the offset, e.g. `2026-10-25T14:45:00+08:00`.
+| Deployment | Purpose | Notes |
+|---|---|---|
+| **Split R1** | MVP rehearsal T-01…T-06 (Carlos C-18) | Deploy **first** (by about 12:45). Carlos also uses it for read-only spikes. |
+| **Split R2** | T-07: reload mid-payment on a separate plan and deployment | Deploy right after R1 |
+| **Split D1** | Live pitch demo | Never touched before the pitch except to register it |
 
-| Deployment | Purpose | Recommended deadline | Funding cut-off (deadline − 10 min) | Notes |
-|---|---|---|---|---|
-| **F1** | Refund rehearsal T-08: funded, never approved | `14:45` (tentative; confirm in S-01) | 14:35 | Deploy **first** (by about 12:45) so the refund evidence exists before the pitch. If CYFER funding is not ready by 14:30, Carlos may authorise a hosted-page deposit, which must be **labelled** as such. |
-| **R1** | Happy-path rehearsal T-01…T-07, T-09 | `17:30` | 17:20 | Separate from the live demo. It is retired after rehearsal. |
-| **D1** | Live pitch demo | `18:00` | 17:50 | Pitching runs 4:00–5:00 PM, and 18:00 leaves margin if slots run late. Release must happen before 17:58. |
-| B1 *(optional, SHOULD)* | Budget Split 50/30/20 | n/a (no condition) | — | Only after MVP readiness (G5) |
-
-- **Deadline adjustments.** If the team changes a deadline, keep at least 10 min funding margin plus time for signing, and at least 2 min release margin.
-- **F1 timing.** F1's deadline must leave time after funding for chain finality, automation polling (several minutes) and verification before 15:35.
-- **Registration order.** Carlos registers the deployments one at a time (F1 → R1 → D1) because CYFER refuses an ambiguous match (Francis CL-11).
+- **The same envelope wallets in every deployment.** All three use the **same three envelope recipient wallets in the same order**: 1 Operations 5000 bps, 2 Payroll 3000 bps, 3 Supplies 2000 bps.
+- **Order matters.** The last recipient receives any rounding remainder, and CYFER checks the order.
+- **Sequential registration.** Carlos registers the deployments one at a time, because CYFER refuses an ambiguous match (Francis CL-11).
 
 ### 2.3 Part A: accounts and wallets (S-01)
 
-- [ ] Agree role assignments with Carlos and Francis (B-07). Record **public addresses only** in the handoff table (§2.9). Keys stay in Freighter.
+- [ ] Agree role assignments with Carlos and Francis (B-07, B-13). Record **public addresses only** in §2.9. Keys stay in Freighter.
 
-  | Role | Freighter account on | Used for |
-  |---|---|---|
-  | **Client (buyer)** | Demo machine | Funds escrow; receives refunds |
-  | **Seller (freelancer)** | Demo machine | Receives the released payout |
-  | **Deployer** | Shanti's machine | Signs and pays for deployments only; never client or seller |
+  | Role | Freighter account on | Used for | Needs a CYFER account |
+  |---|---|---|---|
+  | **Owner / authorised signer** | Demo machine | Records the plan and signs the Split payment | Yes |
+  | **Approver A** | Demo machine | Approves the plan | Yes |
+  | **Approver B** | Demo machine | Approves the plan | Yes |
+  | **Operations** envelope wallet | — | Receives 50% | No; it only needs to be a funded account |
+  | **Payroll** envelope wallet | — | Receives 30% | No |
+  | **Supplies** envelope wallet | — | Receives 20% | No |
+  | **Deployer** | Shanti's machine | Signs and pays for deployments only | No |
 
-- [ ] All three are **distinct** Testnet accounts, each funded with Friendbot via Freighter.
-  - The client holds enough XLM for the deposits (1 XLM each in rehearsals, unless agreed otherwise) plus fees and reserves.
-  - The seller account exists and is funded. A missing recipient account makes payouts revert (`AccountMissingError`).
+- [ ] All accounts are **distinct** Testnet accounts, each funded with Friendbot via Freighter.
+  - The signer holds enough XLM for 1 XLM per rehearsal or demo payment, plus fees and reserves.
+  - Every envelope wallet exists and is funded. A missing recipient makes the payment revert (`AccountMissingError`).
 - [ ] Freighter is installed in the same browser used for Paiflow and CYFER, and is set to **Stellar Testnet**.
 - [ ] Sign in to Paiflow at `https://beta.app.paiflow.xyz` with the team account ("Continue with Google").
   - The event access code comes from the organisers.
   - **Never** paste the access code into the app, these docs, commits or screenshots.
-- [ ] With Carlos, agree the exact deadlines in §2.2 and write them in §2.9 before building anything.
 
-### 2.4 Part B: build and deploy the commission escrow (repeat for F1, R1, D1) — S-02, S-03
+### 2.4 Part B: build and deploy the budget Split (repeat for R1, R2, D1) — S-02, S-03
 
-The Paiflow Guide PDF only shows a Split example, so the field names below come from `llms.md` (Condition `time_before` with `at` and optional `timeZone`; Pay with `recipient`, `asset`, `fullAmount`). If a label on screen differs, **stop and confirm with Carlos** rather than guessing. The English preview is the final check.
+This follows the Paiflow Guide p4 flow and PRD §L.3 step 2. If a label on screen differs from what is described here, **stop and confirm with Carlos**. The English preview is the final check.
 
-- [ ] Create a new flow named clearly, e.g. `CYFER escrow F1 — refund rehearsal` / `R1 — rehearsal` / `D1 — LIVE DEMO`.
-- [ ] Remove every example block and default recipient from the starting graph.
-- [ ] Add **On Receive** and set the asset to **native XLM**. Leave the optional minimum empty.
-- [ ] Add a **Condition** block:
-  - kind **`time_before`**
-  - date and time = the agreed deadline
-  - time zone = **Asia/Manila (UTC+08:00)** if a zone field exists
-- [ ] Connect **On Receive → Condition**.
-- [ ] Add **Pay** #1 (the seller):
-  - recipient = the **seller's** fixed G-address
-  - asset = native XLM
-  - **Full amount = on** (100% of what arrives)
-- [ ] Add **Pay** #2 (the refund):
-  - recipient = the **client's** fixed G-address
-  - asset = native XLM
-  - **Full amount = on**
-- [ ] Connect the Condition's **True** handle to **Pay seller**, and its **False** handle to **Pay client**. Each handle goes to exactly one step, and both handles are connected (llms.md Condition).
-- [ ] Confirm that **no Hold** block exists. Hold would block early release.
-- [ ] Confirm that **no Return to owner** block exists. It would pay the deployer, not the client.
-- [ ] Confirm **Dev mode is off**. No "Fill value via API" and no `PENDING:` placeholders anywhere.
-- [ ] Open the deployment review and read the **English preview**. Check each of these out loud with Carlos, who reads the addresses back character by character:
+- [ ] Create a new flow named clearly, e.g. `CYFER budget split R1 — rehearsal` / `R2 — reload test` / `D1 — LIVE DEMO`.
+- [ ] Use **On Receive** as the trigger and **Split** as the action, then connect On Receive → Split.
+- [ ] Select **native XLM** as the flow's asset. Leave the optional minimum empty.
+- [ ] Remove every unrelated example block and default recipient from the starting graph.
+- [ ] Set the Split to **percentage** mode, with all recipients in the same mode. Add the recipients **in this order**:
+  1. Label `Operations`, the Operations wallet G-address, **5000 bps**
+  2. Label `Payroll`, the Payroll wallet G-address, **3000 bps**
+  3. Label `Supplies`, the Supplies wallet G-address, **2000 bps**
+- [ ] Confirm the total is exactly **10,000 bps**, there are no duplicate addresses, and every placeholder address is replaced (no `PENDING:`).
+- [ ] Confirm **Dev mode is off**.
+- [ ] Open the deployment review and read the **English preview**. Check each of these out loud with Carlos, who reads the three addresses back character by character:
   - [ ] Trigger: On Receive, native XLM.
-  - [ ] Condition: time **before** the exact deadline, with the correct date, time and zone.
-  - [ ] Before/True → full amount to the **seller** address.
-  - [ ] After/False → full amount to the **client** address.
-  - [ ] No other recipients, no Hold, no Return to owner, Dev mode off.
+  - [ ] Split: percentage, three recipients, in the order and shares above.
+  - [ ] No other blocks or recipients.
 - [ ] Connect the **deployer** wallet. Freighter must be on Testnet.
 - [ ] Click **Start deployment**. In Freighter, check the network (Testnet), the source account (the deployer), the operations and the fee, then sign.
 - [ ] Wait until the deployment reports **CONFIRMED**, then open its deployment page.
 - [ ] Copy the **deployment UUID** from the deployment page.
-- [ ] Find the **condition node ID** in the flow editor or graph details.
-  - If it is not visible, Carlos reads `operations.releaseEarly.nodeIds` from the capabilities check (C-06), and you confirm there is exactly one candidate.
 - [ ] Take **non-secret** evidence:
   - a screenshot of the canvas
   - a screenshot of the English preview, cropped so it shows no account menus, tokens or access codes
 - [ ] Fill in the handoff record (§2.9) and tell Carlos it is ready (**HO-07**).
+- [ ] **Do not** test D1 (or R1/R2) with the hosted trigger page. Rehearsal payments go through CYFER under ⚠ AUTH (Carlos C-18).
 
 ### 2.5 Part C: developer token for the server (S-04)
 
@@ -146,78 +136,96 @@ The token is a server secret. It goes **directly** to the backend credential cus
   - label `cyfer-demo-server`
   - expiry: shortly after the event
   - permission **Read and operate**
-  - select the confirmed deployments (F1, and R1/D1 once they exist)
+  - select the confirmed deployments (R1, and R2/D1 once they exist)
 - [ ] The secret is shown **once**. Copy it only into the custodian's `.env.local`. **Never** into chat, these docs, commits, screenshots, a `NEXT_PUBLIC_` variable or the browser.
-- [ ] After creating R1, D1 (and B1), **edit the token's deployment selection** to add them. New deployments do **not** get access automatically (Paiflow Guide p6).
+- [ ] After creating each further deployment (R2, D1, and later the SHOULD E-R1/E-F1), **edit the token's deployment selection** to add it. New deployments do **not** get access automatically (Paiflow Guide p6).
   - Changing the label, permission or expiry needs a replacement token.
-- [ ] If the token is ever exposed: revoke it in Paiflow, create a replacement, and tell Carlos.
+- [ ] If the token is ever exposed: revoke it, create a replacement, and tell Carlos.
 - [ ] After the event: revoke or rotate it (PRD §K.4).
 
-### 2.6 Part D: registration and capability check (Carlos runs; you confirm)
+### 2.6 Part D: registration and capability check (Carlos runs; you confirm) — S-05
 
-- [ ] Carlos registers the deployment through CYFER's operator console (C-06). The capability check must show:
-  - network `testnet`
-  - trigger `deposit`
-  - input asset native
-  - execute and releaseEarly **not** `unsupported`
-  - your node ID among the releaseEarly candidates
-- [ ] Confirm that the registry row shows the same UUID, deadline, seller and buyer addresses as your handoff record.
-  - Paiflow's API does **not** return recipient addresses, so this two-person check is the control until a verified payout proves it (Francis CL-12).
+- [ ] Carlos registers each deployment through CYFER's operator console (C-06). The capability check must show network `testnet`, trigger `deposit`, input asset native, and execute **not** `unsupported`.
+- [ ] Confirm that the registry row shows the same UUID, recipients, **order** and bps as your handoff record.
+  - Paiflow's API does **not** return recipient addresses or shares, so this two-person check is the control until the rehearsal's verified payouts prove it (Francis CL-12).
 
-### 2.7 Part E: Testnet rehearsal funding (⚠ AUTH; Carlos leads)
+### 2.7 Part E: rehearsal payments (⚠ AUTH; Carlos leads)
 
-- [ ] **Do not** use the hosted trigger page (`/trigger/<uuid>`) on R1 or D1.
-- [ ] Every deposit, release or hosted-page payment needs explicit team authorisation in chat **first**. Carlos records who authorised it, when, the amount and the deployment.
-- [ ] Record only public transaction evidence: hashes, explorer links and screenshots.
+- [ ] Every Testnet payment needs explicit team authorisation in chat **first**. Carlos records who authorised it, when, the amount and the deployment.
+- [ ] Record only public evidence: hashes, explorer links and screenshots.
 
-### 2.8 Part F: separate refund rehearsal F1 (S-02, verified by Carlos in G6)
+### 2.8 SHOULD runbook: protected-payment (escrow) flows — S-30 (only after G5)
 
-- [ ] Build F1 per §2.4 with its own short deadline. **Never** shorten D1 for this.
-- [ ] Fund F1 before its funding cut-off. Use CYFER's Fund flow if it is ready; otherwise use the hosted page **only with authorisation**, and label every screenshot "funded via Paiflow hosted page, not CYFER checkout".
-- [ ] Do **not** approve or release F1. Let the deadline pass.
-- [ ] Expect the refund several minutes after the deadline. Capture:
-  - the deal page showing "Deadline reached; refund pending (polled)"
-  - then "Refunded to client — verified"
-  - the refund hash on Stellar Expert (testnet)
-- [ ] In the pitch, show this as **Recorded** evidence, labelled with the time it happened.
+Start this **only after the MVP gate G5 passes**. It never blocks the MVP or the demo. If it is not done, the pitch **explains** the protected payment and refund rule with the graph (PRD §N.2).
+
+- [ ] **Roles:** a payer (client) and a payee (seller), each a distinct funded Testnet Freighter account with a CYFER account, plus the same deployer.
+- [ ] **Deadlines:** agree with Carlos (B-09). All times are PHT, written as ISO with the offset `+08:00`.
+
+  | Deployment | Purpose | Recommended deadline |
+  |---|---|---|
+  | **E-R1** | T-08, T-09, T-11 (fund, deliver, approve, release) | `18:00` |
+  | **E-F1** | T-10 refund rehearsal; funded, never approved | about 40–60 min after it is deployed, leaving ≥ 10 min funding margin plus time for chain finality, automation polling and verification |
+
+- [ ] **Build each flow:**
+  - [ ] Add **On Receive** with native XLM.
+  - [ ] Add a **Condition** of kind **`time_before`**, with the agreed date and time and zone **Asia/Manila** (if a zone field exists).
+  - [ ] Add the **True** branch: **Pay** the payee's fixed address, **Full amount = on**.
+  - [ ] Add the **False** branch: **Pay** the payer's fixed refund address, **Full amount = on**.
+  - [ ] Connect both handles, each to exactly one step.
+  - [ ] **No Hold.** Hold would block early release.
+  - [ ] **No Return to owner.** It would pay the deployer, not the payer.
+  - [ ] **Dev mode off.**
+- [ ] **Review and deploy:**
+  - [ ] Review the English preview with Carlos: before/True → payee, after/False → payer, exact deadline and zone.
+  - [ ] Deploy from the deployer and wait for **CONFIRMED**.
+  - [ ] Copy the **deployment UUID** and the **condition node ID**. If the node ID is not visible, Carlos reads `operations.releaseEarly.nodeIds` and you confirm there is exactly one.
+  - [ ] Add the deployment to the token selection, then hand off via §2.9.
+- [ ] **E-F1 refund rehearsal:**
+  - [ ] Fund E-F1 via CYFER before its cut-off. Use the hosted page only with authorisation, labelling every artefact "funded via Paiflow hosted page, not CYFER checkout".
+  - [ ] **Do not** approve or release it.
+  - [ ] Capture "Deadline reached; refund pending (polled)", then "Refunded to payer — verified", plus the refund hash on Stellar Expert (testnet).
+  - [ ] Show it as **Recorded** with its time.
+- [ ] **Never shorten another deployment's deadline** for a refund test.
 
 ### 2.9 Handoff records (non-secret; HO-07)
 
-| Field | F1 | R1 | D1 | B1 (opt.) |
-|---|---|---|---|---|
-| Flow name | | | | |
-| Deployment UUID | | | | |
-| Condition node ID | | | | n/a |
-| Deadline (ISO + offset) | | | | n/a |
-| Asset | native XLM | native XLM | native XLM | native XLM |
-| Seller / True recipient (G…) | | | | n/a |
-| Client / False recipient (G…) | | | | n/a |
-| Split recipients / bps | n/a | n/a | n/a | |
-| Deployer address (public) | | | | |
-| CONFIRMED at (PHT) | | | | |
-| Preview screenshot file | | | | |
-| Graph snapshot SHA-256 (from C-06) | | | | |
-| Registered by / at | | | | |
+**Split deployments (MVP):**
 
-### 2.10 Optional: budget Split flow B1 (SHOULD; only after G5)
+| Field | R1 | R2 | D1 |
+|---|---|---|---|
+| Flow name | | | |
+| Deployment UUID | | | |
+| Recipient 1: Operations (G…) / bps | / 5000 | / 5000 | / 5000 |
+| Recipient 2: Payroll (G…) / bps | / 3000 | / 3000 | / 3000 |
+| Recipient 3: Supplies (G…) / bps | / 2000 | / 2000 | / 2000 |
+| Asset | native XLM | native XLM | native XLM |
+| Deployer address (public) | | | |
+| CONFIRMED at (PHT) | | | |
+| Preview screenshot file | | | |
+| Graph snapshot SHA-256 (from C-06) | | | |
+| Registered by / at | | | |
 
-- [ ] On Receive native XLM → **percentage Split** with three distinct funded recipients:
-  - Operations **5000 bps**
-  - Payroll **3000 bps**
-  - Supplies **2000 bps**
-  - Total exactly 10,000 bps. Rounding goes to the last recipient.
-- [ ] Dev mode off. Review the English preview, deploy from the deployer, wait for CONFIRMED, add B1 to the token's deployment selection, and hand off per §2.9.
-- [ ] Changing a recipient or a share later needs a **new deployment** and a fresh plan approval in CYFER (REQ-BUD-01).
-- [ ] **USDC is STRETCH only.** It needs separate deployments and the exact trustline (code `USDC`, issuer `GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5`) plus a balance in every paying and receiving wallet. Never mix it into the XLM MVP setup.
+**Protected-payment deployments (SHOULD):**
 
-### 2.11 Runbook tasks
+| Field | E-R1 | E-F1 |
+|---|---|---|
+| Deployment UUID | | |
+| Condition node ID | | |
+| Deadline (ISO + offset) | | |
+| Payee / True recipient (G…) | | |
+| Payer / False recipient (G…) | | |
+| CONFIRMED at / registered at | | |
 
-- [ ] **S-01** Accounts, wallets, roles and deadlines agreed (§2.3). **Evidence:** the public-address table, plus the deadline values signed off by Carlos.
-- [ ] **S-02** F1 built, deployed, CONFIRMED and handed off (§2.4, §2.8). **Evidence:** the §2.9 F1 column.
-- [ ] **S-03** R1 and D1 built, deployed, CONFIRMED and handed off (§2.4). **Evidence:** the §2.9 R1 and D1 columns.
-- [ ] **S-04** Token created and delivered securely to the custodian; deployment selection updated (§2.5). **Evidence:** a statement "token created at HH:MM, delivered by method (a)/(b), deployments selected: …" with **no secret**.
-- [ ] **S-05** Registration confirmed for each deployment (§2.6). **Evidence:** the registry row matches the handoff.
-- [ ] **S-06** *(optional)* B1 Split deployment (§2.10).
+**USDC is STRETCH only.** It needs separate deployments and the exact trustline (code `USDC`, issuer `GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5`) plus a balance in every paying and receiving wallet. Never mix it into the XLM MVP setup.
+
+### 2.10 Runbook tasks
+
+- [ ] **S-01 [MVP]** Accounts, wallets, roles, approver set and signer agreed (§2.3). **Evidence:** the public-address table.
+- [ ] **S-02 [MVP]** Split R1 built, deployed, CONFIRMED and handed off (§2.4). **Evidence:** the §2.9 R1 column.
+- [ ] **S-03 [MVP]** Split R2 and D1 built, deployed, CONFIRMED and handed off. **Evidence:** the §2.9 R2 and D1 columns.
+- [ ] **S-04 [MVP]** Token created and delivered securely to the custodian; deployment selection kept current (§2.5). **Evidence:** a statement "token created at HH:MM, delivered by method (a)/(b), deployments selected: …" with **no secret**.
+- [ ] **S-05 [MVP]** Registration confirmed per deployment (§2.6). **Evidence:** the registry row matches the handoff.
+- [ ] **S-30 [SHOULD]** Protected-payment flows E-R1 and E-F1 (§2.8). Only after G5.
 
 ---
 
@@ -231,144 +239,138 @@ The token is a server secret. It goes **directly** to the backend credential cus
 - `aria-live="polite"` on status regions.
 - Abbreviated hashes with copy buttons and full text for screen readers.
 - Explorer links labelled "Stellar Expert (testnet)".
-- "Paid" and "Refunded" appear only for `verified`.
+- "Distributed", "Paid" and "Refunded" appear only for `verified` evidence.
 - **Wording:** use the strings in `src/contracts/state-copy.ts` ([Francis §3.2](FRANCIS-PHASETASK.md#contract-states)). To change the meaning of any string, request a CR.
 
 **Working mode:**
 
 - Start against fixtures by setting `NEXT_PUBLIC_CYFER_FIXTURES=1` in your own `.env.local`.
 - Show a persistent "FIXTURE DATA — not Testnet" banner whenever `getControllerMode() === 'fixture'`.
-- Switch to live mode in S-21.
+- Switch to live mode in S-19.
+
+**MVP screens:**
 
 - [ ] **S-10 App shell, navigation and inherited page removal (HO-12)**
-  - **Build:** `src/app/(sme)/layout.tsx` with navigation (Deals, Wallet, Operator for operators), a TESTNET chip and a sign-out button.
+  - **Build:** `src/app/(sme)/layout.tsx` with navigation (Budget plans, Documents, Wallet, and Operator for operators), the org name, a TESTNET chip and a sign-out button.
   - **Remove:** the government pages and navigation (`(public)` documents, budget, transparency, blockchain, audit; the `(admin)` area). Remove the components and constants that import `src/lib/types.ts`.
-  - **Check:** `/` either redirects to `/deals` or shows a minimal SME page. Make sure two route groups never both define `/`.
+  - **Check:** `/` redirects to the plans page. Make sure two route groups never both define `/`.
   - **Done when:** `npm run build` and `npm run lint` pass, and no page fetches an inherited API route. Then tell Francis (HO-12).
   - **Needs:** HO-01.
 
 - [ ] **S-11 Sign-in** (`/sign-in`)
   - **Data and actions:** email and password → `business.signIn()`; error states 400/401/429. Accounts are pre-provisioned (F-18), so there is no sign-up.
-  - **Wording:** generic errors ("Email or password is incorrect"). Never reveal whether an account exists.
+  - **Wording:** generic errors only. Never reveal whether an account exists.
 
 - [ ] **S-12 Wallet binding** (`/wallet/bind`)
   - **Hooks:** `useFreighter`, `useWalletBinding`.
-  - **States:** not installed (link to freighter.app), not connected, wrong network ("Switch Freighter to Testnet"), awaiting signature, verifying, bound (show address + "verified"), error.
+  - **States:** not installed (link to freighter.app), not connected, wrong network ("Switch Freighter to Testnet"), awaiting signature, verifying, bound (address + "verified"), error.
   - **Mismatch warning:** if `freighterMatchesBinding === false`, show "Freighter is on a different account than your verified wallet. Switch accounts before signing."
+  - **Shared use:** this screen supplies the real-signature check for G2.
 
 - [ ] **S-13 Wallet page** (`/wallet`, REQ-WAL-01)
   - **Hook:** `useWalletSummary`.
   - **Three separate panels, never summed:**
     1. Wallet balance (XLM). "Unavailable" when `state:'unavailable'`, **never 0**.
-    2. Escrow by deal: the deal state, not a balance claim.
+    2. Payment status per plan, with the viewer's role (owner, approver, signer, envelope recipient). The escrow list stays empty in the MVP.
     3. Cumulative **verified** payouts.
   - **History table:** kind, amount, Stellar hash with explorer link, verification badge.
-  - **Never** show a CYFER audit hash in this page.
+  - **Copy:** "Stellar assets and Stellar wallets only". **Never** show a CYFER audit hash.
 
-- [ ] **S-14 Deals list** (`/deals`)
-  - **Data:** `DealSummaryDTO[]`, showing title, counterparty, amount (via `fromStroops`), XLM, deadline (PHT), state label and role.
+- [ ] **S-14 Budget plans list** (`/plans`)
+  - **Data:** `BudgetPlanSummaryDTO[]`, showing purpose, version, total (via `fromStroops`) XLM, the dashboard badge (Planned / Approved / Pending / Verified distribution / Needs review) and approvals "k of n".
   - **States:** empty and loading.
 
-- [ ] **S-15 New deal** (`/deals/new`, client only)
-  - **Fields:** seller wallet address, title, description, deliverable description, and amount entered as decimal XLM and converted with `toStroops` (bigint; at most 7 decimals).
-  - **Deadline and asset:** read-only, from `GET /api/deployments/match`.
+- [ ] **S-15 New budget plan** (`/plans/new`, owner)
+  - **Load:** `GET …/split-deployment` and pre-fill the three envelopes **read-only** (address, bps, order). The owner can edit only labels and optional PHP planning figures.
+    - PHP is entered as pesos and sent as integer centavos, labelled **"planning figure (PHP), not a crypto amount"**, with no conversion shown.
+  - **Fields:** purpose, total amount (decimal XLM → `toStroops`), signer (a member with a bound wallet).
   - **Errors:**
-    - `NO_MATCHING_DEPLOYMENT`: "No prepared escrow matches these parties and deadline. Ask the operator."
-    - `AMBIGUOUS_DEPLOYMENT_MATCH`: tell the user to ask the operator.
-    - Validation errors.
-  - **After save:** show the terms hash.
+    - `NO_SPLIT_DEPLOYMENT`: "No prepared Split matches. Ask the operator."
+    - `ENVELOPES_MISMATCH_DEPLOYMENT`, `BPS_TOTAL_INVALID`, `APPROVER_SET_INVALID`.
+  - **After save:** show the plan hash.
+  - **Constant note:** "Recipients and shares are fixed by the deployed flow. Changing them needs a new flow and fresh approval."
 
-- [ ] **S-16 Deal detail** (`/deals/[id]`, the single source of truth)
-  - **Hook:** `useDealEvidence`.
+- [ ] **S-16 Budget plan detail** (`/plans/[planId]`; the primary demo screen)
+  - **Hook:** `usePlanEvidence`.
   - **Contents:**
-    - the timeline, built with `AuditTimeline`
-    - the parties
-    - the terms hash and version
-    - deposit, release and refund evidence, each with its verification state
-    - the deliverable versions
-    - the latest decision
-  - **Persistent warnings:**
-    - `NONRESPONSE_REFUND`: "If the client does not approve before the deadline, Paiflow refunds the client even if the seller delivered."
-    - the deadline in PHT, with a countdown
-  - **Actions:** buttons only from `allowedActions`, plus a "Refresh evidence" control (`refreshEvidence`).
+    - **Four-step dashboard:** Planned → Approved → Pending → Verified distribution (or Needs review).
+    - **Plan facts:** plan hash and version; signer name and address.
+    - **Approvals:** "k of n" with each approver's decision; `approve`/`reject` buttons for the viewer (reject needs a reason); on `STALE_VERSION`, "A newer version exists; review it first."
+    - **Envelope table:** label, address, bps, expected share (from the DTO), PHP planning figure, and the payout verification badge with hash and explorer link per envelope. "{Label} paid — verified" appears only when verified.
+    - **Progress:** "Payment confirmed; k of n payouts verified" or "Distribution verified".
+    - **Timeline:** `AuditTimeline`, with the CYFER audit hash labelled "CYFER audit hash (not a Stellar transaction)".
+    - **Refresh evidence** control.
 
-- [ ] **S-17 Terms acceptance and editing**
-  - **Actions:**
-    - "Accept terms v{n} (hash …)" → `acceptTerms(version, sha256)`.
-    - The client can edit terms only while `edit_terms` is allowed.
-  - **Wording:** "Waiting for seller to accept terms" / "Ready to fund". On `STALE_VERSION`, show a refresh prompt.
-
-- [ ] **S-18 Fund escrow modal** (client)
-  - **Hook:** `useFundEscrow`.
-  - **Show:** the TESTNET chip, amount, asset, **seller and client recipient addresses**, fee, expiry countdown and deployment UUID.
-  - **Sign button:** one explicit "Sign in Freighter" click, which calls `signAndSubmit()`. It is never automatic.
-  - **States:** preparing, review, awaiting signature, wallet changed, expired, submitting, checking, confirmed ("Deposit confirmed; awaiting indexed evidence" → "Funds held in escrow"), failed, unresolved ("Payment outcome unknown. **Do not pay again.**").
-
-- [ ] **S-19 Deliver** (seller)
-  - **Upload:** via `business.uploadDeliverable(file)`.
-  - **Before upload:** show the limits (10 MB; PDF, PNG, JPEG, ZIP, TXT, DOCX).
-  - **States:** uploading, too large (413), wrong type (415), deadline passed (409), recorded (show v{n} and SHA-256).
-
-- [ ] **S-20 Review, approve and verify file** (client; verify for both parties)
-  - **Review:** download via signed URL; the deliverable v{n} hash is shown.
-  - **Approve:** sends `termsVersionId` + `deliverableVersionId` + `deliverableSha256` exactly as displayed.
-  - **Reject:** requires a reason.
-  - **Stale version** (`STALE_VERSION`): "A newer deliverable exists; review it first."
-  - **Verify-file results** (REQ-DLV-02 text, no "tampered"):
-    - Match: "Matches deliverable v{n} recorded {time}. This confirms the bytes are identical. It does not confirm quality, authorship or that delivery was truthful."
-    - No match: "Does not match deliverable v{n}. The file differs from what was recorded. This alone does not prove tampering."
-
-- [ ] **S-21 Release and recovery controls, then switch to live controllers (G4)**
-  - **Release:** one "Release payment to seller" button → `requestRelease()`. It is disabled while busy and hidden unless `release` is allowed.
-  - **Release states:** "Releasing to seller…", "Release outcome being checked" (uncertain → "Check release evidence" button, which is read-only; **no retry button**), "Paid to seller — verified".
-  - **Funding recovery:**
+- [ ] **S-17 Sign payment modal and recovery controls** (signer)
+  - **Hook:** `usePayment({kind:'plan'})`.
+  - **Before approval:** a disabled "Sign payment" button with "Waiting for all approvers (k of n)". For the demo, attempting it shows the server refusal (`refused_not_approved`): "Payment cannot proceed until every approver has approved."
+  - **Modal shows:** TESTNET, total, asset, the **three recipients with expected shares**, the fee, the expiry countdown and the deployment UUID. One explicit "Sign in Freighter" click calls `signAndSubmit()`.
+  - **States:** preparing, review, awaiting signature, wallet changed, expired, submitting, checking, confirmed, failed, unresolved ("Payment outcome unknown. **Do not pay again.**").
+  - **Recovery:**
     - "Check original transaction" is read-only.
-    - "Resubmit same signed envelope" is a separate button behind a confirm dialog explaining it sends the identical signed transaction. Show it only when `resubmit_same_envelope` is allowed.
-  - **Mismatch:** "Evidence mismatch — under review".
-  - **Live switch:** then remove the fixture flag and run the [G4](#g4) checks.
+    - "Resubmit same signed envelope" is a separate button behind a confirm dialog explaining it re-sends the identical signed transaction. Show it only when allowed.
+    - There is **never** a "pay again" button.
 
-- [ ] **S-22 Operator console** (`/operator`, operator only)
+- [ ] **S-18 Documents and tamper check** (`/documents`, REQ-DOC-01, REQ-DLV-02)
+  - **Upload:** choose a kind (contract, invoice, receipt, plan attachment, other). Limits are shown first (10 MB; PDF, PNG, JPEG, ZIP, TXT, DOCX).
+  - **Recorded documents list:** SHA-256 and a download button (signed URL).
+  - **Verify a file:** pick the recorded document or plan version, then upload a candidate. Results use the REQ-DLV-02 text:
+    - Match: "Matches {record} recorded {time}. This confirms the bytes are identical. It does not confirm quality, authorship or that delivery was truthful."
+    - No match: "Does not match {record}. The file differs from what was recorded. This alone does not prove tampering."
+    - **Never** the word "tampered" as a verdict.
+  - **Errors:** 413/415/403.
+
+- [ ] **S-19 Switch to live controllers → [G4](#g4)**
+  - Remove the fixture flag and wire every MVP screen to the real routes and hooks (HO-10).
+  - Run the G4 checks.
+
+- [ ] **S-20 Operator console** (`/operator`, operator only)
   - **Hook:** `useOperatorConsole`.
-  - **Deployment registry:** a list plus a registration form with the §2.9 fields.
-  - **Review queue:** items with reason and deal link; a resolve form with outcome and **required justification**.
+  - **Deployment registry:** a list plus a registration form (template, UUID, ordered recipients and bps).
+  - **Review queue:** a resolve form with outcome and **required justification**.
   - **Never shown:** XDR.
 
-- [ ] **S-23 Accessibility and responsive pass**
-  - Keyboard-only run-through of sign-in → fund → approve → release.
+- [ ] **S-21 Evidence display components**
+  - One shared hash component: abbreviated, copy button, screen-reader full text, kind label (Stellar tx / SHA-256 / CYFER audit hash).
+  - One verification badge (icon + text) for `pending evidence` / `verified` / `mismatch` / `needs review`.
+  - Used on every screen.
+
+- [ ] **S-22 Accessibility and responsive pass**
+  - Keyboard-only run-through of sign-in → bind → create plan → approve ×2 → sign payment → verify document.
   - Focus is visible everywhere.
-  - Status is conveyed by text or icon, not colour alone.
+  - Status is not conveyed by colour alone.
   - `aria-live` on status regions.
-  - Usable at 375 px and 1440 px widths.
+  - Usable at 375 px and 1440 px.
   - Contrast meets WCAG AA for text.
 
-- [ ] **S-24 Copy honesty pass** (input to [G7](FRANCIS-PHASETASK.md#g7))
-  - No "tampered", "immutable", "anchored on Stellar", "real money" or "guaranteed refund time".
-  - The CYFER audit hash is labelled "CYFER audit hash (not a Stellar transaction)".
+- [ ] **S-23 Copy honesty pass** (input to [G7](FRANCIS-PHASETASK.md#g7))
+  - No "tampered", "immutable", "anchored on Stellar", "real money", "Distributed" before verification, or currency conversion of PHP figures.
   - "Testnet — simulation, no real money" appears on money pages.
+  - "A verified payout proves distribution, not that the money was well spent" appears near the dashboard.
 
-- [ ] **S-25 Demo script and rehearsal → [G8](#g8)**
+- [ ] **S-24 Demo script and rehearsal → [G8](#g8)**
 
-- [ ] **S-26** *(SHOULD)* Budget plan screens: planned → approved → payment pending → distribution verified. PHP figures are labelled "planning figure (PHP), not a crypto amount", and progress reads "2 of 3 payouts verified". This waits for F-23 and C-21.
+**SHOULD and STRETCH screens (only after G5):**
 
-- [ ] **S-27** *(SHOULD)* Online-selling screens. **Every** courier element carries "MOCK courier status — not a real courier integration" (REQ-SELL-01). This waits for F-24.
+- [ ] **S-31 [SHOULD] Protected-payment screens.** New deal (payer), deal detail (timeline, terms hash, held state, deliverables, `NONRESPONSE_REFUND` warning, deadline in PHT), fund modal, deliver, review and approve with verify-file, release ("Releasing to payee…", "Release outcome being checked" with a read-only check and **no retry button**, "Paid to payee — verified"). Uses the SHOULD hooks and DTOs fixed by CR at F-30/C-34.
+- [ ] **S-32 [SHOULD] Public receipt page** (`/r/[slug]`). Allow-listed fields only, transaction hashes with explorer links, and "not found" / "withdrawn" states.
+- [ ] **S-33 [SHOULD] SME landing copy.** SME positioning; government only as a future direction.
+- [ ] **S-34 [STRETCH] Template screens, online selling and USDC picker.** **Every** courier element carries "MOCK courier status — not a real courier integration" (REQ-SELL-01).
 
-- [ ] **S-28** *(STRETCH)* Landing rebrand (government only as a future direction) and the public receipt page (allow-listed fields only).
-
-**Can start immediately:** S-01, S-02, then S-10, S-11 and S-14…S-20 against fixtures once HO-01 merges. Mock hooks arrive with HO-06.
-**Must wait:** S-12 live (F-13, C-15), S-21 live (HO-10), S-22 live (C-06, C-17), S-26 and S-27 (MVP first).
+**Can start immediately:** S-01 and S-02, then S-10, S-11 and S-13…S-18, S-20 and S-21 against fixtures once HO-01 merges. Mock hooks arrive with HO-06.
+**Must wait:** S-12 live (F-13, C-14), S-19 (HO-10), S-24 (G5), S-30…S-34 (G5).
 
 ---
 
 ## 4. Visual, accessibility and demo checklist (short)
 
 - [ ] TESTNET chip visible on every money screen and in every demo screenshot.
-- [ ] One consistent state badge component (icon + text) used for deal, attempt and verification states.
-- [ ] Hashes: monospace, abbreviated, copy button, full value available to screen readers.
-- [ ] Explorer links open the testnet explorer and are labelled "Stellar Expert (testnet)".
+- [ ] The S-21 badge and hash components are used everywhere, with consistent wording.
+- [ ] The four-step dashboard reads clearly at projection size.
 - [ ] No secrets, account menus or access codes visible in any screenshot or screen share.
 - [ ] Browser zoom 100%; demo window sized for projection; notifications off.
-- [ ] Freighter on Testnet, with the client and seller accounts named clearly. Switch accounts deliberately during the demo.
-- [ ] Tabs prepared: the D1 deal page; Stellar Expert pages for the D1 deposit (after funding), R1 release and F1 refund; the Paiflow canvas preview screenshot.
+- [ ] Freighter on Testnet, with the owner/signer and approver accounts named clearly. Switch deliberately.
+- [ ] Tabs prepared: the D1 plan page; Stellar Expert pages for the R1 payment and its envelope payouts; the Split graph preview screenshot; (SHOULD) the escrow graph preview.
 
 ---
 
@@ -378,16 +380,16 @@ The token is a server secret. It goes **directly** to the backend credential cus
 ### G4 — UI connected to real routes and controllers
 
 - **Owner:** Shanti.
-- **Prerequisites:** G3, HO-10, HO-11; S-10…S-22 built.
+- **Prerequisites:** G3, HO-10, HO-11; S-10…S-18, S-20 and S-21 built.
 - **Pass criteria:**
   - [ ] `NEXT_PUBLIC_CYFER_FIXTURES` unset; `npm run build` and `npm run lint` pass.
-  - [ ] Carlos's bundle check finds no `[FIXTURE]` marker in the production build (C-18).
-  - [ ] With a real signed-in client on R1:
-    - the deal page loads from `GET /api/deals/:id`
+  - [ ] Carlos's bundle check finds no `[FIXTURE]` marker in the production build (C-17).
+  - [ ] With a real signed-in owner on Split R1:
+    - the plan page loads from `GET …/budget-plans/:planId`
     - the deployment UUID shown equals the §2.9 record (not a `00000000-0000-4000-8000-…` fixture ID)
     - no fixture banner appears
-  - [ ] Every screen in §3 S-11…S-22 renders the live data or error states (spot check of 401, 403 and 409 handling).
-- **Evidence:** build output, bundle check output, and screenshots showing a real UUID. The deposit-hash screenshot is added during G5 (T-03). It is **not** a G4 prerequisite, so the gates do not form a cycle.
+  - [ ] Every MVP screen renders live data and error states (spot check of 401, 403 `PLAN_NOT_APPROVED`, 409 and 422 handling).
+- **Evidence:** build output, bundle check output, and screenshots showing a real UUID. The payment-hash screenshot is added during G5 (T-04); it is **not** a G4 prerequisite.
 
 <a id="g8"></a>
 ### G8 — Three-minute demo rehearsed with evidence
@@ -396,26 +398,36 @@ The token is a server secret. It goes **directly** to the backend credential cus
 - **Responsibilities:**
   - **Carlos:** the evidence sheet (hashes, explorer links) and is on standby for the operator console.
   - **Francis:** the Q&A answers on security and honest limits.
-- **Prerequisites:** G5 (or a documented decision to label steps **Recorded** per PRD §N.2); G6 evidence available; S-24 copy honesty pass; D1 deal created and **funded before the pitch** if the team chooses that (record the funding time).
+- **Prerequisites:** G5 (or a documented decision to label steps **Recorded** per PRD §N.2); G7; S-23. The D1 plan is created before the pitch; whether approvals and payment happen live is decided per N.2.
 - **Pass criteria:**
-  - [ ] Full run-through timed at ≤ 3:00 in the primer order:
-    1. **Problem** (0:20): no unsourced statistics.
-    2. **Solution** (0:25): "Paiflow holds and routes the money. CYFER proves why it moved."
+  - [ ] Full run-through timed at ≤ 3:00 in the primer order (PRD §N.1):
+    1. **Problem** (0:20): budgets and payments run on chat and spreadsheets. No unsourced statistics.
+    2. **Solution** (0:25): "Paiflow moves the money. CYFER proves what was approved and what was paid."
     3. **Stellar impact** (0:20): demonstrated vs potential, kept separate.
-    4. **Paiflow integration** (0:25): show the graph On Receive → time_before → Pay seller / Pay client. Explain release-early vs the automatic, polled refund, and one deployment = one relationship.
-    5. **Demo** (1:30): D1 deal held → seller uploads → hash recorded → verify the same and an altered file → client approves v{n} → release → "Paid to seller — verified" with an explorer link → show the F1 refund as **Recorded**.
-  - [ ] Every step carries its honesty label from PRD §N.2 (Live / Recorded / Explained / Mocked).
-  - [ ] All four required statements (PRD §N.3) are said:
-    - "If the client never approves, the deadline refunds the client even if the freelancer delivered. CYFER's evidence helps a dispute but cannot move money. Arbitration is future work."
-    - "Our server can release early only to the fixed seller, and only after the client's recorded approval. Whoever holds the deployment token or the deploying wallet is trusted; we log every release."
+    4. **Paiflow integration** (0:25): show the Split graph (three envelopes) and, if built or explained, the protected-payment graph. Recipients are fixed per deployment, and one deployment is one relationship.
+    5. **Demo** (1:30), budget flow first:
+       1. The owner records the plan (hash and ledger block).
+       2. The approvers approve, with payment shown refused before the last approval.
+       3. The signer signs in Freighter, and Paiflow splits the payment.
+       4. CYFER verifies the transaction and each envelope payout, with hashes.
+       5. The protected payment is shown as the add-on: Live only if G6 passed, otherwise Recorded or Explained.
+       6. Tamper check: an altered document gives "no match".
+  - [ ] Every step carries its honesty label from PRD §N.2 (Live / Recorded / Explained / Mocked / Future).
+  - [ ] The PRD §N.3 required statements are said where relevant:
+    - "If the payer never approves, the deadline refunds the payer even if the payee delivered. CYFER's evidence helps a dispute but cannot move money. Arbitration is future work." (only if the protected payment is shown)
+    - "Our server can release early only to the fixed payee, and only after the payer's recorded approval. Whoever holds the deployment token or the deploying wallet is trusted; we log every release." (only if the protected payment is shown)
+    - "Recipients and shares are fixed when a flow is deployed. A new payee or a changed envelope means a new flow and a fresh approval."
     - "Testnet only: this is a simulation with no real money."
-    - "The hash proves the file is byte-identical, not that the work is good."
+    - "The hash proves the file is byte-identical, not that the work is good, and a verified payout proves distribution, not that the money was well spent."
+    - "Interoperability here means Stellar assets and Stellar wallets. We do not bridge to other blockchains."
   - [ ] The evidence sheet is ready and open:
-    - D1, R1 and F1 deployment UUIDs
-    - deposit, release and refund hashes, with Stellar Expert links
-    - terms and deliverable SHA-256
+    - R1, R2 and D1 deployment UUIDs
+    - plan hash
+    - payment hash and three envelope payout hashes, with Stellar Expert links
+    - document SHA-256
+    - (SHOULD) escrow hashes if G6 passed
   - [ ] Fallback agreed: if a live step fails, switch to the R1 recorded evidence and say so.
-- **Evidence:** the rehearsal time, the presenter, the evidence sheet location (no secrets) and the decisions on labels.
+- **Evidence:** the rehearsal time, the presenter, the evidence sheet location (no secrets) and the label decisions.
 
 <a id="evidence-log"></a>
 ## 6. Evidence log (Shanti)

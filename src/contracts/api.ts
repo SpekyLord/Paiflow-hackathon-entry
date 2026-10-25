@@ -9,6 +9,8 @@ import type {
   GAddress,
   IsoUtc,
   OperatorReviewDTO,
+  OrgMemberDTO,
+  PlanVersionIndexDTO,
   OrgDocumentDTO,
   OrgDocumentKind,
   PaymentAttemptViewDTO,
@@ -59,6 +61,8 @@ export interface ApiRoutes {
   'GET /api/wallet/summary': Route<undefined, WalletSummaryDTO>; // C
   'GET /api/orgs': Route<undefined, SessionDTO['orgs']>; // F
   'GET /api/orgs/:orgId/split-deployment': Route<undefined, SplitDeploymentDTO>; // F, owner
+  'GET /api/orgs/:orgId/members': Route<undefined, OrgMemberDTO[]>; // F, member (CR-03)
+  'GET /api/orgs/:orgId/plan-versions': Route<undefined, PlanVersionIndexDTO[]>; // F, member (CR-03)
   'GET /api/orgs/:orgId/budget-plans': Route<undefined, BudgetPlanSummaryDTO[]>; // F, member
   'POST /api/orgs/:orgId/budget-plans': Route<CreatePlanInput, BudgetPlanDetailDTO>; // F, owner
   'GET /api/orgs/:orgId/budget-plans/:planId': Route<undefined, BudgetPlanDetailDTO>; // F, member/operator

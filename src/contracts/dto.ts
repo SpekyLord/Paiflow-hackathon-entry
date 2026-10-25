@@ -161,6 +161,27 @@ export interface PaymentReviewDTO {
   outcome: 'created' | 'existing';
 }
 
+// ---------- MVP: organisation directory (CR from Shanti: signer choice, approver preview, plan-version picker) ----------
+/** Members of the viewer's own organisation. Never exposes emails, internal flags or wallet addresses. */
+export interface OrgMemberDTO {
+  userId: string;
+  displayName: string;
+  role: OrgRole;
+  hasVerifiedWallet: boolean; // a plan's signer needs one
+  isViewer: boolean;
+}
+
+/** One row per saved plan version in the organisation, for the tamper-check picker. */
+export interface PlanVersionIndexDTO {
+  versionId: string;
+  planId: string;
+  version: number;
+  purpose: string;
+  planSha256: Sha256Hex;
+  createdAt: IsoUtc;
+  superseded: boolean;
+}
+
 // ---------- MVP: documents and tamper check ----------
 export type OrgDocumentKind = 'contract' | 'invoice' | 'receipt' | 'plan_attachment' | 'other';
 

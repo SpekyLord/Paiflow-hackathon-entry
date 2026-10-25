@@ -1034,7 +1034,7 @@ The phases below are listed in order:
     - 413/415 limits hold.
     - The rate limit applies.
   - **Implementation:** uploads are streamed through the shared multipart size cap, validated against the MIME allowlist and file signatures, hashed server-side, then written to the private bucket before the transactional record RPC. RPC failure triggers best-effort orphan deletion. Downloads use attachment signed URLs capped at 300 seconds. Verification scopes the selected document or plan version to the requested org; cross-org IDs return 403.
-  - **Verification:** `npm run typecheck` passed. Runtime upload, cross-org, size-limit and one-byte-change flows still need acceptance exercise.
+  - **Verification:** mocked route-level acceptance covers upload order, unsupported and oversized files, signed attachment URL expiry, identical/one-byte-changed hashes, and cross-org 403. `npm test` (300 tests) and `npm run typecheck` passed. No writes were made to the hosted Supabase project; live-storage acceptance remains unexercised.
 
 - [ ] **F-16 Plan approval route hardening**
   - **Requirements:** REQ-BUD-02 AC1–AC3.

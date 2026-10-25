@@ -791,12 +791,12 @@ The MVP is complete only when G1–G5 and G7 pass **and** the Testnet rehearsal 
 - **Prerequisites:** G5.
 - **Pass criteria (each with test output or a recorded manual check):**
   - [ ] 401 on every plan, approval, document, payment and wallet route without a session (REQ-ACC-01 AC1).
-  - [ ] 403 for non-members of the org. A non-approver cannot approve, and a non-signer cannot prepare.
+  - [x] 403 for non-members of the org. (proven: DB tests, guard tests, route tests; see §11) A non-approver cannot approve, and a non-signer cannot prepare.
   - [ ] **REQ-BUD-02 AC4:** `pay/prepare` before full approval returns 403 `PLAN_NOT_APPROVED`, and Paiflow is **not** called (mock call count = 0, plus the T-03 log).
-  - [ ] RLS: an `anon` or `authenticated` client cannot select `payment_attempts`, `wallet_challenges`, `operator_reviews` or SME file objects.
-  - [ ] A private SME document is not fetchable without membership or a ≤ 5 min signed URL (REQ-DOC-01 AC1).
-  - [ ] Concurrency: concurrent last approvals publish once (REQ-BUD-02 AC1), concurrent prepares create one attempt, and concurrent reservations have one winner (mocked RPC concurrency where B-12 is unresolved; real DB if authorised).
-  - [ ] Carlos's bundle scan: no `pfd_`/`pfk_` token, `PAIFLOW_API_TOKEN`, service-role key or SDK runtime in `.next/static`, and no `[FIXTURE]` marker in the production build.
+  - [x] RLS: an `anon` or `authenticated` client cannot select (proven in DB incl. `storage.objects` for `sme-files`, §11) `payment_attempts`, `wallet_challenges`, `operator_reviews` or SME file objects.
+  - [x] A private SME document is not fetchable without membership (proven live, §11) or a ≤ 5 min signed URL (REQ-DOC-01 AC1).
+  - [x] Concurrency: concurrent last approvals publish once (proven with real parallel sessions on `cyfai-sme-dev`, all three cases, §11) (REQ-BUD-02 AC1), concurrent prepares create one attempt, and concurrent reservations have one winner (mocked RPC concurrency where B-12 is unresolved; real DB if authorised).
+  - [x] Carlos's bundle scan: no `pfd_`/`pfk_` token (`npm run check:bundle` passes on the current build, run by Francis, §11), `PAIFLOW_API_TOKEN`, service-role key or SDK runtime in `.next/static`, and no `[FIXTURE]` marker in the production build.
   - [ ] Logs reviewed during rehearsal contain no token, XDR or signed envelope.
   - [ ] Copy review (with Shanti S-23):
     - no "tampered"
@@ -876,7 +876,7 @@ The phases below are listed in order:
 
 ### Phase B — Schema and RPCs (write files; do not apply until F-19) [MVP]
 
-- [ ] **F-05 Migration 002: identity, organisations, wallet bindings**
+- [x] **F-05 Migration 002: identity, organisations, wallet bindings** — proven in DB (replay, other address/user, unique address, lock), §11
   - **Requirements:** REQ-ACC-01, REQ-ACC-02 AC1–AC4, PRD §I.1, §I.2, §D.2.
   - **Deliverable:** `002_sme_identity_orgs_wallets.sql`, containing:
     - `profiles(user_id → auth.users, display_name, is_operator default false)`, with the flag settable only by migration or service role
@@ -890,7 +890,7 @@ The phases below are listed in order:
   - **Acceptance:** the replay, wrong-signer and unique-address rules are enforceable in SQL; the signature itself is checked in F-13.
   - **Verification:** SQL review; tests in F-21.
 
-- [ ] **F-06 Migration 003: deployment registry and reservations**
+- [x] **F-06 Migration 003: deployment registry and reservations** — proven in DB (one active reservation under concurrency, Split recipient validation), §11
   - **Requirements:** REQ-DEP-01 AC1–AC4, D-04, D-12.
   - **Deliverable:** `003_sme_deployments.sql`, containing:
     - `paiflow_deployments` (PRD §I.4 plus `capability_snapshot jsonb` and `split_recipients jsonb` in deployment order), with no credential columns
@@ -915,7 +915,7 @@ The phases below are listed in order:
   - **Acceptance:** every rule in the §3.6 "DB enforces" list is expressible.
   - **Blocking question:** B-04.
 
-- [ ] **F-08 Migrations 004 and 006: budget plans and SME documents**
+- [x] **F-08 Migrations 004 and 006: budget plans and SME documents** — proven in DB (private bucket, no object policies, key format, approver PK), §11
   - **Requirements:** REQ-BUD-01/02, REQ-DOC-01, PRD §I.6, §I.8, §K.6, CL-13…CL-15.
   - **Deliverable (F-08b) `004_sme_budget_plans.sql`:**
     - `budget_plans(id, org_id, deployment_id, state, current_version_id, created_by, …)`
@@ -933,7 +933,7 @@ The phases below are listed in order:
     - Storage keys contain no user filename.
     - The approver primary key prevents duplicate approver rows.
 
-- [ ] **F-09 Migration 007: ledger and audit concurrency fix**
+- [x] **F-09 Migration 007: ledger and audit concurrency fix** — proven in DB (advisory lock, no fork under concurrency, hashes recomputable), §11
   - **Requirements:** PRD §I.10, §I.11, §K.9, D-09.
   - **Deliverable:** `007_sme_ledger_audit.sql`, containing:
     - additive `transactions` columns `deal_id`, `org_id`, `plan_id`, `actor_user_id`, `hash_input jsonb`, with new `action_type` values (PRD §I.10 plus `plan_create`, `plan_approve`, `plan_reject`, `doc_record`, `pay_prepare`, `pay_submit`, `envelope_payout_verified`) added after F-02 confirms the existing check constraint
@@ -945,7 +945,7 @@ The phases below are listed in order:
     - The UI label is "CYFER audit hash".
   - **Blocking question:** B-01.
 
-- [ ] **F-10 Business RPCs**
+- [x] **F-10 Business RPCs** — proven in DB incl. concurrent last approvals and ledger-failure rollback, §11
   - **Requirements:** REQ-BUD-01 AC1/AC2, REQ-BUD-02 AC1–AC3, REQ-BUD-03 AC2, REQ-DOC-01, REQ-DEP-01.
   - **Deliverable:** these SQL functions, each locking the plan or org row and appending evidence in the same transaction:
     - `create_budget_plan(p_actor, p_org, p_input jsonb)`:
@@ -1211,5 +1211,8 @@ The phases below are listed in order:
 | (time to confirm) | F-17 ticked | `tests/server/business/plan.test.ts` now snapshots the browser-visible `BudgetPlanDetailDTO` for each of the 10 plan states using an in-memory database and fixed clock. The related assertions cover verified-payout counts, audit hash field naming, and omission of XDR/request IDs. Focused plan tests: 29 passed; TypeScript check passed; ESLint passed with six existing warnings. | Mocked |
 | (time to confirm) | F-15 review fixes (F-15 not ticked) | Review of the F-15 files found two bugs in `verify-file`, both fixed: (1) `recordedAt` was the time of the check, now the record's own `created_at` (document or plan version); (2) the candidate file went through the upload type/signature gate, so a file damaged after recording (bad header, wrong type) got 415 instead of `match:false`; now only size-capped and hashed. New `tests/server/business/verify-file.test.ts` (4 tests, Mocked): they **fail 3 of 4 on the old code and pass on the fix** (guard-removal check done). Lint is clean (unused import and two `any` types removed). Full suite 321 pass, `tsc` clean, `npm run build` passes. Still open for F-15: no live upload -> verify over HTTP yet (would write one document record to the ledger), DOCX check is loose (any ZIP containing the text `word/document.xml`). | Mocked |
 | (time to confirm) | F-15 ticked | **Live** (`next start`, real `cyfai-sme-dev` incl. private Storage, demo accounts; server stopped afterwards). Refusals: no session 401; `.exe` 415; text declared as PDF 415 ("contents do not match"); operator (not a member) 403 `NOT_MEMBER`; cross-origin 403. **Upload** of a 41-byte text file as owner -> 201, server `sha256` equals the local `sha256sum`, `ledgerBlockId` 635, uploader "Demo Owner". List returns the DTO fields only (no storage key). **Download**: signed URL -> HTTP 200, `Content-Disposition: attachment`, downloaded bytes identical, `expiresAt` 300 s ahead; public/unsigned bucket access -> 400 (bucket private). **Tamper check**: identical file -> `match:true`; one character changed -> `match:false`; a binary of a different type -> `match:false` (not 415); `recordedAt` equals the document's saved time on all three; no response contains "tamper"; operator 403. Not shown live: 413 and the other-org 403 (covered by Mocked tests only) and `plan_version` targets. **Leftovers in the demo project:** one test document record + its ledger block and one object in `sme-files`; harmless but visible in the audit trail. Block IDs are not contiguous (rolled-back tests consume sequence values). DOCX signature check is still loose (any ZIP containing the text `word/document.xml`). | Manual (local server, real project, Storage) |
+| (time to confirm) | F-21 / G7 gap closers | **New tests, all on `cyfai-sme-dev` or Mocked:** (1) `route-auth-sweep.test.ts`: every route file must be classified; the 19 guarded routes (orgs, operator, wallet, auth/me) answer 401 `UNAUTHENTICATED` with no session; with a session present 14 of its tests fail, so it is not vacuous. (2) `concurrency-guards.db.mjs` (A): 5 parallel `begin_payment_attempt` -> exactly one `created`, all others `existing` with the same attempt id, one row, plan `payment_pending`. (3) same file (B): two orgs racing for one deployment -> exactly one winner, one active reservation. **This found a real defect:** the loser got `VALIDATION`; fixed by `011_fix_create_plan_race.sql` (applied; loser now gets `NO_SPLIT_DEPLOYMENT`). (4) storage: anon and authenticated see 0 objects in `sme-files`. (5) a ledger failure injected in a rolled-back transaction leaves no document row and no audit row. (6) bad stroop strings, mainnet, upper-case or short hash, bad status, bad address and a duplicate `original_tx_hash` are all rejected by the table checks. (7) guard-removal spot checks: without the write-once trigger the XDR changes, without the partial unique index two open attempts exist, and the approval gate still refuses when the plan state is forced to `approved` with an approver pending. After the changes: DB suite 27/27, approval concurrency passes, full Vitest 439 pass, `tsc` and eslint clean, `check:bundle` passes. Concurrency fixtures are committed then removed; the one delete-blocking trigger on `payment_attempts` was disabled inside the cleanup transaction only and verified enabled again (`tgenabled = O`); leftovers 0 plans, 0 attempts, 0 deployments. **Still open for G7:** 401 on `integration/status` (Carlos) and the inherited routes (F-20), logs review and copy review (rehearsal and Shanti), AC4 T-03 log, and wrong-signature binding (F-13 live). F-21 stays unticked until F-13's signature tests exist. | DB (cyfai-sme-dev) + Mocked |
+| (time to confirm) | F-13 live round trip (F-13 stays unticked) | Reviewed the wallet routes (`challenge`, `bind`, `unbind`, `src/server/wallet-binding/*`): the message is rebuilt server-side from the stored challenge, the signature is verified BEFORE the challenge is consumed (a bad signature does not burn it), and SQL enforces expiry, single use, user and address match. **Live** (real server + `cyfai-sme-dev`, throwaway `Keypair`s, secrets never printed; NOT a Freighter signature): signature by a different key 400 `SIGNATURE_INVALID`; signature over changed text 400; `signerAddress` != `address` 400; garbage signature 400; another user using this challenge 400 `CHALLENGE_INVALID`; correct signature 200 and `/auth/me` shows the binding; replay 400 `CHALLENGE_INVALID`; another user binding the same address 409 `ADDRESS_ALREADY_BOUND`; no session 401; bad address 422; unbind 200 and `/auth/me` binding null. **Still required:** a real Freighter `signMessage` signature (C-02(a), T-01) with the binding row; `BINDING_LOCKED` over HTTP is covered in DB tests only. | Mocked + Manual (test keypairs) |
+| (time to confirm) | F-05, F-06, F-08, F-09, F-10 ticked | Ticked on the evidence already recorded in the rows above: 27 rolled-back DB tests, `approval-concurrency` and `concurrency-guards` on real parallel sessions, live checks of documents and storage. **F-07 stays unticked:** its columns are provisional until HO-04 (the real Split payout payload). **F-02 and F-04:** F-02's question (what is in the *shared* project) was never answered and is now moot because the demo uses an empty dedicated project; record it as superseded, do not tick it. F-04 needs Carlos and Shanti to confirm at CP-1. | DB (cyfai-sme-dev) |
 | ~13:10 | F-05…F-10 (not ticked) | Drafts, **not applied and not executed**: `supabase/migrations/002`…`008` (identity/wallets, deployments, plans, evidence tables, documents + private bucket, ledger/`append_evidence`, business RPCs). Syntax unchecked: no local Postgres, and Docker is not running. F-07 columns are provisional until HO-04. F-11 (financial RPCs) not started. | Mocked |
 | 13:14 | F-21 (partial) | Expanded `tests/db/business-financial.db.mjs`; **22/22 pass** on `cyfai-sme-dev`. Added `register_deployment` operator gate and Split-recipient validation cases (bps total, duplicate, malformed address, order, zero share), valid recipient-order preservation, a guard-sensitivity probe that drops the recipient CHECK only inside a savepoint and confirms invalid registration then rolls back, and a two-session advisory-lock wait probe for `append_evidence`. The runner reports 0 leftover plans/orgs. This is a rollback-safe lock-serialization probe, **not** a committed parallel-write test. Remaining F-21 work: route tests, guard-removal spot checks for other key rules, and true committed-session concurrency coverage on a disposable DB. | DB (cyfai-sme-dev) |

@@ -2,7 +2,7 @@ import { DEFAULT_ERROR_MESSAGE, type ErrorCode } from "@/contracts/errors";
 import { paymentReviewFixture } from "@/contracts/fixtures";
 import type { PaymentAttemptViewDTO, PaymentReviewDTO } from "@/contracts/dto";
 import type { SafeError, SafeErrorCode, UsePayment } from "@/contracts/controllers";
-import { createStore, createTimers } from "./store";
+import { createStore, createTimers } from "../store";
 import type { FixtureScenario } from "./scenario";
 
 // Framework-free fixture payment flow behind the mock usePayment hook. It

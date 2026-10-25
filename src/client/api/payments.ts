@@ -24,10 +24,11 @@ export function submitPlanPayment(orgId: string, planId: string, attemptId: stri
 }
 
 // Read-only: the server never submits on a check (CL-05).
-export function checkPlanPayment(orgId: string, planId: string, attemptId: string) {
+// The server's bounded check can take up to 30 s; the signal lets the user stop waiting.
+export function checkPlanPayment(orgId: string, planId: string, attemptId: string, signal?: AbortSignal) {
   return apiRequest<Res<"POST /api/orgs/:orgId/budget-plans/:planId/pay/check">>(
     `${planPath(orgId, planId)}/pay/check`,
-    { method: "POST", body: { attemptId } },
+    { method: "POST", body: { attemptId }, signal, timeoutMs: 45_000 },
   );
 }
 

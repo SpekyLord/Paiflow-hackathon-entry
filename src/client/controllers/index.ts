@@ -1,6 +1,6 @@
 "use client";
 import type { ControllerHooks } from "@/contracts/controllers";
-import * as live from "./live";
+import * as live from "./live/hooks";
 import * as mock from "./mock/hooks";
 
 // The §3.7 hooks Shanti imports. The mode is fixed at build time, so each

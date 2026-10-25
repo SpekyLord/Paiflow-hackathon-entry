@@ -1,7 +1,7 @@
 import { planDetailFixture } from "@/contracts/fixtures";
 import type { PlanState } from "@/contracts/states";
 import type { UsePlanEvidence } from "@/contracts/controllers";
-import { createStore, createTimers } from "./store";
+import { createStore, createTimers } from "../store";
 import type { FixtureScenario } from "./scenario";
 
 // Framework-free fixture plan evidence behind the mock usePlanEvidence hook.

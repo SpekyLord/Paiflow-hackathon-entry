@@ -1,6 +1,6 @@
 import { PLAN_STATES, type PlanState } from "@/contracts/states";
 import type { UseFreighter } from "@/contracts/controllers";
-import { createStore } from "./store";
+import { createStore } from "../store";
 
 // Which fixture story the mock controllers tell. Set it from code with
 // setFixtureScenario() or from the URL, e.g.

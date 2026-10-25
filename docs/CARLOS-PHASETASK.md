@@ -447,7 +447,7 @@ const pay = usePayment({ kind: 'plan', orgId, planId });
 //   only when plan.allowedActions.includes('resubmit_same_envelope')
 ```
 
-**Fixture mode (HO-06).** Run with `NEXT_PUBLIC_CYFER_FIXTURES=1 npm run dev`. Render the "FIXTURE DATA — not Testnet" banner when `getControllerMode() === 'fixture'`. Pick the story with URL parameters: `fixturePlan=<PlanState>`, `fixturePartial=1` (2 of 3 verified), `fixturePayment=confirmed|refused_not_approved|wallet_changed|expired|unresolved|failed`, `fixtureWallet=ok|unavailable|empty`, `fixtureFreighter=connected|not_installed|not_connected|wrong_network`, `fixtureDelay=<ms>`. Example: `/plans/x?fixturePlan=payment_confirmed&fixturePartial=1`. Live mode currently returns a "not connected" error from every hook until C-15.
+**Fixture mode (HO-06).** Run with `NEXT_PUBLIC_CYFER_FIXTURES=1 npm run dev`. Render the "FIXTURE DATA — not Testnet" banner when `getControllerMode() === 'fixture'`. Pick the story with URL parameters: `fixturePlan=<PlanState>`, `fixturePartial=1` (2 of 3 verified), `fixturePayment=confirmed|refused_not_approved|wallet_changed|expired|unresolved|failed`, `fixtureWallet=ok|unavailable|empty`, `fixtureFreighter=connected|not_installed|not_connected|wrong_network`, `fixtureDelay=<ms>`. Example: `/plans/x?fixturePlan=payment_confirmed&fixturePartial=1`. Live mode (flag unset) uses the real routes since C-15 (`9c4df2e`); `useWalletBinding` needs Francis's F-13 challenge/bind routes, which are not merged yet.
 
 ```tsx
 import { useFreighter, useWalletBinding, usePayment, usePlanEvidence,
@@ -483,12 +483,12 @@ const op = useOperatorConsole();
 
 | Hook | Snippet delivered (commit) |
 |---|---|
-| `useFreighter` | Fixture: `4524866`, `5104ea6` |
-| `useWalletBinding` | Fixture: `4524866`, `5104ea6` |
-| `usePayment` (plan) | Fixture: `4524866`, `5104ea6` |
-| `usePlanEvidence` | Fixture: `4524866`, `5104ea6` |
-| `useWalletSummary` | Fixture: `4524866`, `5104ea6` |
-| `useOperatorConsole` | Fixture: `4524866`, `5104ea6` |
+| `useFreighter` | Fixture: `4524866`, `5104ea6`; live: `9c4df2e` |
+| `useWalletBinding` | Fixture: `4524866`, `5104ea6`; live: `9c4df2e` |
+| `usePayment` (plan) | Fixture: `4524866`, `5104ea6`; live: `9c4df2e` |
+| `usePlanEvidence` | Fixture: `4524866`, `5104ea6`; live: `9c4df2e` |
+| `useWalletSummary` | Fixture: `4524866`, `5104ea6`; live: `9c4df2e` |
+| `useOperatorConsole` | Fixture: `4524866`, `5104ea6`; live: `9c4df2e` |
 | SHOULD: `usePayment` (deal), `useDealEvidence`, `useRelease` | — |
 
 ---
@@ -600,3 +600,10 @@ const op = useOperatorConsole();
 | 13:16 | C-10 | `src/server/paiflow/events.ts` (`7e2614f`). Multi-page fixtures fully ingested, duplicates ignored, concurrent cursor advance not clobbered, page cap never complete, lease and poll budget honoured. Not wired to a scheduler yet (C-12). | Mocked | — |
 | 13:16 | Totals (after C-06…C-10) | `npm run typecheck`, `npm run lint` (0 errors), `npm test` (16 files, 253 tests), `npm run build`, `npm run check:bundle` pass on Node v24.11.1. One build attempt failed fetching Google Fonts (`src/app/layout.tsx`, network); the rerun passed. | Mocked | — |
 | 13:25 | F-12 wiring | Payment routes use Francis's `getAuthUserId` + `loadSession` and `limit()` (commit after `c622dc5`). Full suite: 18 files, 275 tests; build and `check:bundle` pass. Not yet exercised against the real Supabase project or Paiflow. | Mocked | — |
+| 13:40 | CR to Francis | `getLatestAttempt(scope)` added to `src/server/db/financial-core.ts` + `financial.ts` (`b3d4d12`), approved by the user in chat: read-only query of the plan's newest attempt, needed because `getOpenAttempt` skips terminal attempts and `getPaymentContext` needs a member. No SQL or migration. Francis may move or reshape it. | Mocked | User (in chat) |
+| 13:40 | C-12 | `reconcilePlan` (`26b98ea`), `POST …/evidence/refresh` returning Francis's F-17 plan detail (`8ba9622`), and the opt-in worker in `src/instrumentation.ts` (`3f11cc7`). **B-06 choice (a):** a lease-guarded 30 s interval on the demo server process when `CYFER_RECONCILER=1`; per-process caveats in `reconcile-runner.ts`. Read-only toward Paiflow (0 prepare/submit calls asserted); two runners never double-process (lease test); ≥ 15 s between member refreshes. Envelope payouts stay `awaiting_events` until B-04 records the Split payout shape, and an operator review opens after 10 minutes. Not yet run against the real DB or R1. | Mocked | — |
+| 13:40 | C-13 | `GET /api/wallet/summary` (`a05f9f6`). Horizon failure, 404 or bad body → `unavailable`, never 0; no CYFER audit hash in `history`; totals verified-only; panels not summed. | Mocked | — |
+| 13:40 | C-16 | `GET /api/operator/reviews`, `POST /api/operator/reviews/:reviewId` (`c97630f`). Non-operator 403; empty justification 422; on-chain confirmations need the checked Stellar hash; no outcome prepares or submits. | Mocked | — |
+| 13:40 | C-15 | Live controllers (`9c4df2e`). Swapping mock and live needs only `NEXT_PUBLIC_CYFER_FIXTURES`; a reload mid-attempt reads back the same attempt and original hash with no new prepare (REQ-REC-01 AC1, mocked); nothing in localStorage; no decision-making polling. | Mocked | — |
+| 13:40 | C-17 | Negative-path suite (`2a0038d`): 401 on every route without a session, 403 cross-origin and 413 oversize on every mutation, 0 Paiflow calls, token absent from all responses and console output. It found that `pay/prepare` skipped the body cap; fixed in `4c9c31c`. Output handed to Francis for G7. | Mocked | — |
+| 13:40 | Totals (after C-12…C-17) | `npm run typecheck`, `npm run lint` (0 errors, 7 warnings in inherited/Francis files), `npm test` (27 files, 379 tests), `npm run build`, `npm run check:bundle` pass on Node v24.11.1. Still open: C-02 and C-18 (Testnet, ⚠ AUTH), B-04, B-10 (Node 22). | Mocked | — |

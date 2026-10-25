@@ -706,7 +706,7 @@ Each producer marks a handoff delivered in their own evidence log, and the consu
 | HO-09 | Francis → all | Migrations applied to the agreed database (⚠ AUTH); demo accounts, organisation, memberships (owner + approvers) and operator flag provisioned (F-18, F-19) | G2, C-06, S-11 |
 | HO-10 | Carlos → Shanti | Real controllers plus an integration example for each hook (C-15) | S-19, G4 |
 | HO-11 | Francis → Carlos | Business routes live: orgs, budget plans, approvals, documents, verify-file (F-14…F-17) | C-18 rehearsal |
-| HO-12 | Shanti → Francis | Government pages and navigation removed; no page imports inherited API routes or `src/lib/types.ts` (S-10) | F-20 |
+| HO-12 | Shanti → Francis | Government pages and navigation removed; no page imports inherited API routes or `src/lib/types.ts` (S-10) — **received, checked 2026-10-25: `constants.ts` no longer imports `lib/types`; build and lint pass; `/` redirects to `/plans`** | F-20 |
 
 **Dependency graph (acyclic).** Arrows point from prerequisite to dependent.
 

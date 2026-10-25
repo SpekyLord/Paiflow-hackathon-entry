@@ -41,8 +41,27 @@ A rendered screen or an HTTP 200 is not evidence that a payment, payout or refun
 | `tests/server/payments/paiflow-adapter.test.ts` | Config validation, safe error mapping, `Retry-After`, token never logged, `GET /api/integration/status` |
 | `tests/server/payments/bundle-scan.test.ts` | Bundle scan rules |
 | `tests/fixtures/paiflow/` | Deterministic, never-funded test transactions |
+| `tests/server/payments/*` | Carlos's route handlers, reconcile, events, wallet summary, operator routes, negative paths (mocked DB and Paiflow) |
+| `tests/db/payments-flow.db.test.ts` | DB level: real SQL, rolled back (`npm run test:db`) |
+| `tests/live/payments-smoke.live.mjs` | Local live: running dev server and demo accounts |
 
 Test files mock `server-only` with `vi.mock("server-only", () => ({}))` before importing server modules.
+
+## DB and local live tests
+
+Both need `.env.local` for the dedicated test project. Neither sends a Testnet transaction.
+
+- **DB (rolled back):** `npm run test:db` runs Carlos's real handlers, reconcile pass and event ingestion against the real SQL functions, with only Paiflow faked. Every test runs in a transaction that is rolled back, so nothing is left behind. It needs `SUPABASE_DB_URL` and the `pg` package in a separate folder (it is not a project dependency):
+
+  ```bash
+  npm install --prefix ../cyfer-pg pg@8
+  ```
+
+  ```bash
+  CYFER_PG_DIR=../cyfer-pg npm run test:db
+  ```
+
+- **Local live:** start `npm run dev`, then run `node tests/live/payments-smoke.live.mjs http://localhost:3000`. It signs in as the F-18 demo accounts (passwords from `.env.local`) and probes every Carlos route. It refuses any host other than localhost. Without `PAIFLOW_API_TOKEN` nothing can reach Paiflow, and a registration attempt is refused with 503 before anything is written.
 
 ## Environment
 

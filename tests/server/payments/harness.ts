@@ -5,7 +5,7 @@ import type { PaymentDeps, PaiflowPort, RouteSession } from "@/server/paiflow/de
 // Fakes for payment route tests. Every DB function and Paiflow call is a
 // vi.fn, so tests assert call order and counts (e.g. 0 SDK calls).
 const DB_METHODS = [
-  "getPaymentContext", "getOpenAttempt", "getAttempt", "listScopesNeedingReconciliation", "beginPaymentAttempt",
+  "getPaymentContext", "getOpenAttempt", "getAttempt", "getLatestAttempt", "listScopesNeedingReconciliation", "beginPaymentAttempt",
   "recordPreparation", "failPreparation", "markSignatureRequested", "persistSignedEnvelope", "recordEnvelopeRejection",
   "recordSubmission", "recordStatusCheck", "markExpiredUnsigned", "recordPaymentReceiptVerification",
   "recordEnvelopePayoutVerification", "upsertPaiflowEvents", "getEventCursor", "advanceEventCursor", "listStoredEvents",

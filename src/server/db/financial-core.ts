@@ -235,6 +235,19 @@ export function createFinancialDb(client: SupabaseClient) {
       return data && data.length > 0 ? mapAttempt(data[0]) : null;
     },
 
+    /** CR (Carlos, C-12): newest attempt for the plan, terminal or not, so reconciliation can find a paid attempt. */
+    async getLatestAttempt(scope: PayScope): Promise<PaymentAttemptRow | null> {
+      const data = await read<Row[]>('getLatestAttempt', () =>
+        client
+          .from('payment_attempts')
+          .select('*')
+          .eq('budget_plan_id', planId(scope))
+          .order('created_at', { ascending: false })
+          .limit(1),
+      );
+      return data && data.length > 0 ? mapAttempt(data[0]) : null;
+    },
+
     async getAttempt(attemptId: string): Promise<PaymentAttemptRow | null> {
       const data = await read<Row[]>('getAttempt', () => client.from('payment_attempts').select('*').eq('id', attemptId).limit(1));
       return data && data.length > 0 ? mapAttempt(data[0]) : null;

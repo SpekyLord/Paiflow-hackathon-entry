@@ -11,6 +11,7 @@ const get = (): FinancialDb => (db ??= createFinancialDb(getServiceClient()));
 export const getPaymentContext: FinancialDb['getPaymentContext'] = (...a) => get().getPaymentContext(...a);
 export const getOpenAttempt: FinancialDb['getOpenAttempt'] = (...a) => get().getOpenAttempt(...a);
 export const getAttempt: FinancialDb['getAttempt'] = (...a) => get().getAttempt(...a);
+export const getLatestAttempt: FinancialDb['getLatestAttempt'] = (...a) => get().getLatestAttempt(...a);
 export const listScopesNeedingReconciliation: FinancialDb['listScopesNeedingReconciliation'] = (...a) => get().listScopesNeedingReconciliation(...a);
 export const beginPaymentAttempt: FinancialDb['beginPaymentAttempt'] = (...a) => get().beginPaymentAttempt(...a);
 export const recordPreparation: FinancialDb['recordPreparation'] = (...a) => get().recordPreparation(...a);
